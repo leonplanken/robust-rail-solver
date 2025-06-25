@@ -1,4 +1,4 @@
-﻿using ServiceSiteScheduling.Utilities;
+using ServiceSiteScheduling.Utilities;
 using YamlDotNet.Serialization;
 using Google.Protobuf;
 using AlgoIface;
@@ -53,23 +53,50 @@ namespace ServiceSiteScheduling
 
                             Test_Location_Scenario_Parsing(config.LocationPath, config.ScenarioPath);
 
-                            Converter converter = new Converter(ProblemInstance.Current, config.DeepLook.PathScenarioEval);
+                            int testCases = 1;
 
-                            if (converter.ConvertScenario())
+                            for (int testCase = 0; testCase < testCases; testCase++)
                             {
-                                Console.WriteLine("----------------------------------------------------------------------");
-                                Console.WriteLine("Conversion done with success");
-                                Console.WriteLine("----------------------------------------------------------------------");
-                               
 
-                                converter.StoreScenarioEvaluator("scenario_evaluator");
 
+                                Converter converter = new Converter(ProblemInstance.Current, config.DeepLook.ConversionAndStorage.PathScenarioEval);
+
+                                if (converter.ConvertScenario())
+                                {
+                                    Console.WriteLine("----------------------------------------------------------------------");
+                                    Console.WriteLine("Conversion done with success");
+                                    Console.WriteLine("----------------------------------------------------------------------");
+
+
+                                    converter.StoreScenarioEvaluator("scenario_evaluator");
+
+                                }
+
+                                // Console.WriteLine("***************** CreatePlan() *****************");
+                                // CreatePlan(config.LocationPath, config.ScenarioPath, config.PlanPath, config);
+
+                                bool evaluatorResult;
+                                if (Call_Evaluator(config))
+                                {
+                                    Console.WriteLine("The plan is valid");
+                                    evaluatorResult = true;
+                                }
+                                else
+                                {
+                                    Console.WriteLine("The plan is not valid");
+                                    evaluatorResult = false;
+
+                                }
+                                if (StoreScenarioAndEvaluationResults(config.DeepLook.EvaluatorInput.PathScenario, config.DeepLook.ConversionAndStorage.PathScenarioEval, config.DeepLook.ConversionAndStorage.PathEvalResult, testCase, evaluatorResult))
+                                {
+                                    Console.WriteLine("Scenario for Evaluator and the Results are successfully stored");
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Problemes during the storage of Scenario for Evaluator and the Results");
+                                }
                             }
 
-                            // Console.WriteLine("***************** CreatePlan() *****************");
-                            // CreatePlan(config.LocationPath, config.ScenarioPath, config.PlanPath, config);
-
-                            Call_Evaluator(config);
                         }
                         else
                         {
@@ -197,7 +224,6 @@ namespace ServiceSiteScheduling
 
 
                 sa.Graph.DisplayMovements();
-
                 sa.Graph.Clear();
 
             }
@@ -250,18 +276,49 @@ namespace ServiceSiteScheduling
 
         }
 
-        static void Call_Evaluator(Config config)
+        static bool StoreScenarioAndEvaluationResults(string PathScenarioForEval, string PathToStoreEvalScenario, string PathToEvaluationResult, int TestNum, bool valid)
+        {
+
+            try
+            {
+
+                string destinationPath = PathToStoreEvalScenario;
+
+                destinationPath = destinationPath + "/" + "scenario_case_" + TestNum + (valid ? "_valid" : "_not_valid") + Path.GetExtension(PathScenarioForEval);
+                File.Copy(PathScenarioForEval, destinationPath, overwrite: true);
+
+                destinationPath = PathToStoreEvalScenario;
+                destinationPath = destinationPath + "/" + "evaluator_result_case_" + TestNum + (valid ? "_valid" : "_not_valid") + Path.GetExtension(PathToEvaluationResult);
+
+                // destinationPath = Path.GetFileNameWithoutExtension(PathToEvaluationResult);
+                // destinationPath = destinationPath + "evaluator_result_case_" + TestNum + (valid ? "valid" : "not_valid") + Path.GetExtension(PathToStoreEvalScenario);
+                File.Copy(PathToEvaluationResult, destinationPath, overwrite: true);
+
+
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine("Error copying file: " + ex.Message);
+                return false;
+            }
+
+
+
+            return true;
+        }
+
+        static bool Call_Evaluator(Config config)
         {
             Process process = new Process();
-            process.StartInfo.FileName = config.DeepLook.Path;
+            process.StartInfo.FileName = config.DeepLook.EvaluatorInput.Path;
 
-            if (config.DeepLook.Mode == "EVAL")
+            if (config.DeepLook.EvaluatorInput.Mode == "EVAL")
             {
-                process.StartInfo.Arguments = "--mode " + config.DeepLook.Mode + " --path_location " + config.DeepLook.PathLocation + " --path_scenario " + config.DeepLook.PathScenario + " --path_plan " + config.DeepLook.PathPlan + " --plan_type " + config.DeepLook.PlanType;
+                process.StartInfo.Arguments = "--mode " + config.DeepLook.EvaluatorInput.Mode + " --path_location " + config.DeepLook.EvaluatorInput.PathLocation + " --path_scenario " + config.DeepLook.EvaluatorInput.PathScenario + " --path_plan " + config.DeepLook.EvaluatorInput.PathPlan + " --plan_type " + config.DeepLook.EvaluatorInput.PlanType;
             }
-            else if (config.DeepLook.Mode == "EVAL_AND_STORE")
+            else if (config.DeepLook.EvaluatorInput.Mode == "EVAL_AND_STORE")
             {
-                process.StartInfo.Arguments = "--mode " + config.DeepLook.Mode + " --path_location " + config.DeepLook.PathLocation + " --path_scenario " + config.DeepLook.PathScenario + " --path_plan " + config.DeepLook.PathPlan + " --plan_type " + config.DeepLook.PlanType + " --path_eval_result " + config.DeepLook.PathEvalResult;
+                process.StartInfo.Arguments = "--mode " + config.DeepLook.EvaluatorInput.Mode + " --path_location " + config.DeepLook.EvaluatorInput.PathLocation + " --path_scenario " + config.DeepLook.EvaluatorInput.PathScenario + " --path_plan " + config.DeepLook.EvaluatorInput.PathPlan + " --plan_type " + config.DeepLook.EvaluatorInput.PlanType + " --path_eval_result " + config.DeepLook.ConversionAndStorage.PathEvalResult;
 
             }
             else
@@ -277,8 +334,20 @@ namespace ServiceSiteScheduling
             string output = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
 
-            Console.WriteLine("Output from C++:");
+            Console.WriteLine("Output from Evaluator:");
             Console.WriteLine(output);
+
+
+            // Check the evaluator's result if it is valid plan or not only in case the resutls were stored
+
+
+            if (output.Contains("The plan is valid", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            return false;
+
+
+
 
         }
 
@@ -425,19 +494,39 @@ namespace ServiceSiteScheduling
 
         }
 
+        public class ConfigEvaluatorInput
+        {
+            // Path to the evaluator's executable
+            public string Path { get; set; }
+            // Mode to choose, simple evaluation or evaluation with storage of the results (recommended)
+            public string Mode { get; set; }
+
+            // # Folder where the evaluator format location file can be found (TODO: later the solver format location should be converted to evaluator format)
+            public string PathLocation { get; set; }
+
+            // Path to scenario_evaluator.json file ! Important ! scenario_evaluator.json is generated by the Deep Look mode from the solver format scenarion specified by ScenarioPath in the config.yaml 
+            public string PathScenario { get; set; }
+
+            // The path to the plan generated by the solver
+            public string PathPlan { get; set; }
+
+            // To tell the evaluator that a solver formated plan must be evaluated
+            public string PlanType { get; set; }
+        }
+
+        public class ConfigConversionAndStorage
+        {
+            // The path where the evaluation results (.txt) should be stored 
+            public string PathScenarioEval { get; set; }
+            // The path where the scenario_evaluator.json will be stored after the conversion. Note that the name "scenario_evaluator" is a default name it can be changed in the code, but in that case the PathScenario should point to the "renamed" evaluator format scenarion file. This path also serves for serving the evaluator format scenarios after the evaluation as scenario_case_x_valid/not_valid.json - needed to summaize the run cases.
+            public string PathEvalResult { get; set; }
+        }
         public class ConfigDeepLook
         {
-            public string Path { get; set; }
-            public string Mode { get; set; }
-            public string PathLocation { get; set; }
-            public string PathScenario { get; set; }
-            public string PathPlan { get; set; }
-            public string PlanType { get; set; }
-            // Path where the converted scenario for 
-            // the evaluator has to be stored
-            public string PathScenarioEval { get; set; }
-            // Path to store the Evaluator's results
-            public string PathEvalResult { get; set; }
+            public ConfigEvaluatorInput EvaluatorInput { get; set; }
+
+            public ConfigConversionAndStorage ConversionAndStorage { get; set; }
+
 
         }
         public int Seed { get; set; }
