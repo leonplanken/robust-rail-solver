@@ -138,6 +138,7 @@ namespace ServiceSiteScheduling
             instance.InterfaceLocation = location;
             instance.InterfaceScenario = scenario;
 
+
             List<Track> tracks = new List<Track>();
             List<GateWay> gateways = new List<GateWay>();
             Dictionary<ulong, Infrastructure> infrastructuremap = new Dictionary<ulong, Infrastructure>();
@@ -425,85 +426,86 @@ namespace ServiceSiteScheduling
             // the time of arrival of these trains is set to the start time of the scenario
             // TODO: check scenario of two instanding trains maybe conflict will happen 
             // because of the same arrival times ?
-            foreach (var arrivaltrain in scenario.InStanding.Trains)
+
+            int artificialTimeScale = 0;
+            if (scenario.InStanding != null)
             {
-                var currenttrainunits = new List<TrainUnit>();
-                foreach (var unit in arrivaltrain.Members)
+                foreach (var arrivaltrain in scenario.InStanding.Trains)
                 {
-                    if (!traintypemap.ContainsKey(unit.TrainUnit.Type))
+                    var currenttrainunits = new List<TrainUnit>();
+                    foreach (var unit in arrivaltrain.Members)
                     {
-                        var name = $"{unit.TrainUnit.Type.DisplayName}-{unit.TrainUnit.Type.Carriages}";
-                        TrainType type = new TrainType(
-                            traintypes.Count,
-                            name,
-                            (int)unit.TrainUnit.Type.Length,
-                            instance.Tracks.Where(t => t.CanPark).ToArray(),
-                            (int)unit.TrainUnit.Type.BackNormTime,
-                            (int)unit.TrainUnit.Type.BackAdditionTime * (int)unit.TrainUnit.Type.Carriages,
-                            (int)unit.TrainUnit.Type.CombineDuration,
-                            (int)unit.TrainUnit.Type.SplitDuration);
-                        traintypes.Add(type);
-                        traintypemap[unit.TrainUnit.Type] = type;
+                        if (!traintypemap.ContainsKey(unit.TrainUnit.Type))
+                        {
+                            var name = $"{unit.TrainUnit.Type.DisplayName}-{unit.TrainUnit.Type.Carriages}";
+                            TrainType type = new TrainType(
+                                traintypes.Count,
+                                name,
+                                (int)unit.TrainUnit.Type.Length,
+                                instance.Tracks.Where(t => t.CanPark).ToArray(),
+                                (int)unit.TrainUnit.Type.BackNormTime,
+                                (int)unit.TrainUnit.Type.BackAdditionTime * (int)unit.TrainUnit.Type.Carriages,
+                                (int)unit.TrainUnit.Type.CombineDuration,
+                                (int)unit.TrainUnit.Type.SplitDuration);
+                            traintypes.Add(type);
+                            traintypemap[unit.TrainUnit.Type] = type;
+                        }
+                        TrainUnit trainunit = new TrainUnit(
+                            unit.TrainUnit.Id,
+                            trainunits.Count,
+                            traintypemap[unit.TrainUnit.Type],
+                            unit.Tasks.Where(task => taskmap[task.Type].LocationType == ServiceLocationType.Fixed).Select(task => new Service(taskmap[task.Type], (int)task.Duration)).ToArray(),
+                            instance.ServiceTypes);
+                        trainunits.Add(trainunit);
+                        currenttrainunits.Add(trainunit);
+                        trainunitmap[unit.TrainUnit.Id] = trainunit;
+                        instance.TrainUnitConversion[trainunit] = unit.TrainUnit;
+                        freeservicelists.Add(unit.Tasks.Where(task => taskmap[task.Type].LocationType == ServiceLocationType.Free).Select(task => new Service(taskmap[task.Type], (int)task.Duration)).ToArray());
                     }
-                    TrainUnit trainunit = new TrainUnit(
-                        unit.TrainUnit.Id,
-                        trainunits.Count,
-                        traintypemap[unit.TrainUnit.Type],
-                        unit.Tasks.Where(task => taskmap[task.Type].LocationType == ServiceLocationType.Fixed).Select(task => new Service(taskmap[task.Type], (int)task.Duration)).ToArray(),
-                        instance.ServiceTypes);
-                    trainunits.Add(trainunit);
-                    currenttrainunits.Add(trainunit);
-                    trainunitmap[unit.TrainUnit.Id] = trainunit;
-                    instance.TrainUnitConversion[trainunit] = unit.TrainUnit;
-                    freeservicelists.Add(unit.Tasks.Where(task => taskmap[task.Type].LocationType == ServiceLocationType.Free).Select(task => new Service(taskmap[task.Type], (int)task.Duration)).ToArray());
-                }
 
-                Console.WriteLine($"Track part : {infrastructuremap[arrivaltrain.EntryTrackPart]}");
+                    Console.WriteLine($"Track part : {infrastructuremap[arrivaltrain.EntryTrackPart]}");
 
-                GateWay gateway = infrastructuremap[arrivaltrain.EntryTrackPart] as GateWay;
+                    GateWay gateway = infrastructuremap[arrivaltrain.EntryTrackPart] as GateWay;
 
-                if (gateway != null)
-                {
-                    var connection = gatewayconnections[gateway];
-                    instance.GatewayConversion[connection.Track.ID] = connection;
-                    var side = connection.Track.GetSide(connection.Path[connection.Path.Length - 2]);
+                    if (gateway != null)
+                    {
+                        Console.WriteLine($"************ Start time: {(int)instance.ScenarioStartTime}");
+                        var connection = gatewayconnections[gateway];
+                        instance.GatewayConversion[connection.Track.ID] = connection;
+                        var side = connection.Track.GetSide(connection.Path[connection.Path.Length - 2]);
 
-                    Console.WriteLine($"connection :{connection}");
+                        Console.WriteLine($"connection :{connection}");
 
-                    Console.WriteLine($"gateway :{gateway}");
-                    Console.WriteLine($"side :{side}");
+                        Console.WriteLine($"gateway :{gateway}");
+                        Console.WriteLine($"side :{side}");
 
 
-                    var train = new ArrivalTrain(currenttrainunits.ToArray(), connection.Track, Side.None, (int)instance.ScenarioStartTime, true);
-                    Console.WriteLine($"connection.Track :{connection.Track}");
-                
+                        var train = new ArrivalTrain(currenttrainunits.ToArray(), connection.Track, Side.None, (int)instance.ScenarioStartTime, true, arrivaltrain.StandingIndex);
+                        Console.WriteLine($"connection.Track :{connection.Track}");
+                        artificialTimeScale++;
 
-                    arrivals.Add(train);
-                }
-                else
-                {
-                    
-                    var infra = infrastructuremap[arrivaltrain.FirstParkingTrackPart] as Track;
+                        arrivals.Add(train);
+                    }
+                    else
+                    {
 
-                    // Switch @switch = infrastructuremap[departuretrain.LeaveTrackPart] as Switch;
-                    // TODO : add switch statement for more infratype
-                    var train = new ArrivalTrain(currenttrainunits.ToArray(), infra, infra.Access, (int)instance.ScenarioStartTime, true);
+                        var infra = infrastructuremap[arrivaltrain.FirstParkingTrackPart] as Track;
+
+                        // Switch @switch = infrastructuremap[departuretrain.LeaveTrackPart] as Switch;
+                        // TODO : add switch statement for more infratype
+                        Console.WriteLine($">>>>> Arrival Infra Access: {infra} - {infra.Access}");
+
+                        var train = new ArrivalTrain(currenttrainunits.ToArray(), infra, infra.Access, (int)instance.ScenarioStartTime, true, arrivaltrain.StandingIndex);
+                        artificialTimeScale++;
+
+                        arrivals.Add(train);
 
 
-                    arrivals.Add(train);
-
-                    // if (@switch != null)
-                    // {
-
-
-                    //     var train = new DepartureTrain((int)instance.ScenarioEndTime, units.ToArray(), infra, infra.GetSide(@switch), true);
-                    //     departures.Add(train);
-
-                    // }
+                    }
 
                 }
-
             }
+
             foreach (var arrival in arrivals)
                 Console.WriteLine($"Arrival train : {arrival}");
             // only for harder instances
@@ -578,6 +580,65 @@ namespace ServiceSiteScheduling
 
             instance.ArrivalsOrdered = arrivals.OrderBy(arrival => arrival.Time).ToArray();
 
+            Console.WriteLine("Arrivals Ordered: ");
+            foreach (var item in instance.ArrivalsOrdered)
+            {
+                Console.WriteLine(item);
+            }
+
+            // Change order when the standingInedex is lower!
+            // var tmpArrivals = instance.ArrivalsOrdered;
+
+
+            // for (int i = 0; i < tmpArrivals.Length - 1; i++)
+            // {
+            //     var tmpArrival = tmpArrivals[i];
+            //     if (tmpArrival.IsItInStanding())
+            //     {
+
+            //         for (int j = i + 1; j < tmpArrivals.Length; j++)
+            //         {
+            //             if (!tmpArrivals[j].IsItInStanding())
+            //             {
+            //                 // swap
+            //                 var tmp = tmpArrivals[j];
+            //                 tmpArrivals[j] = tmpArrivals[i];
+            //                 tmpArrivals[i] = tmp;
+            //                 break;
+            //             }
+
+            //         }
+            //     }
+
+            // }
+
+            // // for (int i = 0; i < tmpArrivals.Length-1; i++)
+            // // {
+            // //     var tmpArrival = tmpArrivals[i];
+            // //     for (int j = i + 1; j < tmpArrivals.Length; j++)
+            // //     {
+            // //         if (tmpArrivals[i].Track == tmpArrivals[j].Track)
+            // //         {
+            // //             if (tmpArrivals[i].StandingIndex > tmpArrivals[j].StandingIndex)
+            // //             {
+            // //                 var tmp = tmpArrivals[j];
+            // //                 tmpArrivals[j] = tmpArrivals[i];
+            // //                 tmpArrivals[i] = tmp;
+            // //             }    
+            // //         }
+            // //     }
+            // // }
+
+            // Console.WriteLine("Arrivals Re-Ordered: ");
+            // foreach (var item in instance.ArrivalsOrdered)
+            // {
+            //     Console.WriteLine(item);
+            // }
+            // foreach (var item in tmpArrivals)
+            // {
+            //     Console.WriteLine(item);
+            // }
+
             instance.FillArrivals();
 
             instance.FreeServices = freeservicelists.ToArray();
@@ -612,38 +673,45 @@ namespace ServiceSiteScheduling
             // the time of departure of these trains is set to the end time of the scenario
             // TODO: check scenario of two outstanding trains maybe conflict will happen 
             // because of the same departure times ?
-            foreach (var departuretrain in scenario.OutStanding.TrainRequests)
+            if (scenario.OutStanding != null)
             {
-                var units = departuretrain.TrainUnits.Select(
-                    unit => unit.Id == string.Empty ? new DepartureTrainUnit(traintypemap[unit.Type]) : new DepartureTrainUnit(trainunitmap[unit.Id]));
-
-                GateWay gateway = infrastructuremap[departuretrain.LeaveTrackPart] as GateWay;
-
-                if (gateway != null)
+                foreach (var departuretrain in scenario.OutStanding.TrainRequests)
                 {
-                    var connection = gatewayconnections[gateway];
-                    instance.GatewayConversion[connection.Track.ID] = connection;
-                    var side = connection.Track.GetSide(connection.Path[connection.Path.Length - 2]);
-                    var train = new DepartureTrain((int)instance.ScenarioEndTime, units.ToArray(), connection.Track, side, true);
-                    departures.Add(train);
+                    var units = departuretrain.TrainUnits.Select(
+                        unit => unit.Id == string.Empty ? new DepartureTrainUnit(traintypemap[unit.Type]) : new DepartureTrainUnit(trainunitmap[unit.Id]));
 
-                    foreach (var unit in units)
-                        unit.Train = train;
+                    GateWay gateway = infrastructuremap[departuretrain.LeaveTrackPart] as GateWay;
+
+                    if (gateway != null)
+                    {
+                        var connection = gatewayconnections[gateway];
+                        instance.GatewayConversion[connection.Track.ID] = connection;
+                        var side = connection.Track.GetSide(connection.Path[connection.Path.Length - 2]);
+                        var train = new DepartureTrain((int)instance.ScenarioEndTime, units.ToArray(), connection.Track, side, true);
+                        departures.Add(train);
+
+                        foreach (var unit in units)
+                            unit.Train = train;
+
+                    }
+                    else
+                    {
+
+                        var infra = infrastructuremap[departuretrain.LastParkingTrackPart] as Track;
+                        Console.WriteLine($">>>>> Departure Infra Access: {infra} - {infra.Access}");
+
+                        var train = new DepartureTrain((int)instance.ScenarioEndTime, units.ToArray(), infra, infra.Access, true);
+                        departures.Add(train);
+
+                    }
+
+
 
                 }
-                else
-                {
-
-                    var infra = infrastructuremap[departuretrain.LastParkingTrackPart] as Track;
-                    
-                    var train = new DepartureTrain((int)instance.ScenarioEndTime, units.ToArray(), infra, Side.None, true);
-                    departures.Add(train);
-
-                }
-
-
-
             }
+            Console.WriteLine("************ Log from here *************");
+
+
             foreach (var departure in departures)
                 Console.WriteLine($"Departure train : {departure}");
             // only for harder instance

@@ -72,8 +72,8 @@ namespace ServiceSiteScheduling
 
                                 }
 
-                                // Console.WriteLine("***************** CreatePlan() *****************");
-                                // CreatePlan(config.LocationPath, config.ScenarioPath, config.PlanPath, config);
+                                Console.WriteLine("***************** CreatePlan() *****************");
+                                CreatePlan(config.LocationPath, config.ScenarioPath, config.PlanPath, config);
 
                                 bool evaluatorResult;
                                 if (Call_Evaluator(config))
