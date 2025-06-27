@@ -6,6 +6,7 @@ using System.Text.Json;
 using System;
 using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
+using System.Collections;
 
 
 namespace ServiceSiteScheduling
@@ -73,7 +74,47 @@ namespace ServiceSiteScheduling
                                 }
 
                                 Console.WriteLine("***************** CreatePlan() *****************");
-                                CreatePlan(config.LocationPath, config.ScenarioPath, config.PlanPath, config);
+                                ProblemInstance.Current = ProblemInstance.ParseJson(config.LocationPath, config.ScenarioPath);
+
+
+                               
+                                int numberOfArrivals = ProblemInstance.Current.ArrivalsOrdered.Count();
+                                
+                                int timeToAjust = 0;
+                                
+                                switch (testCases % numberOfArrivals)
+                                {
+                                    case 0:
+                                        for (int i = 0; i < numberOfArrivals; i++)
+                                        {
+                                            ProblemInstance.Current.ArrivalsOrdered[i] = new Trains.ArrivalTrain(ProblemInstance.Current.ArrivalsOrdered[i].Units, ProblemInstance.Current.ArrivalsOrdered[i].Track, ProblemInstance.Current.ArrivalsOrdered[i].Side, ProblemInstance.Current.ArrivalsOrdered[i].Time + timeToAjust, ProblemInstance.Current.ArrivalsOrdered[i].InStanding, ProblemInstance.Current.ArrivalsOrdered[i].StandingIndex);
+                                            ProblemInstance.Current.DeparturesOrdered[i] = new Trains.DepartureTrain(ProblemInstance.Current.DeparturesOrdered[i].Time + timeToAjust, ProblemInstance.Current.DeparturesOrdered[i].Units, ProblemInstance.Current.DeparturesOrdered[i].Track, ProblemInstance.Current.DeparturesOrdered[i].Side, ProblemInstance.Current.DeparturesOrdered[i].InStanding);
+                                            timeToAjust = timeToAjust + 100;
+                                        }
+
+                                        break;
+                                    case 1:
+                                        ProblemInstance.Current.ArrivalsOrdered[0] = new Trains.ArrivalTrain(ProblemInstance.Current.ArrivalsOrdered[0].Units, ProblemInstance.Current.ArrivalsOrdered[0].Track, ProblemInstance.Current.ArrivalsOrdered[0].Side, ProblemInstance.Current.ArrivalsOrdered[0].Time + 100, ProblemInstance.Current.ArrivalsOrdered[0].InStanding, ProblemInstance.Current.ArrivalsOrdered[0].StandingIndex);
+                                        break;
+                                    case 2:
+                                        ProblemInstance.Current.ArrivalsOrdered[0] = new Trains.ArrivalTrain(ProblemInstance.Current.ArrivalsOrdered[0].Units, ProblemInstance.Current.ArrivalsOrdered[0].Track, ProblemInstance.Current.ArrivalsOrdered[0].Side, ProblemInstance.Current.ArrivalsOrdered[0].Time + 100, ProblemInstance.Current.ArrivalsOrdered[0].InStanding, ProblemInstance.Current.ArrivalsOrdered[0].StandingIndex);
+                                        break;
+                                    default:
+                                        break;
+                                }
+
+
+                                // trainFirst.Time = trainFirst.Time + 100; 
+
+
+                                // TODO: here we can modify the scenario directly for example influance the timing of the arrivals and departures
+                                // it is more or less custom here
+                                // example of modification:
+
+
+
+                                CreatePlanFromExisting(ProblemInstance.Current, config.PlanPath, config);
+
 
                                 bool evaluatorResult;
                                 if (Call_Evaluator(config))
@@ -137,6 +178,117 @@ namespace ServiceSiteScheduling
             Solutions.PlanGraph graph = null;
 
             ProblemInstance.Current = ProblemInstance.ParseJson(location_path, scenario_path);
+
+            int solved = 0;
+            for (int i = 0; i < 1; i++)
+            {
+                Console.WriteLine(i);
+                LocalSearch.TabuSearch ts = new LocalSearch.TabuSearch(random);
+                if (config != null)
+                {
+                    ts.Run(config.TabuSearch.Iterations, config.TabuSearch.IterationsUntilReset, config.TabuSearch.TabuListLength, config.TabuSearch.Bias, config.TabuSearch.SuppressConsoleOutput);
+                }
+                else
+                {
+                    ts.Run(40, 100, 16, 0.5);
+                }
+                LocalSearch.SimulatedAnnealing sa = new LocalSearch.SimulatedAnnealing(random, ts.Graph);
+                if (config != null)
+                {
+                    sa.Run(new Time(config.SimulatedAnnealing.MaxDuration), config.SimulatedAnnealing.StopWhenFeasible, config.SimulatedAnnealing.IterationsUntilReset, config.SimulatedAnnealing.T, config.SimulatedAnnealing.A, config.SimulatedAnnealing.Q, config.SimulatedAnnealing.Reset, config.SimulatedAnnealing.Bias, config.SimulatedAnnealing.SuppressConsoleOutput, config.SimulatedAnnealing.IintensifyOnImprovement);
+                }
+                else
+                {
+                    sa.Run(Time.Hour, true, 150000, 15, 0.97, 2000, 2000, 0.2, false);
+
+                }
+
+                Console.WriteLine("--------------------------");
+                Console.WriteLine(" Output Movement Schedule ");
+                Console.WriteLine("--------------------------");
+
+                sa.Graph.OutputMovementSchedule();
+                Console.WriteLine("--------------------------");
+                Console.WriteLine("");
+
+
+                Console.WriteLine("----------------------------");
+                Console.WriteLine(" Output Train Unit Schedule ");
+                Console.WriteLine("----------------------------");
+                Console.WriteLine("");
+                sa.Graph.OutputTrainUnitSchedule();
+                Console.WriteLine("----------------------------");
+
+                Console.WriteLine("");
+                Console.WriteLine("------------------------------");
+                Console.WriteLine(" Output Constraint Violations ");
+                Console.WriteLine("------------------------------");
+
+                sa.Graph.OutputConstraintViolations();
+                Console.WriteLine(sa.Graph.Cost);
+                Console.WriteLine("--------------------------");
+
+                if (sa.Graph.Cost.ArrivalDelays + sa.Graph.Cost.DepartureDelays + sa.Graph.Cost.TrackLengthViolations + sa.Graph.Cost.Crossings + sa.Graph.Cost.CombineOnDepartureTrack <= 2)
+                {
+                    solved++;
+                }
+
+                if (sa.Graph.Cost.BaseCost < (best?.BaseCost ?? double.PositiveInfinity))
+                {
+                    best = sa.Graph.Cost;
+                    graph = sa.Graph;
+                }
+                Console.WriteLine($"solved: {solved}");
+                Console.WriteLine($"best = {best}");
+                Console.WriteLine("------------------------------");
+                Console.WriteLine($"Generate JSON format plan");
+                Console.WriteLine("------------------------------");
+
+                Plan plan_pb = sa.Graph.GenerateOutputPB();
+
+                string jsonPlan = JsonFormatter.Default.Format(plan_pb);
+
+                // Console.WriteLine(jsonPlan);
+
+                string directoryPath = Path.GetDirectoryName(plan_path);
+
+                if (!Directory.Exists(directoryPath) && directoryPath != null)
+                {
+
+                    Directory.CreateDirectory(directoryPath);
+                    Console.WriteLine($"Directory created: {directoryPath}");
+                }
+
+                File.WriteAllText(plan_path, jsonPlan);
+
+                Console.WriteLine("----------------------------------------------------------------------");
+
+
+                sa.Graph.DisplayMovements();
+                sa.Graph.Clear();
+
+            }
+
+            Console.WriteLine("------------ OVERALL BEST --------------");
+            Console.WriteLine(best);
+
+            // Console.ReadLine();
+        }
+
+        // Input:   @currentInstance: an already existing problem instance with scenario and location -
+        //          useful in tests when scenarios have to be modifed at code level not directly in the .json file
+        //          @config: service site scheduling config to creat the plan from
+        // Output:  @plan_path: path to where the plan (.json) file will be written
+        // Method: First it calls a Tabu Search method to find an initial plan (Graph) that is used by 
+        //         a Simulated Annealing method to find the final schedle plan (Totally Ordered Graph)
+        static void CreatePlanFromExisting(ProblemInstance currentInstance, string plan_path, Config config = null)
+        {
+
+            Random random = new Random();
+            Solutions.SolutionCost best = null;
+            Solutions.PlanGraph graph = null;
+
+            ProblemInstance.Current = currentInstance;
 
             int solved = 0;
             for (int i = 0; i < 1; i++)
