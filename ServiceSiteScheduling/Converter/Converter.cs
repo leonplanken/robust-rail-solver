@@ -53,6 +53,72 @@ namespace ServiceSiteScheduling
 
             return true;
         }
+
+
+        public bool StorePlan(string FileName, string pathToPlan)
+        {
+
+            if (!File.Exists(pathToPlan) && pathToPlan != null)
+            {
+                Console.WriteLine($"Directory does not exist: {pathToPlan}");
+                return false;
+            }
+
+            var planDirectory = Path.GetDirectoryName(pathToPlan);
+
+            var newPlanToStore = planDirectory + "/" + FileName + Path.GetExtension(pathToPlan);
+
+            if (pathToPlan != null)
+            {
+                File.Copy(pathToPlan, newPlanToStore, overwrite: true);
+            }
+            else
+            {
+                return false;
+            }
+            Console.WriteLine("----------------------------------------------------------------------");
+            Console.WriteLine($" Save modifed plan to {newPlanToStore}");
+            Console.WriteLine("----------------------------------------------------------------------");
+            
+            return true;
+        }
+
+        // During the test phase the Solver formated scenario is also modified 
+        // it is stored in the same directory as the Evaluator formated scenario, but
+        // under a differnet name
+        public bool StoreScenarioSolver(string FileName)
+        {
+            var formatter = new JsonFormatter(new JsonFormatter.Settings(true));
+            string json_scenario_solver = formatter.Format(ProblemInstanceSolver.InterfaceScenario);
+
+            String PathToStoreSolverScenario = PathToStoreEvalScenario;
+
+            if (!Directory.Exists(PathToStoreSolverScenario) && PathToStoreSolverScenario != null)
+            {
+
+                Directory.CreateDirectory(PathToStoreSolverScenario);
+                Console.WriteLine($"Directory created: {PathToStoreSolverScenario}");
+
+            }
+            if (PathToStoreSolverScenario != null)
+            {
+                Console.WriteLine("----------------------------------------------------------------------");
+                string saveTo = PathToStoreSolverScenario + "/" + FileName + ".json";
+                Console.WriteLine($" Save scenario for Evaluaor to {saveTo}");
+
+                File.WriteAllText(saveTo, json_scenario_solver);
+                Console.WriteLine("----------------------------------------------------------------------");
+
+            }
+            else
+            {
+                Console.WriteLine(" Path cannot be found");
+
+                return false;
+            }
+
+            return true;
+        }
         public void PrintScenarioEvaluator()
         {
             var formatter = new JsonFormatter(new JsonFormatter.Settings(true));
