@@ -24,6 +24,8 @@ SimulatedAnnealing:
   SuppressConsoleOutput: false
   IintensifyOnImprovement: false
 DeepLook:
+  TestCases: 2
+  MaxTest: 10 
   EvaluatorInput:
     Path: "/workspace/robust-rail-evaluator/build/TORS" #../../C++/hello"
     Mode: "EVAL_AND_STORE" #EVAL_AND_STORE or EVAL

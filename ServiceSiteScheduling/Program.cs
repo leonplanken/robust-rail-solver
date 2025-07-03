@@ -63,70 +63,170 @@ namespace ServiceSiteScheduling
 
                             int testCases = config.DeepLook.TestCases;
 
-                            for (int testCase = 0; testCase < testCases; testCase++)
+                            ulong timeToAjustCase0 = 0;
+                            ulong timeToAjustCase1 = 0;
+                            ulong timeToAjustCase2 = 0;
+
+                            ulong consAmount = 300;
+                            if (testCases > 0)
                             {
-
-                                Console.WriteLine("***************** CreatePlan() *****************");
-                                ProblemInstance.Current = ProblemInstance.ParseJson(config.LocationPath, config.ScenarioPath);
-
-                                int numberOfArrivals = ProblemInstance.Current.ArrivalsOrdered.Count();
-
-                                ulong timeToAjustCase0 = 0;
-                                ulong timeToAjustCase1 = 0;
-                                ulong timeToAjustCase2 = 0;
-
-                                ulong consAmount = 100;
-
-                                // It is a simple example in which the arrival and departure times are modified
-                                switch (testCase % (numberOfArrivals + 1))
+                                bool validPlanFound = false;
+                                int itTest = 0;
+                                while ((validPlanFound == false) && (itTest < config.DeepLook.MaxTest))
                                 {
-                                    case 0:
-                                        // Test case: Increase the time of arrival trains, but not the departure trains' 
-                                        timeToAjustCase0 = timeToAjustCase0 + consAmount;
 
-                                        foreach (var arrivalTrain in ProblemInstance.Current.InterfaceScenario.In.Trains)
+                                    for (int testCase = -1; testCase < testCases; testCase++)
+                                    {
+
+
+                                        Console.WriteLine("***************** CreatePlan() *****************");
+                                        ProblemInstance.Current = ProblemInstance.ParseJson(config.LocationPath, config.ScenarioPath);
+
+                                        int numberOfArrivals = ProblemInstance.Current.ArrivalsOrdered.Count();
+
+                                        // It is a simple example in which the arrival and departure times are modified
+                                        if (testCase != -1)
                                         {
-                                            arrivalTrain.Arrival = arrivalTrain.Arrival + timeToAjustCase0;
-                                            arrivalTrain.Departure = arrivalTrain.Departure + timeToAjustCase0;
+
+                                            switch (testCase % (numberOfArrivals + 1))
+                                            {
+                                                case 0:
+                                                    // Test case: Increase the time of arrival trains, but not the departure trains' 
+                                                    // timeToAjustCase0 = timeToAjustCase0 + consAmount;
+                                                    foreach (var arrivalTrain in ProblemInstance.Current.InterfaceScenario.In.Trains)
+                                                    {
+                                                        arrivalTrain.Arrival = arrivalTrain.Arrival + timeToAjustCase0;
+                                                        arrivalTrain.Departure = arrivalTrain.Departure + timeToAjustCase0;
+                                                    }
+                                                    break;
+                                                case 1:
+                                                    // Test case: Increase the time of departure trains, but not the arrival trains'
+                                                    timeToAjustCase1 = timeToAjustCase1 + consAmount;
+                                                    ProblemInstance.Current.InterfaceScenario.EndTime = ProblemInstance.Current.InterfaceScenario.EndTime + timeToAjustCase1;
+
+                                                    foreach (var departureTrain in ProblemInstance.Current.InterfaceScenario.Out.TrainRequests)
+                                                    {
+                                                        departureTrain.Arrival = departureTrain.Arrival + timeToAjustCase1;
+                                                        departureTrain.Departure = departureTrain.Departure + timeToAjustCase1;
+                                                    }
+
+                                                    break;
+                                                case 2:
+                                                    // Test case: Increase the time of arrival trains, and the departure trains'
+                                                    timeToAjustCase2 = timeToAjustCase2 + consAmount;
+                                                    ProblemInstance.Current.InterfaceScenario.EndTime = ProblemInstance.Current.InterfaceScenario.EndTime + timeToAjustCase2;
+
+                                                    foreach (var arrivalTrain in ProblemInstance.Current.InterfaceScenario.In.Trains)
+                                                    {
+                                                        arrivalTrain.Arrival = arrivalTrain.Arrival + timeToAjustCase1;
+                                                        arrivalTrain.Departure = arrivalTrain.Departure + timeToAjustCase1;
+                                                    }
+
+                                                    foreach (var departureTrain in ProblemInstance.Current.InterfaceScenario.Out.TrainRequests)
+                                                    {
+                                                        departureTrain.Arrival = departureTrain.Arrival + timeToAjustCase2;
+                                                        departureTrain.Departure = departureTrain.Departure + timeToAjustCase2;
+                                                    }
+
+                                                    break;
+                                                default:
+
+                                                    break;
+                                            }
+
+                                            // The current instance has to be reinitialized since the scenario parameters were changend in a Protobuf object level according to the test cases 
+                                            ProblemInstance.Current = ProblemInstance.Parse(ProblemInstance.Current.InterfaceLocation, ProblemInstance.Current.InterfaceScenario);
                                         }
-                                        break;
-                                    case 1:
-                                        // Test case: Increase the time of departure trains, but not the arrival trains'
-                                        timeToAjustCase1 = timeToAjustCase1 + consAmount;
-                                        foreach (var departureTrain in ProblemInstance.Current.InterfaceScenario.Out.TrainRequests)
+
+                                        // Convert the scenario into an evaluator type scenario
+                                        // and also store it with the prefix scenario_evaluator.json
+                                        Converter converter = new Converter(ProblemInstance.Current, config.DeepLook.ConversionAndStorage.PathScenarioEval);
+
+                                        if (converter.ConvertScenario())
                                         {
-                                            departureTrain.Arrival = departureTrain.Arrival + timeToAjustCase1;
-                                            departureTrain.Departure = departureTrain.Departure + timeToAjustCase1;
-                                        }
+                                            Console.WriteLine("----------------------------------------------------------------------");
+                                            Console.WriteLine("Conversion done with success");
+                                            Console.WriteLine("----------------------------------------------------------------------");
 
-                                        break;
-                                    case 2:
-                                        // Test case: Increase the time of arrival trains, and the departure trains'
-                                        timeToAjustCase2 = timeToAjustCase2 + consAmount;
-                                        foreach (var arrivalTrain in ProblemInstance.Current.InterfaceScenario.In.Trains)
+                                            // Store converted scenario, this will be read by the evaluator
+                                            var fileNameEvalScenario = "scenario_evaluator";
+                                            if (!converter.StoreScenarioEvaluator(fileNameEvalScenario))
+                                                Console.WriteLine("Error while storage of evaluator format scenario");
+
+                                            // Store evaluator format scenarion per test case
+                                            var fileNameEvalScenarioCase = "scenario_evaluator" + "_case_" + testCase;
+                                            if (!converter.StoreScenarioEvaluator(fileNameEvalScenarioCase))
+                                                Console.WriteLine("Error while storage of evaluator format scenario");
+
+                                            // Store the modified solver format scenario in the same folder but under a different file name per test case
+                                            var fileNameSolverScenario = "scenario_solver" + "_case_" + testCase;
+                                            if (!converter.StoreScenarioSolver(fileNameSolverScenario))
+                                                Console.WriteLine("Error while storage of solver format scenario");
+
+                                            scenarioTestCase = fileNameSolverScenario;
+                                        }
+                                        // Create a plan corresponding to the scenario per test case
+                                        CreatePlanFromExisting(ProblemInstance.Current, config.PlanPath, config);
+
+                                        // Store the plan per test case
+                                        var fileNameToStorePlam = "plan" + "_case_" + testCase;
+                                        if (!converter.StorePlan(fileNameToStorePlam, config.DeepLook.EvaluatorInput.PathPlan))
+                                            Console.WriteLine($"Plan Path {config.DeepLook.EvaluatorInput.PathPlan}");
+
+
+                                        bool evaluatorResult;
+                                        if (Call_Evaluator(config))
                                         {
-                                            arrivalTrain.Arrival = arrivalTrain.Arrival + timeToAjustCase2;
-                                            arrivalTrain.Departure = arrivalTrain.Departure + timeToAjustCase2;
+                                            Console.WriteLine("The plan is valid");
+                                            evaluatorResult = true;
                                         }
-
-                                        foreach (var departureTrain in ProblemInstance.Current.InterfaceScenario.Out.TrainRequests)
+                                        else
                                         {
-                                            departureTrain.Arrival = departureTrain.Arrival + timeToAjustCase2;
-                                            departureTrain.Departure = departureTrain.Departure + timeToAjustCase2;
+                                            Console.WriteLine("The plan is not valid");
+                                            evaluatorResult = false;
+
+                                        }
+                                        if (evaluatorResult)
+                                        {
+                                            validPlanFound = true;
+                                        }
+                                        
+                                        if (StoreScenarioAndEvaluationResults(config.DeepLook.EvaluatorInput.PathScenario, config.DeepLook.ConversionAndStorage.PathScenarioEval, config.DeepLook.ConversionAndStorage.PathEvalResult, testCase, evaluatorResult))
+                                        {
+                                            Console.WriteLine("Scenario for Evaluator and the Results are successfully stored");
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Problemes during the storage of Scenario for Evaluator and the Results");
                                         }
 
-                                        break;
-                                    default:
+                                        // Add summary of the test cases and evaluation results
+                                        ResultSummary[scenarioTestCase] = evaluatorResult ? "Valid ✅" : "Not Valid ❌";
 
-                                        break;
+                                    }
+                                    itTest++;
                                 }
 
+                                // Print the sumarry of the test cases and their evaluation results
+
+                                PrintSummary(ResultSummary);
+                                if (ResultSummary.ContainsValue("Valid ✅"))
+                                {
+                                    Console.WriteLine($"Valid plan found in {itTest} iterations");
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"No valid pland was found");
+                                    
+                                }
+
+                            }
+                            else
+                            {
                                 // The current instance has to be reinitialized since the scenario parameters were changend in a Protobuf object level according to the test cases 
                                 ProblemInstance.Current = ProblemInstance.Parse(ProblemInstance.Current.InterfaceLocation, ProblemInstance.Current.InterfaceScenario);
 
-
-                                // Convert the scenario into an evaluator type scenario
-                                // and also store it with the prefix scenario_evaluator.json
+                                var testCase = 0;
                                 Converter converter = new Converter(ProblemInstance.Current, config.DeepLook.ConversionAndStorage.PathScenarioEval);
 
                                 if (converter.ConvertScenario())
@@ -135,9 +235,14 @@ namespace ServiceSiteScheduling
                                     Console.WriteLine("Conversion done with success");
                                     Console.WriteLine("----------------------------------------------------------------------");
 
+                                    // Store converted scenario, this will be read by the evaluator
+                                    var fileNameEvalScenario = "scenario_evaluator";
+                                    if (!converter.StoreScenarioEvaluator(fileNameEvalScenario))
+                                        Console.WriteLine("Error while storage of evaluator format scenario");
+
                                     // Store evaluator format scenarion per test case
-                                    var fileName = "scenario_evaluator" + "_case_" + testCase;
-                                    if (!converter.StoreScenarioEvaluator(fileName))
+                                    var fileNameEvalScenarioCase = "scenario_evaluator" + "_case_" + testCase;
+                                    if (!converter.StoreScenarioEvaluator(fileNameEvalScenarioCase))
                                         Console.WriteLine("Error while storage of evaluator format scenario");
 
                                     // Store the modified solver format scenario in the same folder but under a different file name per test case
@@ -180,11 +285,10 @@ namespace ServiceSiteScheduling
                                 // Add summary of the test cases and evaluation results
 
                                 ResultSummary[scenarioTestCase] = evaluatorResult ? "Valid ✅" : "Not Valid ❌";
+                                // Print the sumarry of the test cases and their evaluation results
+
+                                PrintSummary(ResultSummary);
                             }
-
-                            // Print the sumarry of the test cases and their evaluation results
-                            PrintSummary(ResultSummary);
-
                         }
                         else
                         {
@@ -675,7 +779,7 @@ namespace ServiceSiteScheduling
 
             }
             Console.WriteLine("+------------------------------------------------------+");
-            
+
         }
 
 
@@ -740,7 +844,9 @@ namespace ServiceSiteScheduling
         }
         public class ConfigDeepLook
         {
-            public int TestCases { get; set; } 
+            public int TestCases { get; set; }
+
+            public int MaxTest { get; set; }
             public ConfigEvaluatorInput EvaluatorInput { get; set; }
 
             public ConfigConversionAndStorage ConversionAndStorage { get; set; }
