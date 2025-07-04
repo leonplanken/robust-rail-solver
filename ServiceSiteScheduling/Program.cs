@@ -204,6 +204,9 @@ namespace ServiceSiteScheduling
                                         ResultSummary[scenarioTestCase] = evaluatorResult ? "Valid ✅" : "Not Valid ❌";
 
                                     }
+                                    timeToAjustCase0 = 0;
+                                    timeToAjustCase1 = 0;
+                                    timeToAjustCase2 = 0;
                                     itTest++;
                                 }
 

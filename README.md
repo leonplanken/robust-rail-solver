@@ -204,15 +204,17 @@ protoc --proto_path=protos --csharp_out=generated protos/Plan.proto
 
 ## Deep Look mode 
 In this mode it is possible to process a unit-like test. The works as follows: 
-A solver format scenario is provided (TODO: later replace it with a sort of empty scenario and call arrival/departure/in-outstanding train creation functions, and add possibility to change the timings for example).
-the mode will convert the scenario to an evaluator enabled format. After the conversion, the evaluator is called (its executable with the converted scenario as input). The evaluator will store or return the results in the terminal.
-The solver saves all the evaluation results and the corresponding scenario files. In the end of the program a summary is generated.
+A default solver format scenario is provided, which can be modified with custom parameter setting and modification, e.g., increment the departure time by a certain amount of constant time. This part of the mode can call customized test cases which are described with a switch statement and each case can represent a different logic of testing (the `@TestCases` parameter is used for these iterations). The tests cases are wrapped in a loop that implies that the cases are repeating until a valid scenario is found, or a maximum number of tries achieved (`@MaxTest` parameter is used). 
+
+When the custom test part of the test is done, the (solver format) scenario is converted to an evaluator enabled format. After the conversion, the evaluator is called (evaluator's executable with the converted scenario and plan as input). The evaluator will store or return the results in the terminal.
+The solver saves all the evaluation results, plans and the corresponding scenario files. In the end of the program a summary is generated.
+
 
 ### Usage
 
-Since the evaluator's execution requires dynamic protobuf libraries, the entire execution must take place in the evaluator's conda environment, which already contains the requested libraries.
+Since the evaluator's execution requires dynamic protobuf libraries, the entire execution must take place in the evaluator's conda environment, which already contains the requested libraries. Call `dotnet run -- --config=./config.yaml`, the configuration for this mode (DeepLook) in `config.yaml` is described below. 
 
-**Note**: to use this mode the new version of [.devcontainer](https://github.com/Robust-Rail-NL/.devcontainer) is needed. Also please follow the step described in the [README.md](https://github.com/Robust-Rail-NL/.devcontainer/README.md) before the first usage. 
+**Note**: to use this mode the new version of [.devcontainer](https://github.com/Robust-Rail-NL/.devcontainer) is needed. Also, please follow the step described in the [README.md](https://github.com/Robust-Rail-NL/.devcontainer/README.md) before the first usage. 
 
 ```bash
 conda env list
@@ -230,10 +232,12 @@ Else:
 conda activate my_proto_env 
 ```
 
-In the [config.yaml](./ServiceSiteScheduling/config.yaml) the following parameters serves: 
+In the [config.yaml](./ServiceSiteScheduling/config.yaml) the following parameters serves for: 
 
 ```bash
 DeepLook:
+    TestCases: 10 # Number of test cases to be done
+    MaxTest: 10 #  The maximum number of time the loop can be iterated until a valid plan is found
     EvaluatorInput:
         Path: "/workspace/robust-rail-evaluator/build/TORS" # DO NOT Modify ! 
         Mode: "EVAL_AND_STORE" #EVAL_AND_STORE or EVAL - mode to choose, simple evaluation or evaluation with storage of the results (recommended)
