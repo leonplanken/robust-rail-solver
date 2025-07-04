@@ -202,7 +202,7 @@ protoc --proto_path=protos --csharp_out=generated protos/Plan.proto
 ```
 
 
-## Deep Look mode 
+## Deep Look mode - unit test-like mode
 In this mode it is possible to process a unit-like test. The works as follows: 
 A default solver format scenario is provided, which can be modified with custom parameter setting and modification, e.g., increment the departure time by a certain amount of constant time. This part of the mode can call customized test cases which are described with a switch statement and each case can represent a different logic of testing (the `@TestCases` parameter is used for these iterations). The tests cases are wrapped in a loop that implies that the cases are repeating until a valid scenario is found, or a maximum number of tries achieved (`@MaxTest` parameter is used). 
 
