@@ -620,11 +620,11 @@ namespace ServiceSiteScheduling
 
             if (config.DeepLook.EvaluatorInput.Mode == "EVAL")
             {
-                process.StartInfo.Arguments = "--mode " + config.DeepLook.EvaluatorInput.Mode + " --path_location " + config.DeepLook.EvaluatorInput.PathLocation + " --path_scenario " + config.DeepLook.EvaluatorInput.PathScenario + " --path_plan " + config.DeepLook.EvaluatorInput.PathPlan + " --plan_type " + config.DeepLook.EvaluatorInput.PlanType;
+                process.StartInfo.Arguments = "--mode " + config.DeepLook.EvaluatorInput.Mode + " --path_location " + config.DeepLook.EvaluatorInput.PathLocation + " --path_scenario " + config.DeepLook.EvaluatorInput.PathScenario + " --path_plan " + config.DeepLook.EvaluatorInput.PathPlan + " --plan_type " + config.DeepLook.EvaluatorInput.PlanType + " --departure_delay " + config.DeepLook.EvaluatorInput.DepartureDelay;
             }
             else if (config.DeepLook.EvaluatorInput.Mode == "EVAL_AND_STORE")
             {
-                process.StartInfo.Arguments = "--mode " + config.DeepLook.EvaluatorInput.Mode + " --path_location " + config.DeepLook.EvaluatorInput.PathLocation + " --path_scenario " + config.DeepLook.EvaluatorInput.PathScenario + " --path_plan " + config.DeepLook.EvaluatorInput.PathPlan + " --plan_type " + config.DeepLook.EvaluatorInput.PlanType + " --path_eval_result " + config.DeepLook.ConversionAndStorage.PathEvalResult;
+                process.StartInfo.Arguments = "--mode " + config.DeepLook.EvaluatorInput.Mode + " --path_location " + config.DeepLook.EvaluatorInput.PathLocation + " --path_scenario " + config.DeepLook.EvaluatorInput.PathScenario + " --path_plan " + config.DeepLook.EvaluatorInput.PathPlan + " --plan_type " + config.DeepLook.EvaluatorInput.PlanType + " --path_eval_result " + config.DeepLook.ConversionAndStorage.PathEvalResult + " --departure_delay " + config.DeepLook.EvaluatorInput.DepartureDelay;
 
             }
             else
@@ -836,6 +836,9 @@ namespace ServiceSiteScheduling
 
             // To tell the evaluator that a solver formated plan must be evaluated
             public string PlanType { get; set; }
+
+            // In certain scenarios the departure delay might be allowed, if no delay introduced this parameter should be set to "0"
+            public string DepartureDelay {get; set;}
         }
 
         public class ConfigConversionAndStorage

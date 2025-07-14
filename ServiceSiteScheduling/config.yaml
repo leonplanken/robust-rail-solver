@@ -33,6 +33,7 @@ DeepLook:
     PathScenario: "/workspace/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_deep_look/scenario_evaluator.json"
     PathPlan: "/workspace/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_deep_look/plan.json"
     PlanType: "Solver"
+    DepartureDelay: "600"
   ConversionAndStorage:  
     PathEvalResult: "/workspace/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_deep_look/Evaluation_Results.txt"
     PathScenarioEval: "/workspace/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_deep_look"
