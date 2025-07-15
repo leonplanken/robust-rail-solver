@@ -209,6 +209,13 @@ A default solver format scenario is provided, which can be modified with custom 
 When the custom test part of the test is done, the (solver format) scenario is converted to an evaluator enabled format. After the conversion, the evaluator is called (evaluator's executable with the converted scenario and plan as input). The evaluator will store or return the results in the terminal.
 The solver saves all the evaluation results, plans and the corresponding scenario files. In the end of the program a summary is generated.
 
+**DeterministicPlanning**:
+* This mode also contains a sub-mode `DeterministicPlanning`. This mode allows to set a specific seed (with the `Seed` field under the `DeterministicPlanning` field) for the random number generation, so the plan solving can be reproduced in a deterministic way. 
+
+* In addition, when `LookForSeed` mode is `true` than the initial seed value is incremented for each iteration of the test cases (`testCase`). When the `TestCases` parameter is set to `0` and `LookForSeed` is set to `true`, the scenario is not modified in the test cases only the seed value is incremented - this mode is basically intended to look for a seed which results in a valid or invalid plan for the corresponding scenario.
+
+* To reproduce a plan with a specific seed value the best way is to set `TestCases: 0` and `LookForSeed: false` and specify the seed value `Seed: your_seed_value`.
+
 
 ### Usage
 
@@ -249,6 +256,10 @@ DeepLook:
     ConversionAndStorage:    
         PathEvalResult: "/workspace/robust-rail-solver/ServiceSiteScheduling/database/Evaluation_Results.txt" # The path where the evaluation results (.txt) should be stored 
         PathScenarioEval: "/workspace/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_deep_look" # The path where the scenario_evaluator.json will be stored after the conversion. Note that the name "scenario_evaluator" is a default name it can be changed in the code, but in that case the PathScenario should point to the "renamed" evaluator format scenarion file. This path also serves for serving the evaluator format scenarios after the evaluation as scenario_case_x_valid/not_valid.json - needed to summaize the run cases.
+    DeterministicPlanning:
+        LookForSeed: false # looking for a seed, so the seed value is modified for each iteration, if TestCases is 0 and LookForSeed is true the scenario is not modified only the seed value is modified in the
+        DisplaySeed: true
+        Seed: 11298
 ```
 
 Run the program: 

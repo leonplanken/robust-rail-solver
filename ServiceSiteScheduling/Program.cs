@@ -8,6 +8,8 @@ using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
 using System.Collections;
 using Microsoft.VisualBasic;
+using System.Runtime.CompilerServices;
+using System.Numerics;
 
 
 namespace ServiceSiteScheduling
@@ -59,6 +61,8 @@ namespace ServiceSiteScheduling
 
                             // Contains all the tested scenario cases and the plan evaluation results [valid, not valid]  
                             Dictionary<string, string> ResultSummary = new Dictionary<string, string>();
+
+                            Dictionary<string, string[]> ResultSummaryWithSeed = new Dictionary<string, string[]>();
                             string scenarioTestCase = "";
 
                             int testCases = config.DeepLook.TestCases;
@@ -68,7 +72,11 @@ namespace ServiceSiteScheduling
                             ulong timeToAjustCase2 = 0;
 
                             ulong consAmount = 300;
-                            if (testCases > 0)
+
+                            // If teskCases is 0 and LookForSeed is true the scenario is not modified, but actually the seed is modified
+                            // it might be the case that a plan cannot be found because of the choosen random number and not
+                            // not because of the constraints in the scenarion
+                            if (testCases > 0 || config.DeepLook.DeterministicPlanning.LookForSeed)
                             {
                                 bool validPlanFound = false;
                                 int itTest = 0;
@@ -168,6 +176,10 @@ namespace ServiceSiteScheduling
                                         // Create a plan corresponding to the scenario per test case
                                         CreatePlanFromExisting(ProblemInstance.Current, config.PlanPath, config);
 
+                                        if (config.DeepLook.DeterministicPlanning.LookForSeed)
+                                        {
+                                            config.DeepLook.DeterministicPlanning.Seed++;
+                                        }
                                         // Store the plan per test case
                                         var fileNameToStorePlam = "plan" + "_case_" + testCase;
                                         if (!converter.StorePlan(fileNameToStorePlam, config.DeepLook.EvaluatorInput.PathPlan))
@@ -190,7 +202,7 @@ namespace ServiceSiteScheduling
                                         {
                                             validPlanFound = true;
                                         }
-                                        
+
                                         if (StoreScenarioAndEvaluationResults(config.DeepLook.EvaluatorInput.PathScenario, config.DeepLook.ConversionAndStorage.PathScenarioEval, config.DeepLook.ConversionAndStorage.PathEvalResult, testCase, evaluatorResult))
                                         {
                                             Console.WriteLine("Scenario for Evaluator and the Results are successfully stored");
@@ -203,6 +215,28 @@ namespace ServiceSiteScheduling
                                         // Add summary of the test cases and evaluation results
                                         ResultSummary[scenarioTestCase] = evaluatorResult ? "Valid ✅" : "Not Valid ❌";
 
+
+                                        // If the seed should be displayed
+                                        if (config.DeepLook.DeterministicPlanning.DisplaySeed)
+                                        {
+                                            if (!ResultSummaryWithSeed.ContainsKey(scenarioTestCase))
+                                            {
+                                                ResultSummaryWithSeed[scenarioTestCase] = new string[2];
+                                            }
+                                            ResultSummaryWithSeed[scenarioTestCase][0] = evaluatorResult ? "Valid ✅" : "Not Valid ❌";
+                                            if (config.DeepLook.DeterministicPlanning.LookForSeed)
+                                            {
+                                                ResultSummaryWithSeed[scenarioTestCase][1] = (config.DeepLook.DeterministicPlanning.Seed - 1).ToString();
+                                            }
+                                            else
+                                            {
+                                                ResultSummaryWithSeed[scenarioTestCase][1] = config.DeepLook.DeterministicPlanning.Seed.ToString();
+
+                                            }
+                                        }
+
+
+
                                     }
                                     timeToAjustCase0 = 0;
                                     timeToAjustCase1 = 0;
@@ -211,8 +245,12 @@ namespace ServiceSiteScheduling
                                 }
 
                                 // Print the sumarry of the test cases and their evaluation results
-
                                 PrintSummary(ResultSummary);
+
+                                // Print the results with the seed values
+                                if (config.DeepLook.DeterministicPlanning.DisplaySeed)
+                                    PrintSummaryWithSeeds(ResultSummaryWithSeed);
+
                                 if (ResultSummary.ContainsValue("Valid ✅"))
                                 {
                                     Console.WriteLine($"Valid plan found in {itTest} iterations");
@@ -220,7 +258,7 @@ namespace ServiceSiteScheduling
                                 else
                                 {
                                     Console.WriteLine($"No valid pland was found");
-                                    
+
                                 }
 
                             }
@@ -255,9 +293,13 @@ namespace ServiceSiteScheduling
 
                                     scenarioTestCase = fileNameSolverScenario;
                                 }
+
                                 // Create a plan corresponding to the scenario per test case
                                 CreatePlanFromExisting(ProblemInstance.Current, config.PlanPath, config);
-
+                                if (config.DeepLook.DeterministicPlanning.LookForSeed)
+                                {
+                                    config.DeepLook.DeterministicPlanning.Seed++;
+                                }
                                 // Store the plan per test case
                                 var fileNameToStorePlam = "plan" + "_case_" + testCase;
                                 if (!converter.StorePlan(fileNameToStorePlam, config.DeepLook.EvaluatorInput.PathPlan))
@@ -290,7 +332,30 @@ namespace ServiceSiteScheduling
                                 ResultSummary[scenarioTestCase] = evaluatorResult ? "Valid ✅" : "Not Valid ❌";
                                 // Print the sumarry of the test cases and their evaluation results
 
+                                // If the seed should be displayed
+                                if (config.DeepLook.DeterministicPlanning.DisplaySeed)
+                                {
+                                    if (!ResultSummaryWithSeed.ContainsKey(scenarioTestCase))
+                                    {
+                                        ResultSummaryWithSeed[scenarioTestCase] = new string[2];
+                                    }
+                                    ResultSummaryWithSeed[scenarioTestCase][0] = evaluatorResult ? "Valid ✅" : "Not Valid ❌";
+                                    if (config.DeepLook.DeterministicPlanning.LookForSeed)
+                                    {
+                                        ResultSummaryWithSeed[scenarioTestCase][1] = (config.DeepLook.DeterministicPlanning.Seed - 1).ToString();
+                                    }
+                                    else
+                                    {
+                                        ResultSummaryWithSeed[scenarioTestCase][1] = config.DeepLook.DeterministicPlanning.Seed.ToString();
+
+                                    }
+                                }
+
+                                // Print the sumarry of the test cases and their evaluation results
                                 PrintSummary(ResultSummary);
+                                // Print the results with the seed values
+                                if (config.DeepLook.DeterministicPlanning.DisplaySeed)
+                                    PrintSummaryWithSeeds(ResultSummaryWithSeed);
                             }
                         }
                         else
@@ -327,7 +392,18 @@ namespace ServiceSiteScheduling
         static void CreatePlan(string location_path, string scenario_path, string plan_path, Config config = null)
         {
 
-            Random random = new Random();
+            // If a seed was specified in the config file and it's value is not 0, then we can use the seed for deterministic plan creation
+            Random random;
+            if (config.DeepLook.DeterministicPlanning != null && config.DeepLook.DeterministicPlanning.Seed != 0)
+            {
+                random = new Random(config.DeepLook.DeterministicPlanning.Seed);
+            }
+            else
+            {
+                random = new Random();
+            }
+
+            // Random random = new Random();
             Solutions.SolutionCost best = null;
             Solutions.PlanGraph graph = null;
 
@@ -437,8 +513,19 @@ namespace ServiceSiteScheduling
         //         a Simulated Annealing method to find the final schedle plan (Totally Ordered Graph)
         static void CreatePlanFromExisting(ProblemInstance currentInstance, string plan_path, Config config = null)
         {
+            // If a seed was specified in the config file and it's value is not 0, then we can use the seed for deterministic plan creation
+            Random random;
+            if (config.DeepLook.DeterministicPlanning != null && config.DeepLook.DeterministicPlanning.Seed != 0)
+            {
+                random = new Random(config.DeepLook.DeterministicPlanning.Seed);
+            }
+            else
+            {
+                random = new Random();
+            }
 
-            Random random = new Random();
+            // Random random = new Random();
+
             Solutions.SolutionCost best = null;
             Solutions.PlanGraph graph = null;
 
@@ -786,6 +873,26 @@ namespace ServiceSiteScheduling
         }
 
 
+        // Prints out all the scenario test cases and their evaluation results with the seed values found
+        static void PrintSummaryWithSeeds(Dictionary<string, string[]> summary)
+        {
+            Console.WriteLine("+---------------------------------------------------------------------+");
+            Console.WriteLine("|                            Test summary                             |");
+            Console.WriteLine("+---------------------------------------------------------------------+");
+            Console.WriteLine($"|              File name              |     Result     |      Seed    |");
+            Console.WriteLine("+_____________________________________________________________________+");
+            foreach (var item in summary)
+            {
+                Console.WriteLine($"|       {item.Key}        |  {item.Value[0]}      | {item.Value[1]} ");
+                Console.WriteLine("+_____________________________________________________________________+");
+
+
+            }
+            Console.WriteLine("+---------------------------------------------------------------------+");
+
+        }
+
+
     }
 
     class Config
@@ -794,6 +901,7 @@ namespace ServiceSiteScheduling
         public ConfigSimulatedAnnealing SimulatedAnnealing { get; set; }
 
         public ConfigDeepLook DeepLook { get; set; }
+
         public class ConfigTabuSearch
         {
             public int Iterations { get; set; }
@@ -838,7 +946,7 @@ namespace ServiceSiteScheduling
             public string PlanType { get; set; }
 
             // In certain scenarios the departure delay might be allowed, if no delay introduced this parameter should be set to "0"
-            public string DepartureDelay {get; set;}
+            public string DepartureDelay { get; set; }
         }
 
         public class ConfigConversionAndStorage
@@ -857,8 +965,19 @@ namespace ServiceSiteScheduling
 
             public ConfigConversionAndStorage ConversionAndStorage { get; set; }
 
+            public ConfigDeterministicPlanning DeterministicPlanning { get; set; }
 
         }
+
+        public class ConfigDeterministicPlanning
+        {
+            public bool LookForSeed { get; set; }
+
+            public bool DisplaySeed { get; set; } // To display the seed found
+            public int Seed { get; set; }
+
+        }
+
         public int Seed { get; set; }
         public int MaxDuration { get; set; }
         public bool StopWhenFeasible { get; set; }

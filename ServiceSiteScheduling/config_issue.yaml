@@ -37,3 +37,7 @@ DeepLook:
   ConversionAndStorage:  
     PathEvalResult: "/workspace/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_issue/Evaluation_Results.txt"
     PathScenarioEval: "/workspace/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_issue"
+  DeterministicPlanning:
+    LookForSeed: true # if we look for a working seed
+    DisplaySeed: true
+    Seed: 11268
