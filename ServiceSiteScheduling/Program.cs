@@ -162,12 +162,12 @@ namespace ServiceSiteScheduling
                                                 Console.WriteLine("Error while storage of evaluator format scenario");
 
                                             // Store evaluator format scenarion per test case
-                                            var fileNameEvalScenarioCase = "scenario_evaluator" + "_case_" + testCase;
+                                            var fileNameEvalScenarioCase = "scenario_evaluator" + "_case_" + testCase + "_it_" + itTest;
                                             if (!converter.StoreScenarioEvaluator(fileNameEvalScenarioCase))
                                                 Console.WriteLine("Error while storage of evaluator format scenario");
 
                                             // Store the modified solver format scenario in the same folder but under a different file name per test case
-                                            var fileNameSolverScenario = "scenario_solver" + "_case_" + testCase;
+                                            var fileNameSolverScenario = "scenario_solver" + "_case_" + testCase + "_it_" + itTest;
                                             if (!converter.StoreScenarioSolver(fileNameSolverScenario))
                                                 Console.WriteLine("Error while storage of solver format scenario");
 
@@ -181,7 +181,7 @@ namespace ServiceSiteScheduling
                                             config.DeepLook.DeterministicPlanning.Seed++;
                                         }
                                         // Store the plan per test case
-                                        var fileNameToStorePlam = "plan" + "_case_" + testCase;
+                                        var fileNameToStorePlam = "plan" + "_case_" + testCase + "_it_" + itTest;
                                         if (!converter.StorePlan(fileNameToStorePlam, config.DeepLook.EvaluatorInput.PathPlan))
                                             Console.WriteLine($"Plan Path {config.DeepLook.EvaluatorInput.PathPlan}");
 
@@ -203,7 +203,7 @@ namespace ServiceSiteScheduling
                                             validPlanFound = true;
                                         }
 
-                                        if (StoreScenarioAndEvaluationResults(config.DeepLook.EvaluatorInput.PathScenario, config.DeepLook.ConversionAndStorage.PathScenarioEval, config.DeepLook.ConversionAndStorage.PathEvalResult, testCase, evaluatorResult))
+                                        if (StoreScenarioAndEvaluationResults(config.DeepLook.EvaluatorInput.PathScenario, config.DeepLook.ConversionAndStorage.PathScenarioEval, config.DeepLook.ConversionAndStorage.PathEvalResult, testCase, itTest, evaluatorResult))
                                         {
                                             Console.WriteLine("Scenario for Evaluator and the Results are successfully stored");
                                         }
@@ -227,6 +227,7 @@ namespace ServiceSiteScheduling
                                             if (config.DeepLook.DeterministicPlanning.LookForSeed)
                                             {
                                                 ResultSummaryWithSeed[scenarioTestCase][1] = (config.DeepLook.DeterministicPlanning.Seed - 1).ToString();
+                                                Console.WriteLine($">>> Seed: {config.DeepLook.DeterministicPlanning.Seed - 1}");
                                             }
                                             else
                                             {
@@ -318,7 +319,7 @@ namespace ServiceSiteScheduling
                                     evaluatorResult = false;
 
                                 }
-                                if (StoreScenarioAndEvaluationResults(config.DeepLook.EvaluatorInput.PathScenario, config.DeepLook.ConversionAndStorage.PathScenarioEval, config.DeepLook.ConversionAndStorage.PathEvalResult, testCase, evaluatorResult))
+                                if (StoreScenarioAndEvaluationResults(config.DeepLook.EvaluatorInput.PathScenario, config.DeepLook.ConversionAndStorage.PathScenarioEval, config.DeepLook.ConversionAndStorage.PathEvalResult, testCase, 0, evaluatorResult))
                                 {
                                     Console.WriteLine("Scenario for Evaluator and the Results are successfully stored");
                                 }
@@ -669,7 +670,7 @@ namespace ServiceSiteScheduling
 
         }
 
-        static bool StoreScenarioAndEvaluationResults(string PathScenarioForEval, string PathToStoreEvalScenario, string PathToEvaluationResult, int TestNum, bool valid)
+        static bool StoreScenarioAndEvaluationResults(string PathScenarioForEval, string PathToStoreEvalScenario, string PathToEvaluationResult, int TestNum, int iterationStep, bool valid)
         {
 
             try
@@ -677,11 +678,11 @@ namespace ServiceSiteScheduling
 
                 string destinationPath = PathToStoreEvalScenario;
 
-                destinationPath = destinationPath + "/" + "scenario_case_" + TestNum + (valid ? "_valid" : "_not_valid") + Path.GetExtension(PathScenarioForEval);
+                destinationPath = destinationPath + "/" + "scenario_case_" + TestNum + "_it_" + iterationStep + (valid ? "_valid" : "_not_valid") + Path.GetExtension(PathScenarioForEval);
                 File.Copy(PathScenarioForEval, destinationPath, overwrite: true);
 
                 destinationPath = PathToStoreEvalScenario;
-                destinationPath = destinationPath + "/" + "evaluator_result_case_" + TestNum + (valid ? "_valid" : "_not_valid") + Path.GetExtension(PathToEvaluationResult);
+                destinationPath = destinationPath + "/" + "evaluator_result_case_" + TestNum + TestNum + "_it_" + iterationStep  + (valid ? "_valid" : "_not_valid") + Path.GetExtension(PathToEvaluationResult);
 
                 // destinationPath = Path.GetFileNameWithoutExtension(PathToEvaluationResult);
                 // destinationPath = destinationPath + "evaluator_result_case_" + TestNum + (valid ? "valid" : "not_valid") + Path.GetExtension(PathToStoreEvalScenario);
@@ -857,41 +858,41 @@ namespace ServiceSiteScheduling
         // Prints out all the scenario test cases and their evaluation results 
         static void PrintSummary(Dictionary<string, string> summary)
         {
-            Console.WriteLine("+------------------------------------------------------+");
-            Console.WriteLine("|                    Test summary                      |");
-            Console.WriteLine("+------------------------------------------------------+");
+            Console.WriteLine("+-----------------------------------------------------------+");
+            Console.WriteLine("|                      Test summary                         |");
+            Console.WriteLine("+-----------------------------------------------------------+");
 
             foreach (var item in summary)
             {
-                Console.WriteLine($"|       {item.Key}        |  {item.Value}  |");
-                Console.WriteLine("+______________________________________________________+");
-
+                Console.WriteLine($"|       {item.Key}        |  {item.Value}  ");
+                Console.WriteLine("+___________________________________________________________+");
+                
 
             }
-            Console.WriteLine("+------------------------------------------------------+");
-
+            Console.WriteLine("+-----------------------------------------------------------+");
+            
         }
 
 
         // Prints out all the scenario test cases and their evaluation results with the seed values found
         static void PrintSummaryWithSeeds(Dictionary<string, string[]> summary)
         {
-            Console.WriteLine("+---------------------------------------------------------------------+");
-            Console.WriteLine("|                            Test summary                             |");
-            Console.WriteLine("+---------------------------------------------------------------------+");
-            Console.WriteLine($"|              File name              |     Result     |      Seed    |");
-            Console.WriteLine("+_____________________________________________________________________+");
+            Console.WriteLine("+--------------------------------------------------------------------------+");
+            Console.WriteLine("|                               Test summary                               |");
+            Console.WriteLine("+--------------------------------------------------------------------------+");
+            Console.WriteLine($"|                 File name                |     Result     |      Seed    |");
+            Console.WriteLine("+__________________________________________________________________________+");
             foreach (var item in summary)
-            {
-                Console.WriteLine($"|       {item.Key}        |  {item.Value[0]}      | {item.Value[1]} ");
-                Console.WriteLine("+_____________________________________________________________________+");
+            {        
+                Console.WriteLine($"|       {item.Key}        |  {item.Value[0]}  | {item.Value[1]} ");
+                Console.WriteLine("+__________________________________________________________________________+");
 
 
             }
-            Console.WriteLine("+---------------------------------------------------------------------+");
+            Console.WriteLine("+--------------------------------------------------------------------------+");
 
         }
-
+        
 
     }
 
