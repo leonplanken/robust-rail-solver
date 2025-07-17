@@ -176,10 +176,7 @@ namespace ServiceSiteScheduling
                                         // Create a plan corresponding to the scenario per test case
                                         CreatePlanFromExisting(ProblemInstance.Current, config.PlanPath, config);
 
-                                        if (config.DeepLook.DeterministicPlanning.LookForSeed)
-                                        {
-                                            config.DeepLook.DeterministicPlanning.Seed++;
-                                        }
+
                                         // Store the plan per test case
                                         var fileNameToStorePlam = "plan" + "_case_" + testCase + "_it_" + itTest;
                                         if (!converter.StorePlan(fileNameToStorePlam, config.DeepLook.EvaluatorInput.PathPlan))
@@ -226,8 +223,8 @@ namespace ServiceSiteScheduling
                                             ResultSummaryWithSeed[scenarioTestCase][0] = evaluatorResult ? "Valid ✅" : "Not Valid ❌";
                                             if (config.DeepLook.DeterministicPlanning.LookForSeed)
                                             {
-                                                ResultSummaryWithSeed[scenarioTestCase][1] = (config.DeepLook.DeterministicPlanning.Seed - 1).ToString();
-                                                Console.WriteLine($">>> Seed: {config.DeepLook.DeterministicPlanning.Seed - 1}");
+                                                ResultSummaryWithSeed[scenarioTestCase][1] = (config.DeepLook.DeterministicPlanning.Seed).ToString();
+                                                Console.WriteLine($">>> Seed: {config.DeepLook.DeterministicPlanning.Seed}");
                                             }
                                             else
                                             {
@@ -239,6 +236,11 @@ namespace ServiceSiteScheduling
 
 
                                     }
+                                    if (config.DeepLook.DeterministicPlanning.LookForSeed)
+                                    {
+                                        config.DeepLook.DeterministicPlanning.Seed++;
+                                    }
+
                                     timeToAjustCase0 = 0;
                                     timeToAjustCase1 = 0;
                                     timeToAjustCase2 = 0;
@@ -682,7 +684,7 @@ namespace ServiceSiteScheduling
                 File.Copy(PathScenarioForEval, destinationPath, overwrite: true);
 
                 destinationPath = PathToStoreEvalScenario;
-                destinationPath = destinationPath + "/" + "evaluator_result_case_" + TestNum + TestNum + "_it_" + iterationStep  + (valid ? "_valid" : "_not_valid") + Path.GetExtension(PathToEvaluationResult);
+                destinationPath = destinationPath + "/" + "evaluator_result_case_" + TestNum + TestNum + "_it_" + iterationStep + (valid ? "_valid" : "_not_valid") + Path.GetExtension(PathToEvaluationResult);
 
                 // destinationPath = Path.GetFileNameWithoutExtension(PathToEvaluationResult);
                 // destinationPath = destinationPath + "evaluator_result_case_" + TestNum + (valid ? "valid" : "not_valid") + Path.GetExtension(PathToStoreEvalScenario);
@@ -866,11 +868,11 @@ namespace ServiceSiteScheduling
             {
                 Console.WriteLine($"|       {item.Key}        |  {item.Value}  ");
                 Console.WriteLine("+___________________________________________________________+");
-                
+
 
             }
             Console.WriteLine("+-----------------------------------------------------------+");
-            
+
         }
 
 
@@ -883,7 +885,7 @@ namespace ServiceSiteScheduling
             Console.WriteLine($"|                 File name                |     Result     |      Seed    |");
             Console.WriteLine("+__________________________________________________________________________+");
             foreach (var item in summary)
-            {        
+            {
                 Console.WriteLine($"|       {item.Key}        |  {item.Value[0]}  | {item.Value[1]} ");
                 Console.WriteLine("+__________________________________________________________________________+");
 
@@ -892,7 +894,7 @@ namespace ServiceSiteScheduling
             Console.WriteLine("+--------------------------------------------------------------------------+");
 
         }
-        
+
 
     }
 

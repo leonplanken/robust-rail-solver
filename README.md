@@ -214,7 +214,7 @@ The solver saves all the evaluation results, plans and the corresponding scenari
 
 * In addition, when `LookForSeed` mode is `true` than the initial seed value is incremented for each iteration of the test cases (`testCase`). When the `TestCases` parameter is set to `0` and `LookForSeed` is set to `true`, the scenario is not modified in the test cases only the seed value is incremented - this mode is basically intended to look for a seed which results in a valid or invalid plan for the corresponding scenario.
 
-* To reproduce a plan with a specific seed value the best way is to set `TestCases: 0` and `LookForSeed: false` and specify the seed value `Seed: your_seed_value`.
+* To reproduce a plan with a specific seed value the best way is to set `TestCases: -1` and `LookForSeed: false` and specify the seed value `Seed: your_seed_value`.
 
 
 ### Usage
@@ -269,7 +269,21 @@ cd ServiceSiteScheduling
 dotnet run -- --config=./config.yaml
 ```
 
+# Known Problems
+Several scenario results in an invalid plan. Some times these reuslts are due to some constraints in the scenario, some of them are due to suspicious errors/handling tasks in the solver (e.g., same track occupation by mutiple train) or in the evaluator (e.g., invalid end move action). These latters should be addressed in future development phases. The following descriptions and configurations help to reproduce the known problems/errors/sucpected errors. The configuration, scneario and location files can be found in [setting_known_problems](/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/).
 
+
+
+| ID | Files  | Config file  | Expected Errors | Log file |
+| :------------ |:------------|:------------|:------------|:------------|
+| **[Solver issue]** Track occupation issue | [setting_occupation_error](/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_occupation_error) | [config_occupation_error.yaml](/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_occupation_error/config_occupation_error.yaml) | The train occupation is not always handled in a straightforward way, there are scenarios when train A is parked on a specific track, and later train B is parked on the same track. It used to happen when the deadlines of departure times are tight that train B goes through train A. | [occupation_error.txt](/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_occupation_error/occupation_error.txt)|
+| **[Evaluator issue]** Invalid EndMove action | [setting_invalid_endmove](/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_occupation_error/) | [config_setting_invalid_endmove.yaml](/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_invalid_endmove/config_invalid_endmove.yaml) |  There might be an issue with the train activity checking: when the “move” action followed by an “endmove” action it used to happen that the evaluator states that action is not valid because the train action is already active. To reproduce an error use **seed: 5**. To reproduce a valid plan use the **seed: 6**, departure time 2300 and 2600 respectively. | [invalid_endmove_error](/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_invalid_endmove/invalid_endmove_error.txt) |
+| **[Solver issue]** Multiple Instanding Trains | [setting_multiple_instanding](/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_multiple_instanding/) | [config_multiple_instanding.yaml](/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_multiple_instanding/config_multiple_instanding.yaml) | When the scenario contains multiple instanding trains it happens that the Solver parks too many trains on the departure track, and finally the departure trains start blocking each other movments | [instandning_error.txt](/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_multiple_instanding/instandning_error.txt) |
+
+### Specific "structural" issue
+| ID | Files  | Config file  | Expected Errors | Log file |
+| :------------ |:------------|:------------|:------------|:------------|
+| Switch matter | [Definition of a Switch](/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_invalid_endmove/switch.jpg) | Not Specified | Swithc definition might affect the solving complexity. As definition, the B side of the switch is connected to a single RailRoad while the two A sides to two other RailRoads | Not Specified | 
 
 # Build as standalone tool
 In principle the robust-rail tools are built in a single Docker do ease the development and usage. Nevertheless, it is possible to use/build `robust-rail-solver` as a standalone tool.
