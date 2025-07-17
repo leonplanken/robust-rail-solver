@@ -257,7 +257,7 @@ DeepLook:
         PathEvalResult: "/workspace/robust-rail-solver/ServiceSiteScheduling/database/Evaluation_Results.txt" # The path where the evaluation results (.txt) should be stored 
         PathScenarioEval: "/workspace/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_deep_look" # The path where the scenario_evaluator.json will be stored after the conversion. Note that the name "scenario_evaluator" is a default name it can be changed in the code, but in that case the PathScenario should point to the "renamed" evaluator format scenarion file. This path also serves for serving the evaluator format scenarios after the evaluation as scenario_case_x_valid/not_valid.json - needed to summaize the run cases.
     DeterministicPlanning:
-        LookForSeed: false # looking for a seed, so the seed value is modified for each iteration, if TestCases is 0 and LookForSeed is true the scenario is not modified only the seed value is modified in the
+        LookForSeed: false # looking for a seed, so the seed value is modified for each iteration, if TestCases is 0 and LookForSeed is true the scenario is not modified only the seed value is modified in the loop of @MaxTest
         DisplaySeed: true
         Seed: 11298
 ```
