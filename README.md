@@ -283,7 +283,11 @@ Several scenario results in an invalid plan. Some times these reuslts are due to
 ### Specific "structural" issue
 | ID | Files  | Config file  | Expected Errors | Log file |
 | :------------ |:------------|:------------|:------------|:------------|
-| Switch matter | [Definition of a Switch](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_invalid_endmove/switch.jpg) | Not Specified | Swithc definition might affect the solving complexity. As definition, the B side of the switch is connected to a single RailRoad while the two A sides to two other RailRoads | Not Specified | 
+| Switch matter | [Definition of a Switch](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_invalid_endmove/switch.jpg) | Not Specified | Swithc definition might affect the solving complexity. Reversing the switch will resilt in a different location structure which affect directly the plan solving. In as the figure shows, a switch with Bside{5} Aside{4,1} is not hte sane as switch Bside{1} Aside{4,5}, however, switch with Bside{4,5} Aside{1} is the same as switch with Bside{4,5} Aside{1} | Not Specified | 
+
+![Switch](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_invalid_endmove/switch.jpg)
+
+
 
 # Build as standalone tool
 In principle the robust-rail tools are built in a single Docker do ease the development and usage. Nevertheless, it is possible to use/build `robust-rail-solver` as a standalone tool.
