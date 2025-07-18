@@ -70,6 +70,7 @@ namespace ServiceSiteScheduling
                             ulong timeToAjustCase0 = 0;
                             ulong timeToAjustCase1 = 0;
                             ulong timeToAjustCase2 = 0;
+                            ulong timeToAjustCase3 = 0;
 
                             ulong consAmount = 300;
 
@@ -134,6 +135,18 @@ namespace ServiceSiteScheduling
                                                     {
                                                         departureTrain.Arrival = departureTrain.Arrival + timeToAjustCase2;
                                                         departureTrain.Departure = departureTrain.Departure + timeToAjustCase2;
+                                                    }
+                                                    break;
+
+                                                case 3:
+                                                    // Test case when instanding and outstanding trains are involved
+                                                    timeToAjustCase3 = timeToAjustCase3 + consAmount;
+                                                    ProblemInstance.Current.InterfaceScenario.EndTime = ProblemInstance.Current.InterfaceScenario.EndTime + timeToAjustCase2;
+
+                                                    foreach (var outStandingTrain in ProblemInstance.Current.InterfaceScenario.OutStanding.TrainRequests)
+                                                    {
+                                                        outStandingTrain.Arrival = outStandingTrain.Arrival + timeToAjustCase3;
+                                                        outStandingTrain.Departure = outStandingTrain.Departure + timeToAjustCase3;
                                                     }
 
                                                     break;
