@@ -204,7 +204,7 @@ protoc --proto_path=protos --csharp_out=generated protos/Plan.proto
 
 ## Deep Look mode - unit test-like mode
 In this mode it is possible to process a unit-like test. It works as follows: 
-A default solver format scenario is provided, which can be modified with custom parameter setting and modification, e.g., increment the departure time by a certain amount of constant time. This part of the mode can call customized test cases which are described with a switch statement and each case can represent a different logic of testing (the `@TestCases` parameter is used for these iterations). The tests cases are wrapped in a loop that implies that the cases are repeating until a valid scenario is found, or a maximum number of tries achieved (`@MaxTest` parameter is used). In this same loop, the seed value might also be incremeneted, since it happens that a given scnario can be solved by modifying the constraints (e.g., modification of the departure time), but it cannot the solver is not able to find a solution becaue of the randomness (i.e., local search is based on some random parameters).   
+A default solver format scenario is provided, which can be modified with custom parameter setting and modification, e.g., increment the departure time by a certain amount of constant time. This part of the mode can call customized test cases which are described with a switch statement and each case can represent a different logic of testing (the `@TestCases` parameter is used for these iterations). The tests cases are wrapped in a loop that implies that the cases are repeating until a valid scenario is found, or a maximum number of tries achieved (`@MaxTest` parameter is used). In this same loop, the seed value might also be incremented, since it happens that a given scenario can be solved by modifying the constraints (e.g., modification of the departure time), but it cannot the solver is not able to find a solution became of the randomness (i.e., local search is based on some random parameters).   
 
 When the custom test part of the test is done, the (solver format) scenario is converted to an evaluator enabled format. After the conversion, the evaluator is called (evaluator's executable with the converted scenario and plan as input). The evaluator will store or return the results in the terminal.
 The solver saves all the evaluation results, plans and the corresponding scenario files. In the end of the program a summary is generated.
@@ -212,7 +212,7 @@ The solver saves all the evaluation results, plans and the corresponding scenari
 **DeterministicPlanning**:
 * This mode also contains a sub-mode `DeterministicPlanning`. This mode allows to set a specific seed (with the `Seed` field under the `DeterministicPlanning` field) for the random number generation, so the plan solving can be reproduced in a deterministic way. 
 
-* In addition, when `LookForSeed` mode is `true` than the initial seed value is incremented for each iteration of a test case block (`testCase`). Basically, a `testCase` block (switch case) is executed with the same seed, and the seed value is increased for each iteration (`itTest`) until a valide result is found or the maximum value of tests is achived. When the `TestCases` parameter is set to `0` and `LookForSeed` is set to `true`, the scenario is not modified in the test cases only the seed value is incremented - this mode is basically intended to look for a seed (without modifying the constraints in the scenario) which results in a valid or invalid plan for the corresponding scenario.
+* In addition, when `LookForSeed` mode is `true` than the initial seed value is incremented for each iteration of a test case block (`testCase`). Basically, a `testCase` block (switch case) is executed with the same seed, and the seed value is increased for each iteration (`itTest`) until a valid result is found or the maximum value of tests is achieved. When the `TestCases` parameter is set to `0` and `LookForSeed` is set to `true`, the scenario is not modified in the test cases only the seed value is incremented - this mode is basically intended to look for a seed (without modifying the constraints in the scenario) which results in a valid or invalid plan for the corresponding scenario.
 
 * To reproduce a plan with a specific seed value the best way is to set `TestCases: -1` and `LookForSeed: false` and specify the seed value `Seed: your_seed_value`.
 
@@ -220,6 +220,27 @@ The solver saves all the evaluation results, plans and the corresponding scenari
 ### Usage
 
 Since the evaluator's execution requires dynamic protobuf libraries, the entire execution must take place in the evaluator's conda environment, which already contains the requested libraries. Call `dotnet run -- --config=./config.yaml`, the configuration for this mode (DeepLook) in `config.yaml` is described below. 
+
+
+#### Parameters
+
+* `TestCases`: Number of customized test cases which are described with a switch statement and each case can represent a different logic of testing
+* `MaxTest`: The testing repeats until a valid scenario is found, or a maximum number of tries achieved
+* `EvaluatorInput`: Parameters for the **Evaluator**
+    * `Path`: path to the executable of the **Evaluator** (recommended to not modify)
+    * `Mode`: **EVAL_AND_STORE** evaluation and storage of the results, **EVAL** evaluation of the results
+    * `PathLocation`: path to the folder where the location file take place. Note: this location file is an **Evaluator** format location file
+    * `PathScenario`: Path to the scenario which is converted by the **Solver** to an **Evaluator** format, in this mode the **Solver** converts the solver format scenario (specified by `ScenarioPath`) to an **Evaluator** format scenario - Note that the name of the Evaluator format scenario is hard-coded as `scenario_evaluator.json`. The reason is that for each iteration the modified scenario (modified according to the test cases) is stored under this hard-coded name for the evaluation process. After, the evaluation, this scenario is stored with a name highlighting the test cases and if the plan was valid or not valid.   
+    * `PathPlan`: Path to the plan that was issued by the **Solver**
+    * `PlanType`: it is fixed to "Solver" (the plan is a Solver format plan)
+    * `DepartureDelay`: If different from 0, it means that a certain delay of the departure is allowed
+* `ConversionAndStorage`:
+    * `PathEvalResult`: this parameter is need to specify where the evaluation results (issued by the **Evaluator**) should be stored. Again the file name `Evaluation_Results.txt` is hard-coded because this file is further copied by the **Solver** under another name highlighting the test cases and if the plan was valid or not valid.
+    * `PathScenarioEval`: path to the folder where the evaluation results will be stored
+* `DeterministicPlanning`:
+    * `LookForSeed`: When true the mode will look for a seed value by incrementing `Seed` with the goal of finding a valid plan, note that the upper limit for this loop must be specified by `MaxTest`.
+    * `DisplaySeed`: `true/false` to display the seed values with the summary of the results.
+    * `Seed`: Initial value of the seed, this value can be used to reproduce results, note: `LookForSeed` should be set to `false` in that case. If the `LookForSeed` is set to `true` the `Seed` value is incremented for each iteration in the loop `MaxTest`.
 
 **Note**: to use this mode the new version of [.devcontainer](https://github.com/Robust-Rail-NL/.devcontainer) is needed. Also, please follow the step described in the [README.md](https://github.com/Robust-Rail-NL/.devcontainer/README.md) before the first usage. 
 
@@ -239,7 +260,7 @@ Else:
 conda activate my_proto_env 
 ```
 
-In the [config.yaml](./ServiceSiteScheduling/config.yaml) the following parameters serves for: 
+An example of the DeepLook mode in the [config.yaml](./ServiceSiteScheduling/config.yaml) config file: 
 
 ```bash
 DeepLook:
