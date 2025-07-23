@@ -220,7 +220,8 @@ namespace ServiceSiteScheduling
 
 
                     train.Id = arrivalTrain.Id;
-                    train.Time = arrivalTrain.Departure;
+                    // train.Time = arrivalTrain.Departure;
+                    train.Time = ProblemInstanceSolver.ScenarioStartTime;
                     train.SideTrackPart = arrivalTrain.EntryTrackPart;
                     train.ParkingTrackPart = arrivalTrain.FirstParkingTrackPart;
                     train.CanDepartFromAnyTrack = false;
@@ -320,7 +321,8 @@ namespace ServiceSiteScheduling
 
 
                     train.Id = outStandingTrain.DisplayName;
-                    train.Time = outStandingTrain.Arrival;
+                    // train.Time = outStandingTrain.Arrival;
+                    train.Time = ProblemInstanceSolver.ScenarioEndTime;
                     train.SideTrackPart = outStandingTrain.LeaveTrackPart;
                     train.ParkingTrackPart = outStandingTrain.LastParkingTrackPart;
                     train.CanDepartFromAnyTrack = false;
