@@ -13,8 +13,10 @@ namespace ServiceSiteScheduling.Trains
         public Time Time { get; private set; }
 
         public bool InStanding {get; set;}
+
+        public double StandingIndex { get; set; }
         // TODO: add bolean isInstanding
-        public ArrivalTrain(TrainUnit[] units, Track track, Side side, Time time, bool inStanding = false)
+        public ArrivalTrain(TrainUnit[] units, Track track, Side side, Time time, bool inStanding = false, double standingIndex = 0.0)
         {
             this.Units = units;
             this.Length = units.Sum(unit => unit.Type.Length);
@@ -22,6 +24,7 @@ namespace ServiceSiteScheduling.Trains
             this.Side = side;
             this.Time = time;
             this.InStanding = inStanding;
+            this.StandingIndex = standingIndex;
 
             List<Track> allowedparking = new List<Track>();
             IEnumerable<TrainType> types = units.Select(unit => unit.Type).Distinct();
