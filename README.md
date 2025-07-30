@@ -127,8 +127,30 @@ Some of the scenarios were successfully solved by [robust-rail-solver](https://g
     - **scenario_solver.json** - 10 trains custom config solver format
     - **plan.json** - plan corresponding to the scenario
 
-// TODO
+- **`setting_deep_look`**
+    - **clean.sh** - script to clean the results
+    - **config.json** - config for the evaluator
+    - **location.json** - Kleine Binckhorst evaluator format
+    - **location_solver.json** - Kleine Binckhorst solver format
+    - **plan.json** - plan corresponding to the scenario
+    - **scenario_evaluator.json**  - 6 trains custom config evaluator format
+    - **scenario_solver.json**  - 6 trains custom config solver format
+    - **vis_config.json** - emulator config for visualisation (this is not functional)
 
+- **`setting_issue`**
+    - **clean.sh** - script to clean the results
+    - **config.json** - config for the evaluator
+    - **location.json** - [Small Yard - switch matter](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_invalid_endmove/switch.jpg) - switch decalration will result in different plans (valid/not valid) 
+    - **location_solver.json** - [Small Yard - switch matter](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_invalid_endmove/switch.jpg) - switch decalration will result in different plans (valid/not valid) 
+    - **plan.json** - plan corresponding to the scenario
+    - **scenario_evaluator.json**  - 2 trains custom config evaluator format
+    - **scenario_solver.json**  - 2 trains custom config solver format
+    - **vis_config.json** - emulator config for visualisation (this is not functional)
+
+- **`setting_known_problems`** - read more about these known problems in **Known Problems** section
+    - **setting_invalid_endmove**
+    - **setting_multiple_instanding**
+    - **setting_occupation_error**
 
 ## Partial Order Schedule (POS) - Other helper functions 
 
@@ -294,6 +316,7 @@ dotnet run -- --config=./config.yaml
 * [config_seed.yaml](./ServiceSiteScheduling/config_seed.yaml) provides an example with a fixed seed value `11298` that will result in a valid plan **[Deeplook mode]**. 
     * If the `Seed` is set to 11297 and the `LookForSeed` is set to true the config will result in one valid and one not valid plan.
 * [config_issue.yaml](./ServiceSiteScheduling/config_issue.yaml) provides an example that is looking for a solution by modifiying the initial seed value and the test cases **[Deeplook mode]**.
+
 # Known Problems
 Several scenario results in an invalid plan. Sometimes these results are due to some constraints in the scenario, some of them are due to suspicious errors/handling tasks in the solver (e.g., same track occupation by multiple train) or in the evaluator (e.g., invalid end move action). These latter should be addressed in future development phases. The following descriptions and configurations help to reproduce the known problems/errors/suspected errors. The configuration, scenario and location files can be found in [setting_known_problems](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/).
 
@@ -310,7 +333,7 @@ Several scenario results in an invalid plan. Sometimes these results are due to 
 | :------------ |:------------|:------------|:------------|:------------|
 | Switch matter | [Definition of a Switch](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_invalid_endmove/switch.jpg) | Not Specified | Switch definition might affect the solving complexity. Reversing the switch will result in a different location structure which affect directly the plan solving. In as the figure shows, a switch with Bside{5} Aside{4,1} is not the sane as switch Bside{1} Aside{4,5}, however, switch with Bside{4,5} Aside{1} is the same as switch with Bside{4,5} Aside{1} | Not Specified | 
 
-![Switch](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_invalid_endmove/switch.jpg)
+![Switch](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_invalid_endmove/switch.jpg){#fig:Switch}
 
 
 
