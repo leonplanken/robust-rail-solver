@@ -127,6 +127,7 @@ Some of the scenarios were successfully solved by [robust-rail-solver](https://g
     - **scenario_solver.json** - 10 trains custom config solver format
     - **plan.json** - plan corresponding to the scenario
 
+// TODO
 
 
 ## Partial Order Schedule (POS) - Other helper functions 
@@ -290,6 +291,9 @@ cd ServiceSiteScheduling
 dotnet run -- --config=./config.yaml
 ```
 
+* [config_seed.yaml](./ServiceSiteScheduling/config_seed.yaml) provides an example with a fixed seed value `11298` that will result in a valid plan **[Deeplook mode]**. 
+    * If the `Seed` is set to 11297 and the `LookForSeed` is set to true the config will result in one valid and one not valid plan.
+* [config_issue.yaml](./ServiceSiteScheduling/config_issue.yaml) provides an example that is looking for a solution by modifiying the initial seed value and the test cases **[Deeplook mode]**.
 # Known Problems
 Several scenario results in an invalid plan. Sometimes these results are due to some constraints in the scenario, some of them are due to suspicious errors/handling tasks in the solver (e.g., same track occupation by multiple train) or in the evaluator (e.g., invalid end move action). These latter should be addressed in future development phases. The following descriptions and configurations help to reproduce the known problems/errors/suspected errors. The configuration, scenario and location files can be found in [setting_known_problems](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/).
 
