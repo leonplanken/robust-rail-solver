@@ -1,16 +1,15 @@
 
-LocationPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_A/location_solver.json"
-ScenarioPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_A/scenario_solver.json"
-PlanPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_A/plan.json"
+LocationPath: "/workspace/scenario-planning-inputs/Scenario_settings/setting_B/location_solver.json"
+ScenarioPath: "/workspace/scenario-planning-inputs/Scenario_settings/setting_B/scenario_solver.json"
+PlanPath: "/workspace/scenario-planning-inputs/Scenario_settings/setting_B/plan.json"
 Mode: "Standard" #Standard or DeepLook
-
+DebugLevel: 1
 
 TabuSearch:
   Iterations: 40
   IterationsUntilReset: 100
   TabuListLength: 16
   Bias: 0.5
-  SuppressConsoleOutput: false
 
 SimulatedAnnealing:
   MaxDuration: 3600
@@ -21,8 +20,8 @@ SimulatedAnnealing:
   Q: 2000
   Reset: 2000
   Bias: 0.2
-  SuppressConsoleOutput: false
-  IintensifyOnImprovement: false
+  IntensifyOnImprovement: false
+
 DeepLook:
   TestCases: 0
   MaxTest: 10

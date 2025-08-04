@@ -31,7 +31,7 @@ namespace ServiceSiteScheduling.LocalSearch
         //@tabuListLength: lenght of tabu list conaining LocalSerachMoves -> solution graphs (e.g., 16) 
         //@bias: restricted probability (e.g., 0.75)
         //@suppressConsoleOutput: enables extra logs
-        public void Run(int iterations, int iterationsUntilReset, int tabuListLength, double bias = 0.75, bool suppressConsoleOutput = false)
+        public void Run(int iterations, int iterationsUntilReset, int tabuListLength, double bias = 0.75, int debugLevel = 0)
         {
 
             List<LocalSearchMove> moves = new List<LocalSearchMove>();
@@ -107,8 +107,7 @@ namespace ServiceSiteScheduling.LocalSearch
                 if (next.Cost.Cost(fullcost) < bestcost.Cost(fullcost))
                 {
                     current = bestcost = next.Cost;
-                    if (!suppressConsoleOutput)
-                        Console.WriteLine($"{next.Cost}");
+                    if (debugLevel > 1) { Console.WriteLine($"Cost of next node: {next.Cost}"); }
                     noimprovement = 0;
                 }
                 else
@@ -207,13 +206,12 @@ namespace ServiceSiteScheduling.LocalSearch
                 if (iteration >= iterations)
                     break;
 
-                if (++iteration % 100 == 0 && !suppressConsoleOutput)
-                    Console.WriteLine(iteration);
+                if (++iteration % 100 == 0 && debugLevel > 1) { Console.WriteLine($"Iteration {iteration}"); }
             }
 
             stopwatch.Stop();
 
-            if (!suppressConsoleOutput)
+            if (debugLevel > 0)
             {
                 this.Revert(moves, this.Graph.Cost.IsFeasible);
                 Console.WriteLine("-----------------------");

@@ -71,6 +71,20 @@ namespace ServiceSiteScheduling.Solutions
             this.testIndex = 0;
         }
 
+        public void GetShortPlanStatistics()
+        {
+            int number_moves = 0;
+            MoveTask count_move = this.First;
+            while (count_move != null)
+            {
+                number_moves++;
+                count_move = count_move.NextMove;
+            }
+            Console.WriteLine($"Number of Shunt Units: {this.ShuntUnits.Length}");
+            Console.WriteLine($"PlanGraph starting with arrival at track {this.FirstArrival.Track.PrettyName}");
+            Console.WriteLine($"Move Tasks: {number_moves}, Arrival Tasks: {this.ArrivalTasks.Length}, Departure Tasks: {this.DepartureTasks.Length}");
+        }        
+
         public void UpdateRoutingOrder()
         {
             MoveTask move = this.First;
@@ -692,8 +706,12 @@ namespace ServiceSiteScheduling.Solutions
         public void Clear()
         {
             foreach (var location in ProblemInstance.Current.ServiceLocations)
+            {
                 if (location != null)
+                {
                     location.First = location.Last = null;
+                }
+            }
         }
 
         public void OutputForDemian()
@@ -1586,7 +1604,6 @@ namespace ServiceSiteScheduling.Solutions
                     break;
             }
             plan.Actions.Add(trackaction);
-
         }
 
         private AlgoIface.ShuntingUnit GetShuntUnit(ShuntTrain train, Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion, string _standingType = "")

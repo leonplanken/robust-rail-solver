@@ -116,7 +116,7 @@ namespace ServiceSiteScheduling
             return Parse(location, scenario);
         }
 
-        public static ProblemInstance Parse(AlgoIface.Location location, AlgoIface.Scenario scenario)
+        public static ProblemInstance Parse(AlgoIface.Location location, AlgoIface.Scenario scenario, int debugLevel = 0)
         {
             ProblemInstance instance = new ProblemInstance();
 
@@ -180,7 +180,8 @@ namespace ServiceSiteScheduling
             // Connect the parts
             foreach (var part in location.TrackParts)
             {
-                Console.WriteLine($"Track Parts : {part}");
+                if (debugLevel > 1) { Console.WriteLine($"Track Parts : {part}"); }
+
                 switch (part.Type)
                 {
                     case AlgoIface.TrackPartType.RailRoad:
@@ -229,19 +230,24 @@ namespace ServiceSiteScheduling
                     case AlgoIface.TrackPartType.Bumper:
                         GateWay gateway = infrastructuremap[part.Id] as GateWay;
 
-                        Console.WriteLine($"gateway : {gateway}");
+                        if (debugLevel > 1) { Console.WriteLine($"gateway : {gateway}"); }
                         if (part.ASide.Count() != 0)
                         {
-                            Console.WriteLine($"Track part A: {part.Id}");
-                            Console.WriteLine($"Infra: {infrastructuremap[part.Id]}");
-
+                            if (debugLevel > 1)
+                            {
+                                Console.WriteLine($"Track part A: {part.Id}");
+                                Console.WriteLine($"Infra: {infrastructuremap[part.Id]}");
+                            }
                             gateway.Connect(infrastructuremap[part.ASide.First()]);
 
                         }
                         else if (part.BSide.Count() != 0)
                         {
-                            Console.WriteLine($"Track part B: {part.Id}");
-                            Console.WriteLine($"Infra: {infrastructuremap[part.Id]}");
+                            if (debugLevel > 1)
+                            {
+                                Console.WriteLine($"Track part B: {part.Id}");
+                                Console.WriteLine($"Infra: {infrastructuremap[part.Id]}");
+                            }
                             gateway.Connect(infrastructuremap[part.BSide.First()]);
                         }
                         else
@@ -260,7 +266,10 @@ namespace ServiceSiteScheduling
                 path.Add(gateway);
 
                 gatewayconnections[gateway] = gateway.EndPoint.GetTracksConnectedTo(gateway, 0, path, false).First();
-                Console.WriteLine($"gatewayconnections[gateway]: {gateway}:{gatewayconnections[gateway]}");
+                if (debugLevel > 1)
+                {
+                    Console.WriteLine($"gatewayconnections[gateway]: {gateway}:{gatewayconnections[gateway]}");
+                }
 
             }
 
@@ -285,7 +294,7 @@ namespace ServiceSiteScheduling
                 ServiceType service = new ServiceType(i, type.Other, ServiceLocationType.Fixed);
                 instance.ServiceTypes[i] = service;
                 taskmap[type] = service;
-                Console.WriteLine($">>>>Service : {service}");
+                if (debugLevel > 1) { Console.WriteLine($">>>>Service : {service}"); }
             }
 
 
@@ -297,7 +306,7 @@ namespace ServiceSiteScheduling
             var crews = new List<ServiceCrew>();
             foreach (var facility in location.Facilities)
             {
-                Console.WriteLine($">>>>Facility : {facility}");
+                if (debugLevel > 1) { Console.WriteLine($">>>>Facility : {facility}"); }
 
                 var facilitytracks = new List<Track>();
                 foreach (var part in facility.RelatedTrackParts)
@@ -348,10 +357,12 @@ namespace ServiceSiteScheduling
                 foreach (var track in service.Tracks)
                     service.Resources.Add(instance.ServiceLocations[track.Index]);
 
-
-            foreach (var track in servicetracks)
-                Console.WriteLine($"Service location: {instance.ServiceLocations[track.Index]}");
-
+            if (debugLevel > 1)
+            {
+                foreach (var track in servicetracks)
+                    Console.WriteLine($"Service location: {instance.ServiceLocations[track.Index]}");
+            }
+            
             // Determine train types
             List<TrainType> traintypes = new List<TrainType>();
             List<TrainUnit> trainunits = new List<TrainUnit>();
@@ -394,7 +405,7 @@ namespace ServiceSiteScheduling
                     freeservicelists.Add(unit.Tasks.Where(task => taskmap[task.Type].LocationType == ServiceLocationType.Free).Select(task => new Service(taskmap[task.Type], (int)task.Duration)).ToArray());
                 }
 
-                Console.WriteLine($"Track part : {infrastructuremap[arrivaltrain.EntryTrackPart]}");
+                if (debugLevel > 1) { Console.WriteLine($"Track part : {infrastructuremap[arrivaltrain.EntryTrackPart]}"); }
 
                 GateWay gateway = infrastructuremap[arrivaltrain.EntryTrackPart] as GateWay;
 
@@ -403,21 +414,24 @@ namespace ServiceSiteScheduling
                     var connection = gatewayconnections[gateway];
                     instance.GatewayConversion[connection.Track.ID] = connection;
                     var side = connection.Track.GetSide(connection.Path[connection.Path.Length - 2]);
-
-                    Console.WriteLine($"connection :{connection}");
-
-                    Console.WriteLine($"gateway :{gateway}");
-                    Console.WriteLine($"side :{side}");
-
-
-
                     var train = new ArrivalTrain(currenttrainunits.ToArray(), connection.Track, side, (int)arrivaltrain.Departure);
-                    Console.WriteLine($"connection.Track :{connection.Track}");
-
                     arrivals.Add(train);
+
+                    if (debugLevel > 1)
+                    {
+                        Console.WriteLine($"connection :{connection}");
+                        Console.WriteLine($"gateway :{gateway}");
+                        Console.WriteLine($"side :{side}");
+                        Console.WriteLine($"connection.Track :{connection.Track}");
+                    }
                 }
-                // foreach (var arrival in arrivals)
-                //     Console.WriteLine($"Arrival train : {arrival}");
+                if (debugLevel > 1)
+                {
+                    foreach (var arrival in arrivals)
+                    {
+                        Console.WriteLine($"Arrival train : {arrival}");
+                    }
+                }
 
 
             }
@@ -463,28 +477,28 @@ namespace ServiceSiteScheduling
                         freeservicelists.Add(unit.Tasks.Where(task => taskmap[task.Type].LocationType == ServiceLocationType.Free).Select(task => new Service(taskmap[task.Type], (int)task.Duration)).ToArray());
                     }
 
-                    Console.WriteLine($"Track part : {infrastructuremap[arrivaltrain.EntryTrackPart]}");
+                    if (debugLevel > 1) { Console.WriteLine($"Track part : {infrastructuremap[arrivaltrain.EntryTrackPart]}"); }
 
                     GateWay gateway = infrastructuremap[arrivaltrain.EntryTrackPart] as GateWay;
 
                     if (gateway != null)
                     {
-                        Console.WriteLine($"************ Start time: {(int)instance.ScenarioStartTime}");
+                        if (debugLevel > 1) { Console.WriteLine($"************ Start time: {(int)instance.ScenarioStartTime}"); }
                         var connection = gatewayconnections[gateway];
                         instance.GatewayConversion[connection.Track.ID] = connection;
                         var side = connection.Track.GetSide(connection.Path[connection.Path.Length - 2]);
 
-                        Console.WriteLine($"connection :{connection}");
-
-                        Console.WriteLine($"gateway :{gateway}");
-                        Console.WriteLine($"side :{side}");
-
-
                         var train = new ArrivalTrain(currenttrainunits.ToArray(), connection.Track, Side.None, (int)instance.ScenarioStartTime, true, arrivaltrain.StandingIndex);
-                        Console.WriteLine($"connection.Track :{connection.Track}");
                         artificialTimeScale++;
-
                         arrivals.Add(train);
+
+                        if (debugLevel > 1)
+                        {
+                            Console.WriteLine($"connection :{connection}");
+                            Console.WriteLine($"gateway :{gateway}");
+                            Console.WriteLine($"side :{side}");
+                            Console.WriteLine($"connection.Track :{connection.Track}");
+                        }
                     }
                     else
                     {
@@ -493,21 +507,22 @@ namespace ServiceSiteScheduling
 
                         // Switch @switch = infrastructuremap[departuretrain.LeaveTrackPart] as Switch;
                         // TODO : add switch statement for more infratype
-                        Console.WriteLine($">>>>> Arrival Infra Access: {infra} - {infra.Access}");
+                        if (debugLevel > 1) { Console.WriteLine($">>>>> Arrival Infra Access: {infra} - {infra.Access}"); }
 
                         var train = new ArrivalTrain(currenttrainunits.ToArray(), infra, infra.Access, (int)instance.ScenarioStartTime, true, arrivaltrain.StandingIndex);
                         artificialTimeScale++;
-
                         arrivals.Add(train);
-
-
                     }
 
                 }
             }
 
-            foreach (var arrival in arrivals)
-                Console.WriteLine($"Arrival train : {arrival}");
+            if (debugLevel > 1)
+            {
+                foreach (var arrival in arrivals)
+                    Console.WriteLine($"Arrival train : {arrival}");
+            }
+
             // only for harder instances
             TrainUnit tu9413 = null, tu9414 = null;
             if (include94139414)
@@ -580,10 +595,13 @@ namespace ServiceSiteScheduling
 
             instance.ArrivalsOrdered = arrivals.OrderBy(arrival => arrival.Time).ToArray();
 
-            Console.WriteLine("Arrivals Ordered: ");
-            foreach (var item in instance.ArrivalsOrdered)
+            if (debugLevel > 1)
             {
-                Console.WriteLine(item);
+                Console.WriteLine("Arrivals Ordered: ");
+                foreach (var item in instance.ArrivalsOrdered)
+                {
+                    Console.WriteLine(item);
+                }
             }
 
             // Change order when the standingInedex is lower!
@@ -698,7 +716,7 @@ namespace ServiceSiteScheduling
                     {
 
                         var infra = infrastructuremap[departuretrain.LastParkingTrackPart] as Track;
-                        Console.WriteLine($">>>>> Departure Infra Access: {infra} - {infra.Access}");
+                        if (debugLevel > 1) { Console.WriteLine($">>>>> Departure Infra Access: {infra} - {infra.Access}"); }
 
                         var train = new DepartureTrain((int)instance.ScenarioEndTime, units.ToArray(), infra, infra.Access, true);
                         departures.Add(train);
@@ -709,11 +727,13 @@ namespace ServiceSiteScheduling
 
                 }
             }
-            Console.WriteLine("************ Log from here *************");
 
+            if (debugLevel > 1)
+            {
+                foreach (var departure in departures)
+                    Console.WriteLine($"Departure train : {departure}");
+            }
 
-            foreach (var departure in departures)
-                Console.WriteLine($"Departure train : {departure}");
             // only for harder instance
             if (include94139414)
             {
