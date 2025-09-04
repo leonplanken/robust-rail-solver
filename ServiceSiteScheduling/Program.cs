@@ -65,7 +65,7 @@ namespace ServiceSiteScheduling
                     }
                     else
                     {
-                        Console.Error.WriteLine("Unknown --parameter name");
+                        Console.Error.WriteLine("Unknown --parameter name: " + arg);
                         Environment.Exit(1);
                     }
                 }
@@ -184,7 +184,9 @@ namespace ServiceSiteScheduling
 
                 Plan plan_pb = sa.Graph.GenerateOutputPB();
 
-                string jsonPlan = JsonFormatter.Default.Format(plan_pb);
+                // Set indentation level for better readability
+                var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t")); 
+                string jsonPlan = formatter.Format(plan_pb);
 
                 string directoryPath = Path.GetDirectoryName(plan_path);
 
@@ -306,8 +308,10 @@ namespace ServiceSiteScheduling
                 Console.WriteLine("------------------------------");
 
                 Plan plan_pb = sa.Graph.GenerateOutputPB();
-
-                string jsonPlan = JsonFormatter.Default.Format(plan_pb);
+                
+                // Set indentation level for better readability
+                var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t")); 
+                string jsonPlan = formatter.Format(plan_pb);
 
                 string directoryPath = Path.GetDirectoryName(plan_path);
 
@@ -664,9 +668,6 @@ namespace ServiceSiteScheduling
                 Console.WriteLine("Location:");
 
                 string json = JsonFormatter.Default.Format(location);
-
-                // Console.WriteLine("JSON: \n " + json);
-
 
                 byte[] locationBytes = location.ToByteArray();
                 Console.WriteLine("Location :" + locationBytes.Length);
