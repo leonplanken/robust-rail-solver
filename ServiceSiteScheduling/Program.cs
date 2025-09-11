@@ -3,24 +3,15 @@ using YamlDotNet.Serialization;
 using Google.Protobuf;
 using AlgoIface;
 using System.Text.Json;
-using System;
 using System.Diagnostics;
-using System.Security.Cryptography.X509Certificates;
-using System.Collections;
-using Microsoft.VisualBasic;
-using System.Runtime.CompilerServices;
-using System.Numerics;
-
 
 namespace ServiceSiteScheduling
 {
     class Program
     {
-
         // Method: Run the program from a config file. This is the entry point of the application
         static void Main(string[] args)
         {
-
             if (args.Length != 0)
             {
                 string config_file = "";
@@ -29,6 +20,7 @@ namespace ServiceSiteScheduling
                     if (arg.StartsWith("--config="))
                     {
                         config_file = arg.Substring("--config=".Length);
+                        Console.WriteLine("Using config file: " + config_file);
 
 
                         if (!File.Exists(config_file))
@@ -73,6 +65,7 @@ namespace ServiceSiteScheduling
 
             else
             {
+                Console.WriteLine("No config file provided, running with default test files: scenario_A");
                 Test_Location_Scenario_Parsing("./database/TUSS-Instance-Generator/scenario_settings/setting_A/location_solver.json", "./database/TUSS-Instance-Generator/setting_A/scenario_solver.json");
                 Console.WriteLine("***************** CreatePlan() *****************");
                 CreatePlan("./database/TUSS-Instance-Generator/scenario_settings/setting_A/location_solver.json", "/database/TUSS-Instance-Generator/setting_A/scenario_solver.json", "./database/TUSS-Instance-Generator/plan.json");
@@ -90,16 +83,21 @@ namespace ServiceSiteScheduling
         //         a Simulated Annealing method to find the final schedle plan (Totally Ordered Graph)
         static void CreatePlan(string location_path, string scenario_path, string plan_path, Config config = null, int debugLevel = 0)
         {
-
             // If a seed was specified in the config file and it's value is not 0, then we can use the seed for deterministic plan creation
             Random random;
-            if (config.DeepLook.DeterministicPlanning != null && config.DeepLook.DeterministicPlanning.Seed != 0)
+            if (config.DeepLook != null && config.DeepLook.DeterministicPlanning != null && config.DeepLook.DeterministicPlanning.Seed != 0)
             {
                 random = new Random(config.DeepLook.DeterministicPlanning.Seed);
+            }
+            else if (config.Seed > 0)
+            {
+                Console.WriteLine($"Using random seed <{config.Seed}> from config.");
+                random = new Random(config.Seed);
             }
             else
             {
                 random = new Random();
+                Console.WriteLine("Using default random seed");
             }
 
             // Random random = new Random();
