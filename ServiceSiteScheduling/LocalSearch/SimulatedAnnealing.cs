@@ -1,11 +1,9 @@
 ﻿using ServiceSiteScheduling.Solutions;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using ServiceSiteScheduling.Utilities;
 using ServiceSiteScheduling.Tasks;
-using System.Runtime.CompilerServices;
+using Google.Protobuf;
+using AlgoIface;
 
 namespace ServiceSiteScheduling.LocalSearch
 {
@@ -195,7 +193,7 @@ namespace ServiceSiteScheduling.LocalSearch
         // cannot be improved -> the current solution is reverted to the original solution
         // @bias: Restricted probability (e.g., 0.4)
         // @intensifyOnImprovement: enables further improvments
-        public void Run(Time maxduration, bool stopWhenFeasible, int iterations, double t, double a, int q, int reset, double bias = 0.4, int debugLevel = 0, bool intensifyOnImprovement = false)
+        public void Run(Time maxduration, bool stopWhenFeasible, int iterations, double t, double a, int q, int reset, double bias = 0.4, int debugLevel = 0, bool intensifyOnImprovement = false, string tmp_plan_path = "./tmp_plans/")
         {
             double T = t, alpha = a;
             int Q = q, iterationsUntilReset = reset;
@@ -436,6 +434,13 @@ namespace ServiceSiteScheduling.LocalSearch
                                 noimprovement = 0;
                                 if (debugLevel > 1) { Console.WriteLine($"Cost of selected move: {selected.Cost}"); }
                             }
+                            // Write JSON plan to file
+                            Plan plan_pb = this.Graph.GenerateOutputPB();
+                            var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t"));
+                            string jsonPlan = formatter.Format(plan_pb);
+                            string current_plan = tmp_plan_path + "sa_plan_iteration" + iteration.ToString() + ".json";
+                            Console.WriteLine($"New best solution found at iteration {iteration}, writing plan to {current_plan}");
+                            File.WriteAllText(current_plan, jsonPlan);
                         }
                         else
                         {

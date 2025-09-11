@@ -1,6 +1,9 @@
 ﻿using ServiceSiteScheduling.Solutions;
 using ServiceSiteScheduling.Utilities;
 using System.Diagnostics;
+using Google.Protobuf;
+using AlgoIface;
+
 
 namespace ServiceSiteScheduling.LocalSearch
 {
@@ -31,7 +34,7 @@ namespace ServiceSiteScheduling.LocalSearch
         //@tabuListLength: lenght of tabu list conaining LocalSerachMoves -> solution graphs (e.g., 16) 
         //@bias: restricted probability (e.g., 0.75)
         //@suppressConsoleOutput: enables extra logs
-        public void Run(int iterations, int iterationsUntilReset, int tabuListLength, double bias = 0.75, int debugLevel = 0)
+        public void Run(int iterations, int iterationsUntilReset, int tabuListLength, double bias = 0.75, int debugLevel = 0, string tmp_plan_path = "./tmp_plans/")
         {
 
             List<LocalSearchMove> moves = new List<LocalSearchMove>();
@@ -109,6 +112,14 @@ namespace ServiceSiteScheduling.LocalSearch
                     current = bestcost = next.Cost;
                     if (debugLevel > 1) { Console.WriteLine($"Cost of next node: {next.Cost}"); }
                     noimprovement = 0;
+
+                    // Write JSON plan to file
+                    Plan plan_pb = this.Graph.GenerateOutputPB();
+                    var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t"));
+                    string jsonPlan = formatter.Format(plan_pb);
+                    string current_plan = tmp_plan_path + "tabu_plan_iteration" + iteration.ToString() + ".json";
+                    Console.WriteLine($"New best solution found at iteration {iteration}, writing plan to {current_plan}");
+                    File.WriteAllText(current_plan, jsonPlan);
                 }
                 else
                 {
@@ -131,11 +142,11 @@ namespace ServiceSiteScheduling.LocalSearch
                         bool selected = false;
                         if (this.random.NextDouble() < bias)
                         {
-                            possiblemoves.AddRange(parkingshiftmoves.Where(move => 
-                                this.Graph.Cost.ProblemTracks[move.Track.Index] || 
+                            possiblemoves.AddRange(parkingshiftmoves.Where(move =>
+                                this.Graph.Cost.ProblemTracks[move.Track.Index] ||
                                 move.RelatedTasks.Any(task => this.Graph.Cost.ProblemTrains.Intersects(task.Train.UnitBits))));
-                            possiblemoves.AddRange(parkingswapmoves.Where(move => 
-                                this.Graph.Cost.ProblemTracks[move.ParkingFirst.First().Track.Index] || 
+                            possiblemoves.AddRange(parkingswapmoves.Where(move =>
+                                this.Graph.Cost.ProblemTracks[move.ParkingFirst.First().Track.Index] ||
                                 this.Graph.Cost.ProblemTracks[move.ParkingSecond.First().Track.Index] ||
                                 move.ParkingFirst.Any(task => this.Graph.Cost.ProblemTrains.Intersects(task.Train.UnitBits)) ||
                                 move.ParkingSecond.Any(task => this.Graph.Cost.ProblemTrains.Intersects(task.Train.UnitBits))));
@@ -184,7 +195,7 @@ namespace ServiceSiteScheduling.LocalSearch
                             if (possiblemoves.Count > 0)
                                 selected = true;
                         }
-                        
+
                         if (!selected)
                         {
                             possiblemoves = currentmoves;

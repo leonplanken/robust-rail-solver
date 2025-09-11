@@ -22,17 +22,26 @@ namespace ServiceSiteScheduling
                         config_file = arg.Substring("--config=".Length);
                         Console.WriteLine("Using config file: " + config_file);
 
-
                         if (!File.Exists(config_file))
                         {
                             Console.Error.WriteLine($"Error: Config file '{config_file}' not found.");
                             Environment.Exit(1);
                         }
-
                         string yaml = File.ReadAllText(config_file);
 
                         var deserializer = new Deserializer();
                         Config config = deserializer.Deserialize<Config>(new StringReader(yaml));
+
+                        string directoryPath = Path.GetDirectoryName(config.PlanPath);
+                        if (!Directory.Exists(directoryPath) && directoryPath != null)
+                        {
+                            Directory.CreateDirectory(directoryPath);
+                            if (config.DebugLevel > 0)
+                            {
+                                Console.WriteLine($"Directory created: {directoryPath}");
+                            }
+                        }
+
                         if (config.Mode == "Standard")
                         {
                             if (config.DebugLevel > 0)
@@ -47,7 +56,7 @@ namespace ServiceSiteScheduling
                         }
                         else if (config.Mode == "DeepLook")
                         {
-                           TestCasesDeepLook(config);
+                            TestCasesDeepLook(config);
                         }
                         else
                         {
@@ -65,14 +74,17 @@ namespace ServiceSiteScheduling
 
             else
             {
-                Console.WriteLine("No config file provided, running with default test files: scenario_A");
-                Test_Location_Scenario_Parsing("./database/TUSS-Instance-Generator/scenario_settings/setting_A/location_solver.json", "./database/TUSS-Instance-Generator/setting_A/scenario_solver.json");
+                string directory = "setting_deque";
+                Console.WriteLine($"No config file provided, running with default test files: {directory}");
+                Test_Location_Scenario_Parsing(
+                    $"./database/TUSS-Instance-Generator/scenario_settings/{directory}/location_solver.json",
+                    $"./database/TUSS-Instance-Generator/scenario_settings/{directory}/scenario_solver.json");
                 Console.WriteLine("***************** CreatePlan() *****************");
-                CreatePlan("./database/TUSS-Instance-Generator/scenario_settings/setting_A/location_solver.json", "/database/TUSS-Instance-Generator/setting_A/scenario_solver.json", "./database/TUSS-Instance-Generator/plan.json");
+                CreatePlan(
+                    $"./database/TUSS-Instance-Generator/scenario_settings/{directory}/location_solver.json",
+                    $"./database/TUSS-Instance-Generator/scenario_settings/{directory}/scenario_solver.json",
+                    $"./database/TUSS-Instance-Generator/secenario_settings/{directory}/plan.json");
             }
-
-
-
         }
 
         // Input:   @location_path: path to the location (.json) file
@@ -81,15 +93,19 @@ namespace ServiceSiteScheduling
         // Output:  @plan_path: path to where the plan (.json) file will be written
         // Method: First it calls a Tabu Search method to find an initial plan (Graph) that is used by 
         //         a Simulated Annealing method to find the final schedle plan (Totally Ordered Graph)
-        static void CreatePlan(string location_path, string scenario_path, string plan_path, Config config = null, int debugLevel = 0)
+        static void CreatePlan(string location_path, string scenario_path, string plan_path, Config config = null, int debugLevel = 0, string tmp_plan_path = "./tmp_plans/")
         {
+            foreach (var file in Directory.GetFiles(tmp_plan_path, "*.json"))
+            {
+                File.Delete(file);
+            }
             // If a seed was specified in the config file and it's value is not 0, then we can use the seed for deterministic plan creation
             Random random;
-            if (config.DeepLook != null && config.DeepLook.DeterministicPlanning != null && config.DeepLook.DeterministicPlanning.Seed != 0)
+            if (config != null && config.Mode == "DeepLook" && config.DeepLook.DeterministicPlanning != null && config.DeepLook.DeterministicPlanning.Seed != 0)
             {
                 random = new Random(config.DeepLook.DeterministicPlanning.Seed);
             }
-            else if (config.Seed > 0)
+            else if (config != null && config.Seed > 0)
             {
                 Console.WriteLine($"Using random seed <{config.Seed}> from config.");
                 random = new Random(config.Seed);
@@ -116,7 +132,7 @@ namespace ServiceSiteScheduling
                 LocalSearch.TabuSearch ts = new LocalSearch.TabuSearch(random);
                 if (config != null)
                 {
-                    ts.Run(config.TabuSearch.Iterations, config.TabuSearch.IterationsUntilReset, config.TabuSearch.TabuListLength, config.TabuSearch.Bias, debugLevel);
+                    ts.Run(config.TabuSearch.Iterations, config.TabuSearch.IterationsUntilReset, config.TabuSearch.TabuListLength, config.TabuSearch.Bias, debugLevel, tmp_plan_path);
                 }
                 else
                 {
@@ -125,7 +141,7 @@ namespace ServiceSiteScheduling
                 LocalSearch.SimulatedAnnealing sa = new LocalSearch.SimulatedAnnealing(random, ts.Graph);
                 if (config != null)
                 {
-                    sa.Run(new Time(config.SimulatedAnnealing.MaxDuration), config.SimulatedAnnealing.StopWhenFeasible, config.SimulatedAnnealing.IterationsUntilReset, config.SimulatedAnnealing.T, config.SimulatedAnnealing.A, config.SimulatedAnnealing.Q, config.SimulatedAnnealing.Reset, config.SimulatedAnnealing.Bias, debugLevel, config.SimulatedAnnealing.IntensifyOnImprovement);
+                    sa.Run(new Time(config.SimulatedAnnealing.MaxDuration), config.SimulatedAnnealing.StopWhenFeasible, config.SimulatedAnnealing.IterationsUntilReset, config.SimulatedAnnealing.T, config.SimulatedAnnealing.A, config.SimulatedAnnealing.Q, config.SimulatedAnnealing.Reset, config.SimulatedAnnealing.Bias, debugLevel, config.SimulatedAnnealing.IntensifyOnImprovement, tmp_plan_path);
                 }
                 else
                 {
@@ -180,20 +196,10 @@ namespace ServiceSiteScheduling
                     Console.WriteLine("------------------------------");
                 }
 
+                // Write JSON plan to file
                 Plan plan_pb = sa.Graph.GenerateOutputPB();
-
-                // Set indentation level for better readability
                 var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t")); 
                 string jsonPlan = formatter.Format(plan_pb);
-
-                string directoryPath = Path.GetDirectoryName(plan_path);
-
-                if (!Directory.Exists(directoryPath) && directoryPath != null)
-                {
-                    Directory.CreateDirectory(directoryPath);
-                    if (debugLevel > 0) { Console.WriteLine($"Directory created: {directoryPath}"); }
-                }
-
                 File.WriteAllText(plan_path, jsonPlan);
 
                 if (debugLevel > 1)
@@ -232,8 +238,6 @@ namespace ServiceSiteScheduling
             {
                 random = new Random();
             }
-
-            // Random random = new Random();
 
             Solutions.SolutionCost best = null;
             Solutions.PlanGraph graph = null;
@@ -304,36 +308,17 @@ namespace ServiceSiteScheduling
                 Console.WriteLine("------------------------------");
                 Console.WriteLine($"Generate JSON format plan");
                 Console.WriteLine("------------------------------");
-
+                // Write Plan to json file
                 Plan plan_pb = sa.Graph.GenerateOutputPB();
-                
-                // Set indentation level for better readability
                 var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t")); 
                 string jsonPlan = formatter.Format(plan_pb);
-
-                string directoryPath = Path.GetDirectoryName(plan_path);
-
-                if (!Directory.Exists(directoryPath) && directoryPath != null)
-                {
-
-                    Directory.CreateDirectory(directoryPath);
-                    Console.WriteLine($"Directory created: {directoryPath}");
-                }
-
                 File.WriteAllText(plan_path, jsonPlan);
-
                 Console.WriteLine("----------------------------------------------------------------------");
-
-
                 sa.Graph.DisplayMovements();
                 sa.Graph.Clear();
-
             }
-
             Console.WriteLine("------------ OVERALL BEST --------------");
             Console.WriteLine(best);
-
-            // Console.ReadLine();
         }
 
         static void TestCasesDeepLook(Config config)
@@ -850,34 +835,24 @@ namespace ServiceSiteScheduling
                     }
                 }
 
-                List<AlgoIface.IncomingTrain> incomingTrains = new List<AlgoIface.IncomingTrain>(scenario_in.Trains);
-                foreach (AlgoIface.IncomingTrain train in scenario_in.Trains)
-                {
-                    incomingTrains.Add(train);
-                }
-                
+                List<AlgoIface.IncomingTrain> incomingTrains = new List<AlgoIface.IncomingTrain>(scenario_in.Trains);                
                 if (debugLevel > 1)
                 {
                     Console.WriteLine("Scenario details: ");
                     Console.WriteLine("---- Incoming Trains ----");
                     foreach (AlgoIface.IncomingTrain train in incomingTrains)
                     {
-                        Console.WriteLine("Parcking track " + train.FirstParkingTrackPart + " for train (id) " + train.Id);
+                        Console.WriteLine("Parcking track " + train.FirstParkingTrackPart + " for train (id) " + train.Id + " at time " + train.Arrival);
                     }
                 }
 
                 List<AlgoIface.TrainRequest> outgoingTrains = new List<AlgoIface.TrainRequest>(scenario_out.TrainRequests);
-                foreach (AlgoIface.TrainRequest train in scenario_out.TrainRequests)
-                {
-                    outgoingTrains.Add(train);
-                }
-
                 if (debugLevel > 1)
                 {
-                    Console.WriteLine("---- Incoming Trains ----");
+                    Console.WriteLine("---- Outgoing Trains ----");
                     foreach (AlgoIface.TrainRequest train in outgoingTrains)
                     {
-                        Console.WriteLine("Parcking track " + train.LastParkingTrackPart + " for train (id) " + train.DisplayName);
+                        Console.WriteLine("Parcking track " + train.LastParkingTrackPart + " for train (id) " + train.DisplayName + " at time " + train.Departure);
 
                     }                    
                 }
