@@ -36,11 +36,23 @@ namespace ServiceSiteScheduling
                         if (!Directory.Exists(directoryPath) && directoryPath != null)
                         {
                             Directory.CreateDirectory(directoryPath);
-                            if (config.DebugLevel > 0)
-                            {
-                                Console.WriteLine($"Directory created: {directoryPath}");
-                            }
                         }
+
+                        string tmpPathPlan = "";
+                        if (config.TemporaryPlanPath is null or "")
+                        {
+                            string currentDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                            tmpPathPlan = Path.Combine(currentDirectory, "tmp_plans");
+                        }
+                        else
+                        {
+                            tmpPathPlan = config.TemporaryPlanPath;
+                        }
+                        if (!Directory.Exists(tmpPathPlan))
+                        {
+                            Directory.CreateDirectory(tmpPathPlan);
+                        }                        
+
 
                         if (config.Mode == "Standard")
                         {
@@ -52,7 +64,7 @@ namespace ServiceSiteScheduling
                             Test_Location_Scenario_Parsing(config.LocationPath, config.ScenarioPath, config.DebugLevel);
 
                             Console.WriteLine("***************** Creating a Plan *****************");
-                            CreatePlan(config.LocationPath, config.ScenarioPath, config.PlanPath, config, config.DebugLevel);
+                            CreatePlan(config.LocationPath, config.ScenarioPath, config.PlanPath, config, config.DebugLevel, tmpPathPlan);
                         }
                         else if (config.Mode == "DeepLook")
                         {
@@ -992,6 +1004,7 @@ namespace ServiceSiteScheduling
         public string LocationPath { get; set; }
         public string ScenarioPath { get; set; }
         public string PlanPath { get; set; }
+        public string TemporaryPlanPath { get; set; }
         public string Mode { get; set; }
     }
 }
