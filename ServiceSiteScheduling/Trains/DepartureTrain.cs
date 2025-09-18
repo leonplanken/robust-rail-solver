@@ -8,20 +8,20 @@ namespace ServiceSiteScheduling.Trains
         public Utilities.Time Time { get; private set; }
         public DepartureTrainUnit[] Units { get; private set; }
 
-        public bool InStanding {get; set;}
-        public DepartureTrain(Utilities.Time time, DepartureTrainUnit[] units, TrackParts.Track track, Side side, bool inStanding = false)
+        public bool OutStanding {get; set;}
+        public DepartureTrain(Utilities.Time time, DepartureTrainUnit[] units, TrackParts.Track track, Side side, bool outStanding = false)
         {
             this.Track = track;
             this.Time = time;
             this.Side = side;
             this.Units = units;
-            this.InStanding = inStanding;
+            this.OutStanding = outStanding;
 
             foreach (var unit in units)
                 unit.Train = this;
         }
 
-        public DepartureTrain(Utilities.Time time, DepartureTrainUnit unit, TrackParts.Track track, Side side, bool inStanding = false) : this(time, new DepartureTrainUnit[1] { unit }, track, side, inStanding) { }
+        public DepartureTrain(Utilities.Time time, DepartureTrainUnit unit, TrackParts.Track track, Side side, bool outStanding = false) : this(time, new DepartureTrainUnit[1] { unit }, track, side, outStanding) { }
 
         public override string ToString()
         {
@@ -29,9 +29,9 @@ namespace ServiceSiteScheduling.Trains
         }
         
         // Returns if the departure train is an outstanding one which stays in the shunting yard after the scenario ends
-        public bool IsItInStanding()
+        public bool IsItOutStanding()
         {
-            return this.InStanding;
+            return this.OutStanding;
         }
     }
 

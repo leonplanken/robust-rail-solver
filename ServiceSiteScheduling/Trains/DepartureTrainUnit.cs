@@ -28,7 +28,7 @@ namespace ServiceSiteScheduling.Trains
 
         public override string ToString()
         {
-            return $"{this.ID} {(this.IsFixed ? $"{this.Unit.Index}({this.Unit.Type.Name})" : this.Type.Name)}";
+            return $"Departure Unit id {this.ID} {(this.IsFixed ? $"type {this.Unit.Index}({this.Unit.Type.Name})" : $"name {this.Type.Name}")}";
         }
     }
 }

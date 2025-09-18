@@ -14,9 +14,9 @@ namespace ServiceSiteScheduling.LocalSearch
         Random random;
         public PlanGraph Graph { get; private set; }
 
-        public TabuSearch(Random random)
+        public TabuSearch(Random random, int debugLevel = 0)
         {
-            var graph = Initial.SimpleHeuristic.Construct(random);
+            var graph = Initial.SimpleHeuristic.Construct(random, debugLevel);
             graph.Cost = graph.ComputeModel();
 
             this.Graph = graph;
@@ -36,7 +36,6 @@ namespace ServiceSiteScheduling.LocalSearch
         //@suppressConsoleOutput: enables extra logs
         public void Run(int iterations, int iterationsUntilReset, int tabuListLength, double bias = 0.75, int debugLevel = 0, string tmp_plan_path = "./tmp_plans/")
         {
-
             List<LocalSearchMove> moves = new List<LocalSearchMove>();
             moves.Add(new IdentityMove(this.Graph));
             int noimprovement = 0, iteration = 0, neighborsvisited = 0;
@@ -48,7 +47,6 @@ namespace ServiceSiteScheduling.LocalSearch
             while (true)
             {
                 List<LocalSearchMove> currentmoves = new List<LocalSearchMove>();
-
                 if (iteration >= iterations)
                     break;
 

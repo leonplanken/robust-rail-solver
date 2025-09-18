@@ -1,6 +1,23 @@
 # Robust Rail Solver 
 Also known as Baseline HIP. 
 
+Table of contents
+- [Description](#description)
+    - [How to use?](#how-to-use)
+        - [Input parsing](#location-scenario-parsing)
+        - [Run solver with a configuration file](#create-plan-with-tabu-and-local-search-methods---from-configuration-file)
+        - [Run solver with command line arguments](#create-plan-with-tabu-and-local-search-methods)
+    - [Validated scenarios](#validated-scenarios)
+    - [Partial Order Schedule](#partial-order-schedule-pos---other-helper-functions)
+    - [ProtoBuffers](#protobuffers)
+    - [Deep Look Mode](#deep-look-mode---unit-test-like-mode)
+- [Known Problems](#known-problems)
+- [Building Process](#build-as-standalone-tool)
+    - [Build as `.devcontainer`](#building-process---dev-container)
+    - [Build in Linux](#building-process---native-support-linux)
+    - [Known issues](#issues)
+
+
 # Description 
 This tool is the `baseline version` of the research outcome of a published paper by Roel van den Broek: [A Local Search Algorithm for Train Unit Shunting with Service Scheduling](https://pubsonline.informs.org/doi/10.1287/trsc.2021.1090).
 The paper considers train unit shunting problem extended with service task scheduling. This problem originates from Dutch Railways, which is the main railway operator in the Netherlands. The study presents the first solution method covering all aspects of the shunting and scheduling problem. The problem consists of matching train units arriving on a shunting yard to departing trains, scheduling service tasks such as cleaning and maintenance on the available resources, and parking the trains on the available tracks such that the shunting yard can operate conflict-free. Partial order schedule representation that captures the full problem is also elaborated, and local search algorithm that utilizes the partial ordering has been applied. 
@@ -21,7 +38,7 @@ The plan produced by the solver can be further evaluated by [robust-rail-evaluat
 [robust-rail-generator](https://github.com/Robust-Rail-NL/robust-rail-generator) tool helps to make scenario generation easier. The generated scenario respects the format used by [robust-rail-evaluator](https://github.com/Robust-Rail-NL/robust-rail-evaluator) and [robust-rail-solver](https://github.com/Robust-Rail-NL/robust-rail-solver).
 
 
-## How To Use ?
+## How To Use?
 
 
 The [main program](Program.cs) contains several functions with different features.
@@ -60,7 +77,7 @@ Where [config.yaml](./ServiceSiteScheduling/config.yaml) contains all the parame
     * E.g., of the scenario is the time of arrivals & departures, train types/composition - [scenario_solver.json](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_A/scenario_solver.json).
 
 * The function returns a schedule plan as solution to the scenario. The function uses Tabu Search and Simulated Annealing methods to find a Totally Ordered Graph which is finally converted into a schedule plan.
-    *  The plan is stored in json format and the path/name of the plan defined by `plan_path` input argument (e.g., database/plans/plan.json).  
+    *  The plan is stored in JSON format and the path/name of the plan defined by `plan_path` input argument (e.g., database/plans/plan.json).  
 
 ```bash
 CreatePlan(string location_path, string scenario_path, string plan_path)
@@ -71,7 +88,7 @@ CreatePlan(string location_path, string scenario_path, string plan_path)
 * **Tabu Search parameters**:
     * **iterations**: maximum iterations in the searching algorithm if it is achieved the search ends
     * **iterationsUntilReset**: the current solution should be improved until that number of iteration if this number is hit, the current solution cannot be improved -> the current solution is reverted to the original solution
-    * **tabuListLength**: length of the tabu search list containing LocalSerachMoves -> solution graphs
+    * **tabuListLength**: length of the tabu search list containing LocalSearchMoves -> solution graphs
     * **bias**: restricted probability (e.g., 0.75)
     * **suppressConsoleOutput**: enables extra logs
 
@@ -80,7 +97,7 @@ CreatePlan(string location_path, string scenario_path, string plan_path)
 
 * **Simulated Annealing parameters**:
 
-    * **maxduration**: maximum duration of the serach in seconds (e.g., Time.Hour is 3600 seconds)
+    * **maxduration**: maximum duration of the search in seconds (e.g., Time.Hour is 3600 seconds)
     * **stopWhenFeasible**: stops search when it is feasible (bool)
     * **iterations**: maximum iterations in the searching algorithm if it is achieved the search ends
     * **t**: the T parameter in the equation P = exp([cost(a') - cost(b')]/T), where e T is a control parameter that will be decreased during the search to accept less deterioration in solution quality later on in the process
@@ -135,7 +152,7 @@ Some of the scenarios were successfully solved by [robust-rail-solver](https://g
     - **plan.json** - plan corresponding to the scenario
     - **scenario_evaluator.json**  - 6 trains custom config evaluator format
     - **scenario_solver.json**  - 6 trains custom config solver format
-    - **vis_config.json** - emulator config for visualisation (this is not functional)
+    - **vis_config.json** - emulator config for visualization (this is not functional)
 
 - **`setting_issue`**
     - **clean.sh** - script to clean the results
@@ -145,7 +162,7 @@ Some of the scenarios were successfully solved by [robust-rail-solver](https://g
     - **plan.json** - plan corresponding to the scenario
     - **scenario_evaluator.json**  - 2 trains custom config evaluator format
     - **scenario_solver.json**  - 2 trains custom config solver format
-    - **vis_config.json** - emulator config for visualisation (this is not functional)
+    - **vis_config.json** - emulator config for visualization (this is not functional)
 
 - **`setting_known_problems`** - read more about these known problems in **Known Problems** section
     - **setting_invalid_endmove**
@@ -176,7 +193,7 @@ Where `start` is the first MoveTask of the totally ordered solution in the `Plan
 
 * `ShowAllInfoAboutMove`: Shows all kind of information about a specific Move
 
-* `GetMoveLinksOfPOSMove`: Get all the direct successors and predecessors of a given POS move, the move is identified by its ID (POSMoveTask POSmove.ID). Successors stored in @sucessorPOSMoves; Predecessors stored in @predecessorsPOSMoves @linkType specifies the type of the links 'infrastructure' - same infrastructure used - populated from @POSadjacencyListForInfrastructure 'trainUint' - same train unit(s) used - populated from @POSadjacencyListForTrainUint
+* `GetMoveLinksOfPOSMove`: Get all the direct successors and predecessors of a given POS move, the move is identified by its ID (POSMoveTask POSmove.ID). Successors stored in @successorPOSMoves; Predecessors stored in @predecessorsPOSMoves @linkType specifies the type of the links 'infrastructure' - same infrastructure used - populated from @POSadjacencyListForInfrastructure 'trainUnit' - same train unit(s) used - populated from @POSadjacencyListForTrainUnit
       
 * `DisplayListPOSTrackTask`: Displays the all POSTrackTask list identified in the POS solution
 
@@ -184,7 +201,7 @@ Where `start` is the first MoveTask of the totally ordered solution in the `Plan
 * `DisplayTrainUnitSuccessorsAndPredeccessors`: Displays all the POSMove predecessors and successors - these links are represents the relations between the moves using the same train unit
 
 
-* `DisplayMoveLinksOfPOSMove`: Displays all the direct successors and predecessors of a given POS move the move is identified by its ID (POSMoveTask POSmove.ID) @linkType specifies the type of the links 'infrastructure' - same inrastructure used - populated from @POSadjacencyListForInfrastructure 'trainUint' - same train unit(s) used - populated from @POSadjacencyListForTrainUint
+* `DisplayMoveLinksOfPOSMove`: Displays all the direct successors and predecessors of a given POS move the move is identified by its ID (POSMoveTask POSmove.ID) @linkType specifies the type of the links 'infrastructure' - same infrastructure used - populated from @POSadjacencyListForInfrastructure 'trainUnit' - same train unit(s) used - populated from @POSadjacencyListForTrainUnit
 
 * `DisplayPOSMovementLinksTrainUnitUsed`: Shows train unit relations between the POS movements, meaning that links per move using the same train unit are displayed - links by train unit
  
@@ -199,11 +216,6 @@ Where `start` is the first MoveTask of the totally ordered solution in the `Plan
 
 
 * `DisplayMovements`: Shows rich information about the movements and infrastructure used in the Totally Ordered Solution
-
-
-## Issue with input data
-
-Some input location and scenarios (scenario.data and location.data) cannot be read in the main program by parsing with the protobuffres. 
 
 ## ProtoBuffers
 
@@ -315,7 +327,7 @@ dotnet run -- --config=./config.yaml
 
 * [config_seed.yaml](./ServiceSiteScheduling/config_seed.yaml) provides an example with a fixed seed value `11298` that will result in a valid plan **[Deeplook mode]**. 
     * If the `Seed` is set to 11297 and the `LookForSeed` is set to true the config will result in one valid and one not valid plan.
-* [config_issue.yaml](./ServiceSiteScheduling/config_issue.yaml) provides an example that is looking for a solution by modifiying the initial seed value and the test cases **[Deeplook mode]**.
+* [config_issue.yaml](./ServiceSiteScheduling/config_issue.yaml) provides an example that is looking for a solution by modifying the initial seed value and the test cases **[Deeplook mode]**.
 
 # Known Problems
 Several scenario results in an invalid plan. Sometimes these results are due to some constraints in the scenario, some of them are due to suspicious errors/handling tasks in the solver (e.g., same track occupation by multiple train) or in the evaluator (e.g., invalid end move action). These latter should be addressed in future development phases. The following descriptions and configurations help to reproduce the known problems/errors/suspected errors. The configuration, scenario and location files can be found in [setting_known_problems](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/).
@@ -333,7 +345,8 @@ Several scenario results in an invalid plan. Sometimes these results are due to 
 | :------------ |:------------|:------------|:------------|:------------|
 | Switch matter | [Definition of a Switch](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_invalid_endmove/switch.jpg) | Not Specified | Switch definition might affect the solving complexity. Reversing the switch will result in a different location structure which affect directly the plan solving. In as the figure shows, a switch with Bside{5} Aside{4,1} is not the sane as switch Bside{1} Aside{4,5}, however, switch with Bside{4,5} Aside{1} is the same as switch with Bside{4,5} Aside{1} | Not Specified | 
 
-![Switch](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_invalid_endmove/switch.jpg){#fig:Switch}
+![Switch](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_invalid_endmove/switch.jpg)
+Figure: Switch
 
 
 
@@ -352,7 +365,7 @@ The usage of **[Dev-Container](https://code.visualstudio.com/docs/devcontainers/
 
 * 3rd - Open the project in **VS Code**
 
-* 4th - `Ctrl+Shif+P` → Dev Containers: Rebuild Container (it can take a few minutes) - this command will use the [Dockerfile](.devcontainer/Dockerfile) and [devcontainer.json](.devcontainer/devcontainer.json) definitions unde [.devcontainer](.devcontainer).
+* 4th - `Ctrl+Shif+P` → Dev Containers: Rebuild Container (it can take a few minutes) - this command will use the [Dockerfile](.devcontainer/Dockerfile) and [devcontainer.json](.devcontainer/devcontainer.json) definitions under [.devcontainer](.devcontainer).
 
 * 5th - Build process of the tool is below: 
 Note: all the dependencies are already contained by the Docker instance.
@@ -398,8 +411,8 @@ Other packages might also be needed to be installed on the system:
 sudo apt install name-of-the-package
 ```
 
-## Compile Protobuf
-In case the protobuf structures must be modified the under [ProtoBuf](./ServiceSiteScheduling/ProtoBuf/), the must be compiled so the main program can call their functionalities.
+## Compile ProtoBuf
+In case the ProtoBuf structures must be modified (they can be found under [ProtoBuf](./ServiceSiteScheduling/ProtoBuf/)), then they must be compiled so the main program can call their functionalities.
 
 If first usage:
 
@@ -408,7 +421,7 @@ conda env create -f env.yml
 source ~/.bashrc
 ```
 
-Activate the enviornment:
+Activate the environment:
 
 ```bash
 conda activate my_proto_env_solver
@@ -416,11 +429,10 @@ protoc --proto_path="/workspace/robust-rail-solver/ServiceSiteScheduling/ProtoBu
 ```
 
 
-# Issues
-There is knwonk issue when using the new `.devcontainer` of the project. It might happpen that after switching to the new version, the following error will be rased when running the solver
+## Issues
+There is a known issue when using the new `.devcontainer` of the project. It might happen that after switching to the new version, the following error will be raised when running the solver:
 
-
-## Issue 1
+### Issue 1
 ```bash
 /usr/share/dotnet/sdk/8.0.411/Microsoft.Common.CurrentVersion.targets(3829,5): error MSB3491: Could not write lines to file "obj/Debug/net8.0/HIP.csproj.CoreCompileInputs.cache". Access to the path '/workspace/robust-rail-solver/ServiceSiteScheduling/obj/Debug/net8.0/HIP.csproj.CoreCompileInputs.cache' is denied.  [/workspace/robust-rail-solver/ServiceSiteScheduling/HIP.csproj]
 ```
@@ -433,13 +445,13 @@ rm -rf obj/
 rm -rf bin/
 ```
 
-# Issue 2
+### Issue 2
 ```bash
 ./build/TORS: error while loading shared libraries: libprotobuf.so.26: cannot open shared object file: No such file or directory
 ```
-In that case the `robust-rail-evaluator` project should be re-built. 
+In that case the `robust-rail-evaluator` project should be rebuilt. 
 
-If it was alredy re-built, then:
+If it was already rebuilt, then:
 ```bash
 cd /workspace/robust-rail-evaluator
 conda env create -f env.yml # if the env has not yet been build

@@ -32,7 +32,7 @@ namespace ServiceSiteScheduling.Trains
 
         public override string ToString()
         {
-            return $"{this.Name} {this.Index} ({this.Type.Name})";
+            return $"Unit {this.Name} id {this.Index} ({this.Type.Name})";
         }
     }
 }

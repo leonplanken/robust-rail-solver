@@ -141,7 +141,7 @@ namespace ServiceSiteScheduling
                 {
                     Console.WriteLine($"Create Plan Iteration: {i}");
                 }
-                LocalSearch.TabuSearch ts = new LocalSearch.TabuSearch(random);
+                LocalSearch.TabuSearch ts = new LocalSearch.TabuSearch(random, debugLevel);
                 if (config != null)
                 {
                     ts.Run(config.TabuSearch.Iterations, config.TabuSearch.IterationsUntilReset, config.TabuSearch.TabuListLength, config.TabuSearch.Bias, debugLevel, tmp_plan_path);

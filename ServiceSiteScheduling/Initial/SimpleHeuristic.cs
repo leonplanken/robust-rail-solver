@@ -10,7 +10,7 @@ namespace ServiceSiteScheduling.Initial
 {   
     class SimpleHeuristic
     {
-        public static PlanGraph Construct(Random random)
+        public static PlanGraph Construct(Random random, int debugLevel = 0)
         {
             ShuntTrainUnit[] shunttrainunits = ProblemInstance.Current.TrainUnits.Select(tu => new ShuntTrainUnit(tu)).ToArray();
             ShuntTrain[] arrivalshunttrains = ProblemInstance.Current.ArrivalsOrdered.Select(t => new ShuntTrain(t.Units.Select(tu => shunttrainunits[tu.Index]), t.IsItInStanding())).ToArray();
@@ -27,7 +27,7 @@ namespace ServiceSiteScheduling.Initial
 
             // Determine how to split
             Dictionary<ShuntTrain, List<ShuntTrain>> splitparts = new Dictionary<ShuntTrain, List<ShuntTrain>>();
-            List<ShuntTrain> serviceshunttrains = new List<ShuntTrain>();
+            List<ShuntTrain> partialshunttrains = new List<ShuntTrain>();
             foreach (ShuntTrain st in arrivalshunttrains)
             {
                 var parts = st.Units.GroupBy(stu => reversematching[stu].Part);
@@ -37,15 +37,16 @@ namespace ServiceSiteScheduling.Initial
                     {
                         ShuntTrain partialtrain = new ShuntTrain(part);
                         splitparts[st].Add(partialtrain);
-                        serviceshunttrains.Add(partialtrain);
+                        partialshunttrains.Add(partialtrain);
                     }
                 else
                 {
                     splitparts[st].Add(st);
-                    serviceshunttrains.Add(st);
+                    partialshunttrains.Add(st);
                 }
+                if (debugLevel > 1)
+                    Console.WriteLine($"Split part shunt train {st} to {string.Join(",", splitparts[st].Select(un => un.ToString()))}");
             }
-
             // Add arrival and inital routing tasks
             List<ArrivalTask> arrivals = new List<ArrivalTask>();
             List<RoutingTask> routings = new List<RoutingTask>();
@@ -83,10 +84,10 @@ namespace ServiceSiteScheduling.Initial
                 ShuntTrain shunttrain = arrivalshunttrains[i];
 
                 Time departuretime = shunttrain.Units.Max(u => reversematching[u].Train.Departure.Time);
-                // due date including service time
+                // Due date including service time
                 Time due = departuretime - shunttrain.ServiceDuration;
 
-                // add arrival operation
+                // Add arrival operation
                 ArrivalTask arrival = new ArrivalTask(shunttrain, train.Track, train.Side, train.Time);
                 arrivals.Add(arrival);
                 foreach (ShuntTrainUnit stu in shunttrain)
@@ -104,14 +105,11 @@ namespace ServiceSiteScheduling.Initial
                 foreach (ShuntTrain part in splitparts[shunttrain])
                     previousTask[part] = routing;
             }
-
             // Add departure tasks
             List<DepartureTask> departures = new List<DepartureTask>();
             Dictionary<ShuntTrainUnit, DepartureRoutingTask> departuremapping = new Dictionary<ShuntTrainUnit, DepartureRoutingTask>();
-
             foreach (Matching.Train dt in matching.DepartureTrains)
             {
-
                 var shunttrain = matching.GetShuntTrain(dt);
                 DepartureTask departure = new DepartureTask(shunttrain, dt.Departure.Track, dt.Departure.Side, dt.Departure.Time);
                 dt.Task = departure;
@@ -131,7 +129,6 @@ namespace ServiceSiteScheduling.Initial
                 foreach (ShuntTrainUnit unit in shunttrain)
                     departuremapping[unit] = todeparture;
             }
-
             // Jobshop
             // create the schedule data structure
             var schedule = new Dictionary<ServiceResource, LinkedList<ServiceTask>>();
@@ -145,53 +142,51 @@ namespace ServiceSiteScheduling.Initial
             Dictionary<ShuntTrain, LinkedList<ServiceTask>> orderedservices = new Dictionary<ShuntTrain, LinkedList<ServiceTask>>();
             Dictionary<ShuntTrain, Time> earlieststart = new Dictionary<ShuntTrain, Time>();
 
-            // Add service tasks
-            foreach (ShuntTrain shunttrain in serviceshunttrains)
+            // Add shunting trains
+            foreach (ShuntTrain partial_shunttrain in partialshunttrains)
             {
-                RoutingTask previousroute = previousTask[shunttrain];
-                DepartureRoutingTask departure = departuremapping[shunttrain.Units.First()];
+                RoutingTask previousroute = previousTask[partial_shunttrain];
+                DepartureRoutingTask departure = departuremapping[partial_shunttrain.Units.First()];
 
-                Time departuretime = shunttrain.Units.Max(u => reversematching[u].Train.Departure.Time);
+                Time departuretime = partial_shunttrain.Units.Max(u => reversematching[u].Train.Departure.Time);
                 Time releasedate = previousroute.Start;
-                Time duedate = departuretime - shunttrain.ServiceDuration;
+                Time duedate = departuretime - partial_shunttrain.ServiceDuration;
                 ServiceTask service = null, first = null;
 
-                var trainservicetypes = shunttrain.Units.Aggregate(new ServiceType[0], (set, unit) => set.Concat(unit.RequiredServices.Select(s => s.Type)).ToArray()).Distinct().ToList();
+                var trainservicetypes = partial_shunttrain.Units.Aggregate(new ServiceType[0], (set, unit) => set.Concat(unit.RequiredServices.Select(s => s.Type)).ToArray()).Distinct().ToList();
                 // randomize
                 Shuffle(trainservicetypes, random);
                 foreach (ServiceType type in trainservicetypes)
                 {
-                    service = new ServiceTask(new ShuntTrain(shunttrain), null, type, null);
+                    service = new ServiceTask(new ShuntTrain(partial_shunttrain), null, type, null);
                     service.Start = releasedate;
                     releasedate += service.MinimumDuration;
                     duedate += service.MinimumDuration;
                     service.End = duedate;
-
                     if (first == null)
                     {
                         first = service;
-                        orderedservices[shunttrain] = new LinkedList<ServiceTask>();
+                        orderedservices[partial_shunttrain] = new LinkedList<ServiceTask>();
                     }
-
                     services.Add(service);
-                    orderedservices[shunttrain].AddLast(service);
+                    orderedservices[partial_shunttrain].AddLast(service);
 
-                    // add route to service
-                    var to = new RoutingTask(new ShuntTrain(shunttrain));
+                    // Add route to service
+                    var to = new RoutingTask(new ShuntTrain(partial_shunttrain));
                     to.Start = to.End = service.Start;
                     to.Next.Add(service);
                     service.Previous = to;
                     routings.Add(to);
 
-                    // add parking before service
-                    var parking = new ParkingTask(new ShuntTrain(shunttrain), null);
+                    // Add parking before service
+                    var parking = new ParkingTask(new ShuntTrain(partial_shunttrain), null);
                     parking.Previous = previousroute;
                     previousroute.Next.Add(parking);
                     parking.Next = to;
                     to.Previous = parking;
                     parkings.Add(parking);
 
-                    // add route from service
+                    // Add route from service
                     var from = new RoutingTask(service.Train);
                     from.Start = from.End = service.End;
                     service.Next = from;
@@ -201,21 +196,20 @@ namespace ServiceSiteScheduling.Initial
                     previousroute = from;
                 }
 
-                // add first candidate
+                // Add first candidate
                 if (first != null)
                     candidates.Add(first);
 
                 departure.Start = departure.End = Math.Max(previousroute.End, departure.End);
 
-                // add parking before departure
-                var departureparking = new ParkingTask(new ShuntTrain(shunttrain), null);
+                // Add parking before departure: initialized with parking at <null> track
+                var departureparking = new ParkingTask(new ShuntTrain(partial_shunttrain), null);
                 departureparking.Previous = previousroute;
                 previousroute.Next.Add(departureparking);
                 departureparking.Next = departure;
                 departure.Previous.Add(departureparking);
                 parkings.Add(departureparking);
             }
-
             Comparison<ServiceTask> comparison = (a, b) =>
             {
                 Time aStart = Math.Max(a.Previous.Start, schedule.Where(kvp => a.Type.Resources.Contains(kvp.Key)).Select(kvp => kvp.Value?.Last?.Value?.End ?? 0).Min());
@@ -230,17 +224,16 @@ namespace ServiceSiteScheduling.Initial
 
                 Time aDue = Math.Max(aEnd, a.End);
                 Time bDue = Math.Max(bEnd, b.End);
-
                 return bDue.CompareTo(aDue);
             };
 
-            // apply modified due date rule
+            // Apply modified due date rule
             while (candidates.Count > 0)
             {
-                // sort the candidates
+                // Sort the candidates
                 candidates.Sort(comparison);
 
-                // selected the best
+                // Select the best
                 int selectedindex = candidates.Count - 1;
                 var selected = candidates[selectedindex];
                 while (selectedindex > 0 && random.NextDouble() < 0.5 && comparison(candidates[selectedindex - 1], selected) == 0)
@@ -248,11 +241,9 @@ namespace ServiceSiteScheduling.Initial
                     selectedindex--;
                     selected = candidates[selectedindex];
                 }
-
-
                 ServiceResource resource = null;
                 Time t = int.MaxValue;
-                // find the machine with earliest completion time
+                // Find the machine with earliest completion time
                 foreach (var kvp in schedule.Where(kvp => selected.Type.Resources.Contains(kvp.Key)))
                     if ((kvp.Value?.Last?.Value?.End ?? 0) < t)
                     {
@@ -260,7 +251,7 @@ namespace ServiceSiteScheduling.Initial
                         t = kvp.Value?.Last?.Value?.End ?? 0;
                     }
 
-                // add it to the machine
+                // Add it to the machine
                 var machineschedule = schedule[resource];
                 selected.Start = Math.Max(t, selected.Previous.End);
                 if (earlieststart.ContainsKey(selected.Train))
@@ -290,20 +281,20 @@ namespace ServiceSiteScheduling.Initial
                     earlieststart[task.Train] = selected.End + Time.Minute;
 
 
-                // update route to service
+                // Update route to service
                 RoutingTask to = selected.Previous as RoutingTask;
                 to.Start = to.End = selected.Start;
                 to.ToTrack = selected.Track;
                 to.ToSide = selected.ArrivalSide;
                 moveheap.Insert(to);
 
-                // update route from service
+                // Update route from service
                 RoutingTask from = selected.Next as RoutingTask;
                 from.Start = from.End = selected.End;
                 from.FromTrack = selected.Track;
                 moveheap.Insert(from);
 
-                // add new candidate if available
+                // Add new candidate if available
                 orderedservices[selected.Train].RemoveFirst();
                 if (orderedservices[selected.Train].Count > 0)
                     candidates[selectedindex] = orderedservices[selected.Train].First.Value;
@@ -311,7 +302,7 @@ namespace ServiceSiteScheduling.Initial
                     candidates.RemoveAt(selectedindex);
             }
 
-            // Update departure routes
+            // Add routing task before departure (from null track)
             foreach (DepartureTask departure in departures)
             {
                 var routing = departure.Previous as DepartureRoutingTask;
@@ -319,11 +310,8 @@ namespace ServiceSiteScheduling.Initial
                     routing.Start = routing.End = Math.Max(routing.End, previous.Previous.End);
                 moveheap.Insert(routing);
             }
-
             var routinggraph = Routing.RoutingGraph.Construct();
-
             PlanGraph graph = new PlanGraph(matching, routinggraph, shunttrainunits, arrivals.ToArray(), departures.ToArray());
-
 
             // Connect movetasks
             MoveTask prev = null;
@@ -349,7 +337,7 @@ namespace ServiceSiteScheduling.Initial
             Dictionary<Track, int> space = new Dictionary<Track, int>();
             foreach (Track track in ProblemInstance.Current.Tracks)
                 space[track] = track.Length;
-
+            // Assign initial parking track before departure and add routing
             foreach (RoutingTask routing in routings)
             {
                 // Depart
@@ -434,8 +422,9 @@ namespace ServiceSiteScheduling.Initial
                         departure.ToSide = departure.Next.ArrivalSide = side;
                     }
                 }
+                if (debugLevel > 1)
+                    Console.WriteLine($"Set parking track on routing {routing} to parking track {parkingtrack}");
             }
-
             return graph;
         }
 
