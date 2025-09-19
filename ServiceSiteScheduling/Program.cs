@@ -81,7 +81,7 @@ namespace ServiceSiteScheduling
 
             else
             {
-                string directory = "setting_deque";
+                string directory = "setting_A";
                 Console.WriteLine($"No config file provided, running with default test files: {directory}");
                 Test_Location_Scenario_Parsing(
                     $"./database/TUSS-Instance-Generator/scenario_settings/{directory}/location_solver.json",
