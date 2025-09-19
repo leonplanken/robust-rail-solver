@@ -390,9 +390,9 @@ namespace ServiceSiteScheduling
 
             else
             {
-                Test_Location_Scenario_Parsing("./database/TUSS-Instance-Generator/scenario_settings/setting_A/location_solver.json", "./database/TUSS-Instance-Generator/setting_A/scenario_solver.json");
+                Test_Location_Scenario_Parsing("./database/TUSS-Instance-Generator/scenario_settings/setting_A/location_solver.json", "./database/TUSS-Instance-Generator/scenario_settings/setting_A/scenario_solver.json");
                 Console.WriteLine("***************** CreatePlan() *****************");
-                CreatePlan("./database/TUSS-Instance-Generator/scenario_settings/setting_A/location_solver.json", "/database/TUSS-Instance-Generator/setting_A/scenario_solver.json", "./database/TUSS-Instance-Generator/plan.json");
+                CreatePlan("./database/TUSS-Instance-Generator/scenario_settings/setting_A/location_solver.json", "./database/TUSS-Instance-Generator/scenario_settings/setting_A/scenario_solver.json", "./database/TUSS-Instance-Generator/plan.json");
             }
 
 
@@ -410,7 +410,7 @@ namespace ServiceSiteScheduling
 
             // If a seed was specified in the config file and it's value is not 0, then we can use the seed for deterministic plan creation
             Random random;
-            if (config.DeepLook.DeterministicPlanning != null && config.DeepLook.DeterministicPlanning.Seed != 0)
+            if (config != null && config.DeepLook.DeterministicPlanning != null && config.DeepLook.DeterministicPlanning.Seed != 0)
             {
                 random = new Random(config.DeepLook.DeterministicPlanning.Seed);
             }
