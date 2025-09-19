@@ -9,6 +9,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+defaults:
+  run:
+    working-directory: ./ServiceSiteScheduling
+
 jobs:
   build:
 
@@ -21,8 +25,8 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Restore dependencies
-      run: dotnet restore ServiceSiteScheduling/HIP.csproj
+      run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore ServiceSiteScheduling/HIP.csproj
-      # - name: Run
-      #   run: dotnet run --no-build --verbosity normal
+      run: dotnet build --no-restore HIP.csproj
+    - name: Run
+      run: dotnet run --no-build --verbosity normal
