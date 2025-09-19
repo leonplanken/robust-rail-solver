@@ -48,11 +48,6 @@ namespace ServiceSiteScheduling
                         {
                             tmpPathPlan = config.TemporaryPlanPath;
                         }
-                        if (!Directory.Exists(tmpPathPlan))
-                        {
-                            Directory.CreateDirectory(tmpPathPlan);
-                        }                        
-
 
                         if (config.Mode == "Standard")
                         {
@@ -107,6 +102,10 @@ namespace ServiceSiteScheduling
         //         a Simulated Annealing method to find the final schedle plan (Totally Ordered Graph)
         static void CreatePlan(string location_path, string scenario_path, string plan_path, Config config = null, int debugLevel = 0, string tmp_plan_path = "./tmp_plans/")
         {
+            if (!Directory.Exists(tmp_plan_path))
+            {
+                Directory.CreateDirectory(tmp_plan_path);
+            }
             foreach (var file in Directory.GetFiles(tmp_plan_path, "*.json"))
             {
                 File.Delete(file);
