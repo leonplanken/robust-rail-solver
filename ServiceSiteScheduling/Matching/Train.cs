@@ -22,7 +22,7 @@ namespace ServiceSiteScheduling.Matching
         }
         public override string ToString()
         {
-            return $"{this.Departure.Time}: {string.Join("|", this.Units.Select(unit => unit.ToString()))}";
+            return $"{this.Departure.Time}: ({string.Join("|", this.Units.Select(unit => unit.ToString()))})";
         }
     }
 }
