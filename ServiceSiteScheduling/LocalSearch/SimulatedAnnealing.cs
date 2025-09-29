@@ -435,7 +435,7 @@ namespace ServiceSiteScheduling.LocalSearch
                                 if (debugLevel > 1) { Console.WriteLine($"Cost of selected move: {selected.Cost}"); }
                             }
                             // Write JSON plan to file
-                            Plan plan_pb = this.Graph.GenerateOutputPB();
+                            Plan plan_pb = this.Graph.GenerateOutputJSONformat();
                             var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t"));
                             string jsonPlan = formatter.Format(plan_pb);
                             string current_plan = tmp_plan_path + "sa_plan_iteration" + iteration.ToString() + ".json";

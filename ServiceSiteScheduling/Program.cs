@@ -182,7 +182,6 @@ namespace ServiceSiteScheduling
                     Console.WriteLine("------------------------------");
                     Console.WriteLine(" Output Constraint Violations ");
                     Console.WriteLine("------------------------------");
-
                     sa.Graph.OutputConstraintViolations();
                     Console.WriteLine(sa.Graph.Cost);
                     Console.WriteLine("--------------------------");
@@ -208,7 +207,7 @@ namespace ServiceSiteScheduling
                 }
 
                 // Write JSON plan to file
-                Plan plan_pb = sa.Graph.GenerateOutputPB();
+                Plan plan_pb = sa.Graph.GenerateOutputJSONformat();
                 var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t")); 
                 string jsonPlan = formatter.Format(plan_pb);
                 File.WriteAllText(plan_path, jsonPlan);
@@ -320,7 +319,7 @@ namespace ServiceSiteScheduling
                 Console.WriteLine($"Generate JSON format plan");
                 Console.WriteLine("------------------------------");
                 // Write Plan to json file
-                Plan plan_pb = sa.Graph.GenerateOutputPB();
+                Plan plan_pb = sa.Graph.GenerateOutputJSONformat();
                 var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t")); 
                 string jsonPlan = formatter.Format(plan_pb);
                 File.WriteAllText(plan_path, jsonPlan);
@@ -853,7 +852,7 @@ namespace ServiceSiteScheduling
                     Console.WriteLine("---- Incoming Trains ----");
                     foreach (AlgoIface.IncomingTrain train in incomingTrains)
                     {
-                        Console.WriteLine("Parcking track " + train.FirstParkingTrackPart + " for train (id) " + train.Id + " at time " + train.Arrival);
+                        Console.WriteLine("Arrival track " + train.FirstParkingTrackPart + " for train (id) " + train.Id + " at time " + train.Arrival);
                     }
                 }
 
@@ -863,7 +862,7 @@ namespace ServiceSiteScheduling
                     Console.WriteLine("---- Outgoing Trains ----");
                     foreach (AlgoIface.TrainRequest train in outgoingTrains)
                     {
-                        Console.WriteLine("Parcking track " + train.LastParkingTrackPart + " for train (id) " + train.DisplayName + " at time " + train.Departure);
+                        Console.WriteLine("Departure track " + train.LastParkingTrackPart + " for train (id) " + train.DisplayName + " at time " + train.Departure);
 
                     }                    
                 }
