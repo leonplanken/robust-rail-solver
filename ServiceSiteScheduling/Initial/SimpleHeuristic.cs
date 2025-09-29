@@ -367,6 +367,8 @@ namespace ServiceSiteScheduling.Initial
                             routinggraph.RoutePossible(task.Train, track, Side.A, task.Next.ToTrack, Side.B) ||
                             routinggraph.RoutePossible(task.Train, track, Side.B, task.Next.ToTrack, Side.B)
                         )).ToArray();
+                    if (reachable.Count() == 0)
+                        throw new InvalidOperationException($"No routing possible for train {routing.Train} of length {routing.Train.Length} from previous track <{routing.Previous.Track}> with sufficient length and possible route.");
                     var possibletracks = reachable.Where(track => space[track] >= routing.Train.Length);
                     if (possibletracks.Count() == 0)
                         possibletracks = reachable;
