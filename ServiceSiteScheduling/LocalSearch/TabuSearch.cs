@@ -113,7 +113,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
                     // Write JSON plan to file
                     Plan plan_pb = this.Graph.GenerateOutputJSONformat();
-                    var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t"));
+                    var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true));
                     string jsonPlan = formatter.Format(plan_pb);
                     string current_plan = tmp_plan_path + "tabu_plan_iteration" + iteration.ToString() + ".json";
                     Console.WriteLine($"New best solution found at iteration {iteration}, writing plan to {current_plan}");

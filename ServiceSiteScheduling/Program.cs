@@ -41,12 +41,12 @@ namespace ServiceSiteScheduling
                         string tmpPathPlan = "";
                         if (config.TemporaryPlanPath is null or "")
                         {
-                            string currentDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                            tmpPathPlan = Path.Combine(currentDirectory, "tmp_plans");
+                            string currentDirectory = Directory.GetCurrentDirectory();
+                            tmpPathPlan = Path.Combine(currentDirectory, "tmp_plans") + "/";
                         }
                         else
                         {
-                            tmpPathPlan = config.TemporaryPlanPath;
+                            tmpPathPlan = config.TemporaryPlanPath + "/";
                         }
 
                         if (config.Mode == "Standard")
@@ -208,7 +208,7 @@ namespace ServiceSiteScheduling
 
                 // Write JSON plan to file
                 Plan plan_pb = sa.Graph.GenerateOutputJSONformat();
-                var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t")); 
+                var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true)); 
                 string jsonPlan = formatter.Format(plan_pb);
                 File.WriteAllText(plan_path, jsonPlan);
 
@@ -320,7 +320,7 @@ namespace ServiceSiteScheduling
                 Console.WriteLine("------------------------------");
                 // Write Plan to json file
                 Plan plan_pb = sa.Graph.GenerateOutputJSONformat();
-                var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t")); 
+                var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true)); 
                 string jsonPlan = formatter.Format(plan_pb);
                 File.WriteAllText(plan_path, jsonPlan);
                 Console.WriteLine("----------------------------------------------------------------------");
