@@ -188,23 +188,6 @@ namespace ServiceSiteScheduling.Solutions
                 }
                 move = move.NextMove;
             }
-            // if (this.POS == null)
-            // {
-            //     POS = new PartialOrderSchedule(start);
-            //     POS.InitializePOS();
-            //     POS.CreatePOS();
-            //     POS.DisplayInfrastructure();
-            //     POS.DisplayMovements();
-            //     POS.DisplayMoveLinksOfPOSMove(24, "trainUnit");
-            // }
-            // else
-            // {
-            //     if (this.testIndex == 100)
-            //     {
-            //         Console.WriteLine($"Iteration: {this.testIndex}");
-            //     }
-            //     this.testIndex++;
-            // }
         }
 
         public void ComputeTime(MoveTask start, Time time)
@@ -223,6 +206,9 @@ namespace ServiceSiteScheduling.Solutions
                         routing.Start = arrival.Start = arrival.ScheduledTime;
                         if (arrival.ArrivalSide == routing.FromSide)
                             routing.Start += routing.Train.ReversalDuration;
+                        if (routing.Start < time && !arrival.Track.CanPark)
+                            // throw new InvalidOperationException
+                            Console.WriteLine($"Forced shuntingunit {routing.Train} to wait after arriving at {routing.Start} because previous routing task {routing.Previous} ends at time {time}, but arrival track {arrival.Track} cannot be used for parking.");
                     }
                     else if (routing.Previous.TaskType == TrackTaskType.Service)
                         routing.Start = routing.Previous.Start + ((ServiceTask)routing.Previous).MinimumDuration;
@@ -317,8 +303,9 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
-        public void OutputTrainUnitSchedule()
+        public string OutputTrainUnitSchedule()
         {
+            string return_value = "";
             foreach (ShuntTrainUnit unit in this.ShuntUnits)
             {
                 string line = $"{unit.Name} : {unit.Arrival.Track.PrettyName} (Arrival {unit.Arrival.Start.ToMinuteString()} - {unit.Arrival.End.ToMinuteString()})";
@@ -329,8 +316,10 @@ namespace ServiceSiteScheduling.Solutions
                     line += $", {task.Track.PrettyName} ({(task as ServiceTask)?.Type.Name ?? (task is DepartureTask ? "departure" : "parking")} {task.Start.ToMinuteString()} - {task.End.ToMinuteString()})";
                     move = task.Next;
                 }
+                return_value += line + "\n";
                 Console.WriteLine(line);
             }
+            return return_value;
         }
 
         public void OutputConstraintViolations()

@@ -17,7 +17,7 @@ namespace ServiceSiteScheduling.LocalSearch
         public TabuSearch(Random random, int debugLevel = 0)
         {
             var graph = Initial.SimpleHeuristic.Construct(random, debugLevel);
-            graph.Cost = graph.ComputeModel();
+            graph.Cost = graph.ComputeModel();         
 
             this.Graph = graph;
             this.random = random;
@@ -36,6 +36,13 @@ namespace ServiceSiteScheduling.LocalSearch
         //@suppressConsoleOutput: enables extra logs
         public void Run(int iterations, int iterationsUntilReset, int tabuListLength, double bias = 0.75, int debugLevel = 0, string tmp_plan_path = "./tmp_plans/")
         {
+            // Write initial JSON plan to file
+            Plan plan_pb = this.Graph.GenerateOutputJSONformat();
+            var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true));
+            string jsonPlan = formatter.Format(plan_pb);
+            string current_plan = tmp_plan_path + "tabu_plan_initial.json";
+            File.WriteAllText(current_plan, jsonPlan);
+
             List<LocalSearchMove> moves = new List<LocalSearchMove>();
             moves.Add(new IdentityMove(this.Graph));
             int noimprovement = 0, iteration = 0, neighborsvisited = 0;
@@ -85,7 +92,6 @@ namespace ServiceSiteScheduling.LocalSearch
                 }
 
                 LocalSearchMove next = currentmoves.Min();
-
                 // If no moves are possible
                 if (next == null)
                 {
@@ -99,7 +105,6 @@ namespace ServiceSiteScheduling.LocalSearch
                     }
                     else
                         tabu.RemoveLast();
-
                     iteration++;
                     continue;
                 }
@@ -112,10 +117,9 @@ namespace ServiceSiteScheduling.LocalSearch
                     noimprovement = 0;
 
                     // Write JSON plan to file
-                    Plan plan_pb = this.Graph.GenerateOutputJSONformat();
-                    var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true));
-                    string jsonPlan = formatter.Format(plan_pb);
-                    string current_plan = tmp_plan_path + "tabu_plan_iteration" + iteration.ToString() + ".json";
+                    plan_pb = this.Graph.GenerateOutputJSONformat();
+                    jsonPlan = formatter.Format(plan_pb);
+                    current_plan = tmp_plan_path + "tabu_plan_iteration" + iteration.ToString() + ".json";
                     Console.WriteLine($"New best solution found at iteration {iteration}, writing plan to {current_plan}");
                     File.WriteAllText(current_plan, jsonPlan);
                 }
@@ -131,12 +135,10 @@ namespace ServiceSiteScheduling.LocalSearch
                         iteration++;
                         continue;
                     }
-
                     // If we did not improve the current solution
                     if (next.Cost.Cost(fullcost) >= current.Cost(fullcost))
                     {
                         List<LocalSearchMove> possiblemoves = new List<LocalSearchMove>();
-
                         bool selected = false;
                         if (this.random.NextDouble() < bias)
                         {
@@ -189,7 +191,6 @@ namespace ServiceSiteScheduling.LocalSearch
                             possiblemoves.AddRange(parkinginsertmoves);
                             possiblemoves.AddRange(parkingroutingtemporarymoves);
                             possiblemoves = possiblemoves.Where(m => (m.Cost?.Cost(fullcost) ?? double.PositiveInfinity) < current.Cost(fullcost) + 50).ToList();
-
                             if (possiblemoves.Count > 0)
                                 selected = true;
                         }
@@ -198,7 +199,6 @@ namespace ServiceSiteScheduling.LocalSearch
                         {
                             possiblemoves = currentmoves;
                         }
-
                         next = possiblemoves[this.random.Next(possiblemoves.Count)];
                     }
                 }
@@ -211,15 +211,12 @@ namespace ServiceSiteScheduling.LocalSearch
                 this.Graph.Cost = next.Execute();
                 next.Finish();
                 current = next.Cost;
-
                 if (iteration >= iterations)
                     break;
-
                 if (++iteration % 100 == 0 && debugLevel > 1) { Console.WriteLine($"Iteration {iteration}"); }
             }
 
             stopwatch.Stop();
-
             if (debugLevel > 0)
             {
                 this.Revert(moves, this.Graph.Cost.IsFeasible);
@@ -234,10 +231,8 @@ namespace ServiceSiteScheduling.LocalSearch
         protected void Revert(List<LocalSearchMove> moves, bool fullcost)
         {
             int min = moves.MinIndex(move => move.Cost.Cost(fullcost));
-
             for (int i = moves.Count - 1; i > min; i--)
                 this.Graph.Cost = moves[i].Revert();
-
             moves.RemoveRange(min + 1, moves.Count - min - 1);
         }
     }

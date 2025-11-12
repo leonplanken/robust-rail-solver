@@ -21,14 +21,13 @@ namespace ServiceSiteScheduling
                     {
                         config_file = arg.Substring("--config=".Length);
                         Console.WriteLine("Using config file: " + config_file);
-
                         if (!File.Exists(config_file))
                         {
                             Console.Error.WriteLine($"Error: Config file '{config_file}' not found.");
                             Environment.Exit(1);
                         }
-                        string yaml = File.ReadAllText(config_file);
 
+                        string yaml = File.ReadAllText(config_file);
                         var deserializer = new Deserializer();
                         Config config = deserializer.Deserialize<Config>(new StringReader(yaml));
 
@@ -55,9 +54,7 @@ namespace ServiceSiteScheduling
                             {
                                 Console.WriteLine("***************** Reading Location and Scenario *****************");
                             }
-
                             Test_Location_Scenario_Parsing(config.LocationPath, config.ScenarioPath, config.DebugLevel);
-
                             Console.WriteLine("***************** Creating a Plan *****************");
                             CreatePlan(config.LocationPath, config.ScenarioPath, config.PlanPath, config, config.DebugLevel, tmpPathPlan);
                         }
@@ -69,7 +66,6 @@ namespace ServiceSiteScheduling
                         {
                             Console.WriteLine("Unknown parameter for Mode");
                         }
-
                     }
                     else
                     {
@@ -78,7 +74,6 @@ namespace ServiceSiteScheduling
                     }
                 }
             }
-
             else
             {
                 string directory = "setting_A";
@@ -127,13 +122,12 @@ namespace ServiceSiteScheduling
                 Console.WriteLine("Using default random seed");
             }
 
-            // Random random = new Random();
             Solutions.SolutionCost best = null;
             Solutions.PlanGraph graph = null;
-
             ProblemInstance.Current = ProblemInstance.ParseJson(location_path, scenario_path);
 
             int solved = 0;
+            // TODO how many iterations should be used here?
             for (int i = 0; i < 1; i++)
             {
                 if (debugLevel > 0)
@@ -157,29 +151,18 @@ namespace ServiceSiteScheduling
                 else
                 {
                     sa.Run(Time.Hour, true, 150000, 15, 0.97, 2000, 2000, 0.2);
-
                 }
-
                 if (debugLevel > 0)
                 {
                     Console.WriteLine("--------------------------");
                     Console.WriteLine(" Output Movement Schedule ");
                     Console.WriteLine("--------------------------");
-
                     sa.Graph.OutputMovementSchedule();
                     Console.WriteLine("--------------------------");
-                    Console.WriteLine("");
-
-
-                    Console.WriteLine("----------------------------");
                     Console.WriteLine(" Output Train Unit Schedule ");
                     Console.WriteLine("----------------------------");
-                    Console.WriteLine("");
                     sa.Graph.OutputTrainUnitSchedule();
                     Console.WriteLine("----------------------------");
-
-                    Console.WriteLine("");
-                    Console.WriteLine("------------------------------");
                     Console.WriteLine(" Output Constraint Violations ");
                     Console.WriteLine("------------------------------");
                     sa.Graph.OutputConstraintViolations();
@@ -211,15 +194,16 @@ namespace ServiceSiteScheduling
                 var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true)); 
                 string jsonPlan = formatter.Format(plan_pb);
                 File.WriteAllText(plan_path, jsonPlan);
+                Console.WriteLine("Plan written to: " + plan_path);
 
+                File.WriteAllText(Path.ChangeExtension(plan_path, ".txt"), sa.Graph.OutputTrainUnitSchedule());
+                Console.WriteLine("Wrote resulting schedule for train units to text file: " + Path.ChangeExtension(plan_path, "_train_unit_schedule.txt"));
                 if (debugLevel > 1)
                 {
-                    Console.WriteLine("Plan written to: " + plan_path);
                     Console.WriteLine("----------------------------------------------------------------------");
                     sa.Graph.DisplayMovements();
                 }
                 sa.Graph.Clear();
-
                 Console.WriteLine("------------------ Found a plan ---------------------------");
                 sa.Graph.GetShortPlanStatistics();
             }

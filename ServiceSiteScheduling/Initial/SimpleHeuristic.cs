@@ -47,7 +47,7 @@ namespace ServiceSiteScheduling.Initial
                 if (debugLevel > 1)
                     Console.WriteLine($"Split part shunt train {st} to {string.Join(",", splitparts[st].Select(un => un.ToString()))}");
             }
-            // Add arrival and inital routing tasks
+            // Add arrival and initial routing tasks
             List<ArrivalTask> arrivals = new List<ArrivalTask>();
             List<RoutingTask> routings = new List<RoutingTask>();
             BinaryHeap<MoveTask> moveheap = new BinaryHeap<MoveTask>((a, b) =>
@@ -101,6 +101,8 @@ namespace ServiceSiteScheduling.Initial
                 arrival.Next = routing;
                 moveheap.Insert(routing);
                 routings.Add(routing);
+                if (debugLevel > 1)
+                    Console.WriteLine($"Add routing task {routing} from arrival on track {arrival.Track}at time {routing.Start}--{routing.End}");
 
                 foreach (ShuntTrain part in splitparts[shunttrain])
                     previousTask[part] = routing;
@@ -319,6 +321,8 @@ namespace ServiceSiteScheduling.Initial
             while (!moveheap.IsEmpty)
             {
                 MoveTask current = moveheap.ExtractFirst();
+                if (debugLevel > 1)
+                    Console.WriteLine($"<Intial> Add {order}th move task {current} at time {current.Start}--{current.End}");
                 
                 current.MoveOrder = order++;
                 current.PreviousMove = prev;

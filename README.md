@@ -20,7 +20,7 @@ Table of contents
 
 # Description 
 This tool is the `baseline version` of the research outcome of a published paper by Roel van den Broek: [A Local Search Algorithm for Train Unit Shunting with Service Scheduling](https://pubsonline.informs.org/doi/10.1287/trsc.2021.1090).
-The paper considers train unit shunting problem extended with service task scheduling. This problem originates from Dutch Railways, which is the main railway operator in the Netherlands. The study presents the first solution method covering all aspects of the shunting and scheduling problem. The problem consists of matching train units arriving on a shunting yard to departing trains, scheduling service tasks such as cleaning and maintenance on the available resources, and parking the trains on the available tracks such that the shunting yard can operate conflict-free. Partial order schedule representation that captures the full problem is also elaborated, and local search algorithm that utilizes the partial ordering has been applied. 
+The paper considers train unit shunting problem extended with service task scheduling. This problem originates from Dutch Railways, which is the main railway operator in the Netherlands. The study presents the first solution method covering all aspects of the shunting and scheduling problem. The problem consists of matching train units arriving at a shunting yard to departing trains, scheduling service tasks such as cleaning and maintenance on the available resources, and parking the trains on the available tracks such that the shunting yard can operate conflict-free. Partial order schedule representation that captures the full problem is also elaborated, and local search algorithm that utilizes the partial ordering has been applied. 
 An earlier contribution to that research paper is [Train Shunting and Service Scheduling: an integrated local search approach](https://studenttheses.uu.nl/handle/20.500.12932/24118).
 
 ### robust-rail-solver 
@@ -42,21 +42,6 @@ The plan produced by the solver can be further evaluated by [robust-rail-evaluat
 
 
 The [main program](Program.cs) contains several functions with different features.
-
-### Location Scenario Parsing
-
-It is advised to first call `Test_Location_Scenario_Parsing(string location_path, string scenario_path)` function:
-* It will test if the given location and scenario (json format) files can be parsed correctly into protobuf objects (`ProblemInstance`). As part of the test, the overall infrastructure of the location (e.g., track parts) will be displayed. If the parsing from `location_solver.json` `->` `protobuf location object` is successful, the json format location will be displayed. When the parsing from `scenario_solver.json` `->` `protobuf scenario object` is successful, the json format scenario will be displayed and some details about the Incoming and Outgoing trains.
-
-Usage of the parsing test:
-```bash
-Test_Location_Scenario_Parsing(string location_path, string scenario_path)
-```
-Example: 
-
-```bash
-Test_Location_Scenario_Parsing("./database/TUSS-Instance-Generator/scenario_settings/setting_A/location_solver.json", "./database/TUSS-Instance-Generator/setting_A/scenario_solver.json");
-```
 
 ### Create Plan with Tabu and Local Search methods - from configuration file
 
@@ -87,8 +72,8 @@ CreatePlan(string location_path, string scenario_path, string plan_path)
 
 * **Tabu Search parameters**:
     * **iterations**: maximum iterations in the searching algorithm if it is achieved the search ends
-    * **iterationsUntilReset**: the current solution should be improved until that number of iteration if this number is hit, the current solution cannot be improved -> the current solution is reverted to the original solution
-    * **tabuListLength**: length of the tabu search list containing LocalSearchMoves -> solution graphs
+    * **iterationsUntilReset**: the current solution should be improved until that number of iteration if this number is hit, the current solution cannot be improved → the current solution is reverted to the original solution
+    * **tabuListLength**: length of the tabu search list containing LocalSearchMoves → solution graphs
     * **bias**: restricted probability (e.g., 0.75)
     * **suppressConsoleOutput**: enables extra logs
 
@@ -101,9 +86,9 @@ CreatePlan(string location_path, string scenario_path, string plan_path)
     * **stopWhenFeasible**: stops search when it is feasible (bool)
     * **iterations**: maximum iterations in the searching algorithm if it is achieved the search ends
     * **t**: the T parameter in the equation P = exp([cost(a') - cost(b')]/T), where e T is a control parameter that will be decreased during the search to accept less deterioration in solution quality later on in the process
-    * **a**: the rate of the decrease of T (e.g., a=0.97 -> 3% of decrease every time q iteration has been achieved)
+    * **a**: the rate of the decrease of T (e.g., a=0.97 → 3% of decrease every time q iteration has been achieved)
     * **q**: number of iterations until the next decrease of T (e.g., 2000)
-    * **reset**: the current solution should be improved until that number of iteration if this number is hit, the current solution cannot be improved -> the current solution is reverted to the original solution (e.g., 2000)
+    * **reset**: the current solution should be improved until that number of iteration if this number is hit, the current solution cannot be improved → the current solution is reverted to the original solution (e.g., 2000)
     * **bias**: restricted probability (e.g., 0.4)
     * **suppressConsoleOutput**: enables extra logs
     * **intensifyOnImprovement**: enables further improvements
@@ -116,9 +101,24 @@ cd ServiceSiteScheduling
 dotnet run
 ```
 
+### Location Scenario Parsing
+
+It is advised to first call `Test_Location_Scenario_Parsing(string location_path, string scenario_path)` function:
+* It will test if the given location and scenario (json format) files can be parsed correctly into protobuf objects (`ProblemInstance`). As part of the test, the overall infrastructure of the location (e.g., track parts) will be displayed. If the parsing from `location_solver.json` `->` `protobuf location object` is successful, the json format location will be displayed. When the parsing from `scenario_solver.json` `->` `protobuf scenario object` is successful, the json format scenario will be displayed and some details about the Incoming and Outgoing trains.
+
+Usage of the parsing test:
+```bash
+Test_Location_Scenario_Parsing(string location_path, string scenario_path)
+```
+Example: 
+
+```bash
+Test_Location_Scenario_Parsing("./database/TUSS-Instance-Generator/scenario_settings/setting_A/location_solver.json", "./database/TUSS-Instance-Generator/setting_A/scenario_solver.json");
+```
+
 
 ## Validated scenarios
-Some of the scenarios were successfully solved by [robust-rail-solver](https://github.com/Robust-Rail-NL/robust-rail-solver) and the plans were validated by [robust-rail-evaluator](https://github.com/Robust-Rail-NL/robust-rail-evaluator). All the validated scenarios and location files are collected under [scenario-planning-inputs](https://github.com/Robust-Rail-NL/scenario-planning-inputs) repository. Nevertheless some of those plans are available in the `robust-rail-solver` as well. 
+Some of the scenarios were successfully solved by [robust-rail-solver](https://github.com/Robust-Rail-NL/robust-rail-solver) and the plans were validated by [robust-rail-evaluator](https://github.com/Robust-Rail-NL/robust-rail-evaluator). All the validated scenarios and location files are collected under [scenario-planning-inputs](https://github.com/Robust-Rail-NL/scenario-planning-inputs) repository. Nevertheless, some of those plans are available in the `robust-rail-solver` as well. 
 
 
 * [**Scenarios:**](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/)
@@ -150,18 +150,18 @@ Some of the scenarios were successfully solved by [robust-rail-solver](https://g
     - **location.json** - Kleine Binckhorst evaluator format
     - **location_solver.json** - Kleine Binckhorst solver format
     - **plan.json** - plan corresponding to the scenario
-    - **scenario_evaluator.json**  - 6 trains custom config evaluator format
-    - **scenario_solver.json**  - 6 trains custom config solver format
+    - **scenario_evaluator.json** - 6 trains custom config evaluator format
+    - **scenario_solver.json** - 6 trains custom config solver format
     - **vis_config.json** - emulator config for visualization (this is not functional)
 
 - **`setting_issue`**
     - **clean.sh** - script to clean the results
     - **config.json** - config for the evaluator
-    - **location.json** - [Small Yard - switch matter](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_invalid_endmove/switch.jpg) - switch decalration will result in different plans (valid/not valid) 
-    - **location_solver.json** - [Small Yard - switch matter](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_invalid_endmove/switch.jpg) - switch decalration will result in different plans (valid/not valid) 
+    - **location.json** - [Small Yard - switch matter](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_invalid_endmove/switch.jpg) - switch declaration will result in different plans (valid/not valid) 
+    - **location_solver.json** - [Small Yard - switch matter](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_known_problems/setting_invalid_endmove/switch.jpg) - switch declaration will result in different plans (valid/not valid) 
     - **plan.json** - plan corresponding to the scenario
-    - **scenario_evaluator.json**  - 2 trains custom config evaluator format
-    - **scenario_solver.json**  - 2 trains custom config solver format
+    - **scenario_evaluator.json** - 2 trains custom config evaluator format
+    - **scenario_solver.json** - 2 trains custom config solver format
     - **vis_config.json** - emulator config for visualization (this is not functional)
 
 - **`setting_known_problems`** - read more about these known problems in **Known Problems** section
@@ -356,7 +356,7 @@ In principle the robust-rail tools are built in a single Docker do ease the deve
 
 
 ## Building process - Dev-Container
-### Dev-Container setup
+### Dev-Container set up
 The usage of **[Dev-Container](https://code.visualstudio.com/docs/devcontainers/tutorial)** is highly recommended in macOS environment. Running **VS Code** inside a Docker container is useful, since it allows compiling and use cTORS without platform dependencies. In addition, **Dev-Container** allows to an easy to use dockerized development since the mounted `ctors` code base can be modified real-time in a docker environment via **VS Code**.
 
 * 1st - Install **Docker**
@@ -412,7 +412,7 @@ sudo apt install name-of-the-package
 ```
 
 ## Compile ProtoBuf
-In case the ProtoBuf structures must be modified (they can be found under [ProtoBuf](./ServiceSiteScheduling/ProtoBuf/)), then they must be compiled so the main program can call their functionalities.
+In case the ProtoBuf structures must be modified (they can be found under [ProtoBuf](./ServiceSiteScheduling/ProtoBuf/)), then they must be compiled, so the main program can call their functionalities.
 
 If first usage:
 
