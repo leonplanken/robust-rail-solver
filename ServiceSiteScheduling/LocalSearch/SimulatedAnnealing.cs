@@ -439,14 +439,17 @@ namespace ServiceSiteScheduling.LocalSearch
                             var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true));
                             string jsonPlan = formatter.Format(plan_pb);
                             string current_plan = tmp_plan_path + "sa_plan_iteration" + iteration.ToString() + ".json";
-                            Console.WriteLine($"New best solution found at iteration {iteration}, writing plan to {current_plan}");
+                            if (debugLevel > 0) Console.WriteLine($"New best solution found at iteration {iteration}, writing plan to {current_plan}");
                             File.WriteAllText(current_plan, jsonPlan);
                         }
                         else
                         {
-                            Console.WriteLine($"-----------------------------------------------------------------------");
-                            Console.WriteLine($"Break from simulated annealing: no feasible moves selected: {selected}");
-                            Console.WriteLine($"-----------------------------------------------------------------------");
+                            if (debugLevel > 0)
+                            {
+                                Console.WriteLine($"-----------------------------------------------------------------------");
+                                Console.WriteLine($"Break from simulated annealing: no feasible moves selected: {selected}");
+                                Console.WriteLine($"-----------------------------------------------------------------------");
+                            }
                             break;
                         }
                     }
@@ -463,9 +466,12 @@ namespace ServiceSiteScheduling.LocalSearch
 
                 if (iteration >= iterations || stopwatch.ElapsedMilliseconds > 1000 * maxduration || (stopWhenFeasible && this.Graph.Cost.IsFeasible))
                 {
-                    Console.WriteLine($"+++++++++++++++++++++++++++++++++++++++++++++++++++");
-                    Console.WriteLine($"Iteration {iteration}, graph cost is feasible");
-                    Console.WriteLine($"+++++++++++++++++++++++++++++++++++++++++++++++++++");
+                    if (debugLevel > 0)
+                    {
+                        Console.WriteLine($"+++++++++++++++++++++++++++++++++++++++++++++++++++");
+                        Console.WriteLine($"Iteration {iteration}, graph cost is feasible");
+                        Console.WriteLine($"+++++++++++++++++++++++++++++++++++++++++++++++++++");
+                    }
                     break;
                 }
 

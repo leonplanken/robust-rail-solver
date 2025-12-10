@@ -29,6 +29,7 @@ namespace ServiceSiteScheduling
 
                         string yaml = File.ReadAllText(config_file);
                         var deserializer = new Deserializer();
+                        // The config has a debugLevel value: 0=only important info, 1=some info, 2=all info
                         Config config = deserializer.Deserialize<Config>(new StringReader(yaml));
 
                         string directoryPath = Path.GetDirectoryName(config.PlanPath);
@@ -50,12 +51,12 @@ namespace ServiceSiteScheduling
 
                         if (config.Mode == "Standard")
                         {
-                            if (config.DebugLevel > 0)
+                            if (config.DebugLevel > 1)
                             {
                                 Console.WriteLine("***************** Reading Location and Scenario *****************");
                             }
                             Test_Location_Scenario_Parsing(config.LocationPath, config.ScenarioPath, config.DebugLevel);
-                            Console.WriteLine("***************** Creating a Plan *****************");
+                            if (config.DebugLevel > 1) Console.WriteLine("***************** Creating a Plan *****************");
                             CreatePlan(config.LocationPath, config.ScenarioPath, config.PlanPath, config, config.DebugLevel, tmpPathPlan);
                         }
                         else if (config.Mode == "DeepLook")
@@ -752,7 +753,7 @@ namespace ServiceSiteScheduling
         //          @scenario_path: path to the scenario (.json) file
         //          @debugLevel: 0 - no debug, 1 - some debug, 2 - full debug
         // Output:  Prints out the details about the location and scenario, and if the parsing was successful or not
-        static void Test_Location_Scenario_Parsing(string location_path, string scenario_path, int debugLevel = 0)
+        static void Test_Location_Scenario_Parsing(string location_path, string scenario_path, int debugLevel = 1)
         {
 
             ProblemInstance.Current = ProblemInstance.ParseJson(location_path, scenario_path);

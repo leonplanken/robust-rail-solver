@@ -120,7 +120,7 @@ namespace ServiceSiteScheduling.LocalSearch
                     plan_pb = this.Graph.GenerateOutputJSONformat();
                     jsonPlan = formatter.Format(plan_pb);
                     current_plan = tmp_plan_path + "tabu_plan_iteration" + iteration.ToString() + ".json";
-                    Console.WriteLine($"New best solution found at iteration {iteration}, writing plan to {current_plan}");
+                    if (debugLevel > 1) Console.WriteLine($"New best solution found at iteration {iteration}, writing plan to {current_plan}");
                     File.WriteAllText(current_plan, jsonPlan);
                 }
                 else

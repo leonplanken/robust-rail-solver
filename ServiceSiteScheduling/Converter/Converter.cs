@@ -38,7 +38,7 @@ namespace ServiceSiteScheduling
             {
                 Console.WriteLine("----------------------------------------------------------------------");
                 string saveTo = PathToStoreEvalScenario + "/" + FileName + ".json";
-                Console.WriteLine($" Save scenario for Evaluaor to {saveTo}");
+                Console.WriteLine($" Save scenario for Evaluator to {saveTo}");
 
                 File.WriteAllText(saveTo, json_scenario_evaluator);
                 Console.WriteLine("----------------------------------------------------------------------");

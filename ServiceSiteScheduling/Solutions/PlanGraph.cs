@@ -303,9 +303,10 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
-        public string OutputTrainUnitSchedule()
+        public string OutputTrainUnitSchedule(int debugLevel = 0)
         {
             string return_value = "";
+            if (debugLevel > 0) Console.WriteLine($"Plan per shunt unit ({this.ShuntUnits.Length}) in total");
             foreach (ShuntTrainUnit unit in this.ShuntUnits)
             {
                 string line = $"{unit.Name} : {unit.Arrival.Track.PrettyName} (Arrival {unit.Arrival.Start.ToMinuteString()} - {unit.Arrival.End.ToMinuteString()})";
@@ -317,7 +318,7 @@ namespace ServiceSiteScheduling.Solutions
                     move = task.Next;
                 }
                 return_value += line + "\n";
-                Console.WriteLine(line);
+                if (debugLevel > 0) Console.WriteLine(line);
             }
             return return_value;
         }
@@ -752,7 +753,7 @@ namespace ServiceSiteScheduling.Solutions
             MoveTask move = this.First;
             while (move != null)
             {
-                Console.WriteLine($"Now processing move {move.TaskType} of train {move.Train} at {(int)move.Start}--{(int)move.End} from {move.FromTrack} to {move.ToTrack}");
+                // Console.WriteLine($"Now processing move {move.TaskType} of train {move.Train} at {(int)move.Start}--{(int)move.End} from {move.FromTrack} to {move.ToTrack}");
                 if (move.TaskType == MoveTaskType.Standard)
                 {
                     var routing = (RoutingTask)move;
