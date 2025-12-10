@@ -78,9 +78,12 @@ namespace ServiceSiteScheduling.Trains
             foreach (var unit in units)
                 this.UnitBits[unit.Index] = true;
 
-             if(this.InStanding){
+            if (this.InStanding)
+            {
                 this.InStanding = true;
-            }else{
+            }
+            else
+            {
                 this.InStanding = inStanding;
             }
         }

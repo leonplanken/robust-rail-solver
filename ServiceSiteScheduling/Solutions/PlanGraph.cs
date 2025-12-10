@@ -54,7 +54,6 @@ namespace ServiceSiteScheduling.Solutions
                     continue;
 
                 TrackOccupation occupation = new SimpleTrackOccupation(track);
-
                 this.TrackOccupations[i] = occupation;
                 this.RoutingGraph.SuperVertices[track.Index].TrackOccupation = occupation;
 
@@ -63,12 +62,24 @@ namespace ServiceSiteScheduling.Solutions
                 if (ProblemInstance.Current.DeparturesOrdered.Select(t => t.Track).Contains(track))
                     outsidetrack[i] = true;
             }
-
             this.FreeServiceTaskFinished = new bool[ProblemInstance.Current.TrainUnits.Length][];
             for (int i = 0; i < ProblemInstance.Current.TrainUnits.Length; i++)
                 this.FreeServiceTaskFinished[i] = new bool[ProblemInstance.Current.FreeServices[i].Length];
-
             this.testIndex = 0;
+        }
+
+        public void GetShortPlanStatistics()
+        {
+            int number_moves = 0;
+            MoveTask count_move = this.First;
+            while (count_move != null)
+            {
+                number_moves++;
+                count_move = count_move.NextMove;
+            }
+            Console.WriteLine($"Number of Shunt Units: {this.ShuntUnits.Length}");
+            Console.WriteLine($"PlanGraph starting with arrival at track {this.FirstArrival.Track.PrettyName}");
+            Console.WriteLine($"Move Tasks: {number_moves}, Arrival Tasks: {this.ArrivalTasks.Length}, Departure Tasks: {this.DepartureTasks.Length}");
         }
 
         public void UpdateRoutingOrder()
@@ -137,30 +148,30 @@ namespace ServiceSiteScheduling.Solutions
                         this.ComputeRouting(routing, departurecrossingsA, departurecrossingsB);
 
                     if (routing.FromTrack == routing.ToTrack)
+                    {
                         foreach (TrackTask to in routing.Next)
                             to.Replace(routing.Previous);
+                    }
                     else
                     {
+                        if (routing.ToSide == Side.A)
                         {
-                            if (routing.ToSide == Side.A)
+                            for (int i = routing.Next.Count - 1; i >= 0; i--)
                             {
-                                for (int i = routing.Next.Count - 1; i >= 0; i--)
-                                {
-                                    var to = routing.Next[i];
-                                    to.Arrive(this.TrackOccupations[to.Track.Index]);
-                                    if (to is DepartureTask)
-                                        to.Depart(this.TrackOccupations[to.Track.Index]);
-                                }
+                                var to = routing.Next[i];
+                                to.Arrive(this.TrackOccupations[to.Track.Index]);
+                                if (to is DepartureTask)
+                                    to.Depart(this.TrackOccupations[to.Track.Index]);
                             }
-                            else
+                        }
+                        else
+                        {
+                            for (int i = 0; i < routing.Next.Count; i++)
                             {
-                                for (int i = 0; i < routing.Next.Count; i++)
-                                {
-                                    var to = routing.Next[i];
-                                    to.Arrive(this.TrackOccupations[to.Track.Index]);
-                                    if (to is DepartureTask)
-                                        to.Depart(this.TrackOccupations[to.Track.Index]);
-                                }
+                                var to = routing.Next[i];
+                                to.Arrive(this.TrackOccupations[to.Track.Index]);
+                                if (to is DepartureTask)
+                                    to.Depart(this.TrackOccupations[to.Track.Index]);
                             }
                         }
                     }
@@ -175,33 +186,9 @@ namespace ServiceSiteScheduling.Solutions
                         foreach (var task in departure.Previous)
                             task.Depart(this.TrackOccupations[task.Track.Index]);
                 }
-
                 move = move.NextMove;
             }
-
-            // if (this.POS == null)
-            // {
-            //     POS = new PartialOrderSchedule(start);
-            //     POS.InitializePOS();
-            //     POS.CreatePOS();
-            //     POS.DisplayInfrastructure();
-            //     POS.DisplayMovements();
-            //     POS.DisplayMoveLinksOfPOSMove(24, "trainUint");
-            // }
-            // else
-            // {
-
-            //     if (this.testIndex == 100)
-            //     {
-            //         Console.WriteLine($"Iteration: {this.testIndex}");
-            //     }
-            //     this.testIndex++;
-
-            // }
-
-
         }
-
 
         public void ComputeTime(MoveTask start, Time time)
         {
@@ -219,6 +206,9 @@ namespace ServiceSiteScheduling.Solutions
                         routing.Start = arrival.Start = arrival.ScheduledTime;
                         if (arrival.ArrivalSide == routing.FromSide)
                             routing.Start += routing.Train.ReversalDuration;
+                        if (routing.Start < time && !arrival.Track.CanPark)
+                            // throw new InvalidOperationException
+                            Console.WriteLine($"Forced shuntingunit {routing.Train} to wait after arriving at {routing.Start} because previous routing task {routing.Previous} ends at time {time}, but arrival track {arrival.Track} cannot be used for parking.");
                     }
                     else if (routing.Previous.TaskType == TrackTaskType.Service)
                         routing.Start = routing.Previous.Start + ((ServiceTask)routing.Previous).MinimumDuration;
@@ -271,7 +261,6 @@ namespace ServiceSiteScheduling.Solutions
                     departurerouting.Next.End = departurerouting.Next.Start + reversalduration;
                     time = departurerouting.End;
                 }
-
                 move = move.NextMove;
             }
         }
@@ -299,7 +288,6 @@ namespace ServiceSiteScheduling.Solutions
                 else
                 {
                     Console.WriteLine("--> Departure Task");
-
                     var departure = move as DepartureRoutingTask;
                     if (departure != null)
                     {
@@ -315,8 +303,10 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
-        public void OutputTrainUnitSchedule()
+        public string OutputTrainUnitSchedule(int debugLevel = 0)
         {
+            string return_value = "";
+            if (debugLevel > 0) Console.WriteLine($"Plan per shunt unit ({this.ShuntUnits.Length}) in total");
             foreach (ShuntTrainUnit unit in this.ShuntUnits)
             {
                 string line = $"{unit.Name} : {unit.Arrival.Track.PrettyName} (Arrival {unit.Arrival.Start.ToMinuteString()} - {unit.Arrival.End.ToMinuteString()})";
@@ -327,8 +317,10 @@ namespace ServiceSiteScheduling.Solutions
                     line += $", {task.Track.PrettyName} ({(task as ServiceTask)?.Type.Name ?? (task is DepartureTask ? "departure" : "parking")} {task.Start.ToMinuteString()} - {task.End.ToMinuteString()})";
                     move = task.Next;
                 }
-                Console.WriteLine(line);
+                return_value += line + "\n";
+                if (debugLevel > 0) Console.WriteLine(line);
             }
+            return return_value;
         }
 
         public void OutputConstraintViolations()
@@ -496,10 +488,8 @@ namespace ServiceSiteScheduling.Solutions
                         }
                     }
                 }
-
                 move = move.NextMove;
             }
-
             if (checkmaintenance)
                 cost.UnplannedMaintenance = ProblemInstance.Current.TrainUnits.Length - done.Count;
 
@@ -513,7 +503,6 @@ namespace ServiceSiteScheduling.Solutions
                     foreach (var unit in state.Task.Train.Units)
                         cost.ProblemTrains[unit.Index] = true;
             }
-
             return cost;
         }
 
@@ -542,10 +531,8 @@ namespace ServiceSiteScheduling.Solutions
                 {
                     if (train != null)
                         this.computeDepartureRoute(task, train, previous.Track, first, last);
-
                     train = null;
                 }
-
                 if (train == null)
                 {
                     newShuntTrainConstructed = false;
@@ -575,7 +562,6 @@ namespace ServiceSiteScheduling.Solutions
                 previous = tracktask;
                 next = currentnext;
             }
-
             if (train != null)
                 this.computeDepartureRoute(task, train, previous.Track, first, last);
         }
@@ -692,8 +678,12 @@ namespace ServiceSiteScheduling.Solutions
         public void Clear()
         {
             foreach (var location in ProblemInstance.Current.ServiceLocations)
+            {
                 if (location != null)
+                {
                     location.First = location.Last = null;
+                }
+            }
         }
 
         public void OutputForDemian()
@@ -750,187 +740,8 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
-        public void GenerateOutput(string path)
-        {
-            if (ProblemInstance.Current.InterfaceLocation == null || ProblemInstance.Current.InterfaceScenario == null)
-                return;
 
-            AlgoIface.Plan plan = new AlgoIface.Plan();
-
-            Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion = new Dictionary<ShuntTrain, AlgoIface.ShuntingUnit>();
-
-            MoveTask move = this.First;
-            while (move != null)
-            {
-                if (move.TaskType == MoveTaskType.Standard)
-                {
-                    var routing = (RoutingTask)move;
-                    var endtime = (ulong)routing.End;
-
-                    // Add split
-                    if (routing.IsSplit)
-                    {
-                        var splitaction = new AlgoIface.Action();
-                        splitaction.Location = routing.ToTrack.ID;
-                        splitaction.TaskType = new AlgoIface.TaskType();
-                        splitaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Split;
-                        splitaction.EndTime = endtime;
-                        splitaction.StartTime = endtime = (ulong)(routing.End - routing.Train.Units[0].Type.SplitDuration * (routing.Next.Count - 1));
-                        splitaction.ShuntingUnit = GetShuntUnit(move.Train, trainconversion);
-                        plan.Actions.Add(splitaction);
-
-                        // add parent-child relation
-                        foreach (var task in routing.Next)
-                        {
-                            var shuntingunit = GetShuntUnit(task.Train, trainconversion);
-                            splitaction.ShuntingUnit.ChildIDs.Add(shuntingunit.Id);
-                            shuntingunit.ParentIDs.Add(splitaction.ShuntingUnit.Id);
-                        }
-                    }
-
-                    // Add move
-                    if (move.Duration > 0)
-                    {
-                        var moveaction = new AlgoIface.Action();
-                        moveaction.Location = routing.FromTrack.ID;
-                        moveaction.TaskType = new AlgoIface.TaskType();
-                        moveaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Move;
-                        moveaction.StartTime = (ulong)routing.Start;
-                        moveaction.EndTime = endtime;
-                        moveaction.ShuntingUnit = GetShuntUnit(move.Train, trainconversion);
-
-                        Infrastructure previous = null;
-                        foreach (var arc in routing.Route.Arcs)
-                        {
-                            foreach (var infra in arc.Path.Path)
-                            {
-                                if (infra != previous)
-                                {
-                                    var resource = new AlgoIface.Resource();
-                                    resource.TrackPartId = infra.ID;
-                                    resource.Name = infra.ID.ToString();
-                                    moveaction.Resources.Add(resource);
-
-                                    previous = infra;
-                                }
-                            }
-                        }
-                        // remove first
-                        moveaction.Resources.RemoveAt(0);
-                        // add to plan
-                        plan.Actions.Add(moveaction);
-                    }
-                    else
-                    {
-                        // Zero move ? 
-
-
-                    }
-                    // Add task
-                    AddTrackAction(routing.Previous, trainconversion, plan);
-                }
-                else
-                {
-                    var departurerouting = (DepartureRoutingTask)move;
-                    var starttime = departurerouting.Start;
-
-                    foreach (var route in departurerouting.GetRoutes())
-                    {
-                        var tasks = departurerouting.GetPrevious(task => task.Train.UnitBits.Intersects(route.Train.UnitBits));
-                        var shuntingunit = GetShuntUnit(route.Train, trainconversion);
-
-                        // Add tasks
-                        foreach (var task in tasks)
-                            AddTrackAction(task, starttime, trainconversion, plan);
-
-                        // Add merge
-                        if (tasks.Count() > 1)
-                        {
-                            foreach (var task in tasks)
-                            {
-                                var mergeaction = new AlgoIface.Action();
-                                mergeaction.Location = task.Track.ID;
-                                mergeaction.TaskType = new AlgoIface.TaskType();
-                                mergeaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Combine;
-                                mergeaction.StartTime = (ulong)starttime;
-                                mergeaction.EndTime = (ulong)(starttime + departurerouting.Train.Units[0].Type.CombineDuration * (tasks.Count() - 1));
-                                mergeaction.ShuntingUnit = GetShuntUnit(task.Train, trainconversion);
-                                plan.Actions.Add(mergeaction);
-
-                                // add parent-child-relation
-                                mergeaction.ShuntingUnit.ChildIDs.Add(shuntingunit.Id);
-                                shuntingunit.ParentIDs.Add(mergeaction.ShuntingUnit.Id);
-                            }
-                            starttime += departurerouting.Train.Units[0].Type.CombineDuration * (tasks.Count() - 1);
-                        }
-
-                        // Add move
-                        var moveaction = new AlgoIface.Action();
-                        moveaction.Location = route.Tracks[0].ID;
-                        moveaction.TaskType = new AlgoIface.TaskType();
-                        moveaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Move;
-                        moveaction.StartTime = (ulong)starttime;
-                        moveaction.EndTime = (ulong)(starttime + route.Duration - departurerouting.Train.Units[0].Type.CombineDuration * (tasks.Count() - 1));
-                        moveaction.ShuntingUnit = shuntingunit;
-                        // add path
-                        Infrastructure previous = null;
-                        foreach (var arc in route.Arcs)
-                        {
-                            foreach (var infra in arc.Path.Path)
-                            {
-                                if (infra != previous)
-                                {
-                                    var resource = new AlgoIface.Resource();
-                                    resource.TrackPartId = infra.ID;
-                                    resource.Name = infra.ID.ToString();
-                                    moveaction.Resources.Add(resource);
-
-                                    previous = infra;
-                                }
-                            }
-                        }
-                        // remove first
-                        moveaction.Resources.RemoveAt(0);
-                        // add to plan
-                        plan.Actions.Add(moveaction);
-
-                        starttime += route.Duration;
-                    }
-
-                    var departureshuntunit = GetShuntUnit(departurerouting.Train, trainconversion);
-
-                    // Add merge
-                    if (departurerouting.GetRoutes().Count > 1)
-                    {
-                        foreach (var route in departurerouting.GetRoutes())
-                        {
-                            var mergeaction = new AlgoIface.Action();
-                            mergeaction.Location = departurerouting.Next.Track.ID;
-                            mergeaction.TaskType = new AlgoIface.TaskType();
-                            mergeaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Combine;
-                            mergeaction.StartTime = (ulong)starttime;
-                            mergeaction.EndTime = (ulong)departurerouting.End;
-                            mergeaction.ShuntingUnit = GetShuntUnit(route.Train, trainconversion);
-                            plan.Actions.Add(mergeaction);
-
-                            // add parent-child-relation
-                            mergeaction.ShuntingUnit.ChildIDs.Add(departureshuntunit.Id);
-                            departureshuntunit.ParentIDs.Add(mergeaction.ShuntingUnit.Id);
-                        }
-                    }
-
-                    // Add departure
-                    this.AddTrackAction(departurerouting.Next, trainconversion, plan);
-                }
-
-                move = move.NextMove;
-            }
-
-            using (var output = System.IO.File.Create(path))
-                plan.WriteTo(output);
-        }
-
-        public AlgoIface.Plan GenerateOutputPB()
+        public AlgoIface.Plan GenerateOutputJSONformat()
         {
             if (ProblemInstance.Current.InterfaceLocation == null || ProblemInstance.Current.InterfaceScenario == null)
                 return null;
@@ -942,6 +753,7 @@ namespace ServiceSiteScheduling.Solutions
             MoveTask move = this.First;
             while (move != null)
             {
+                // Console.WriteLine($"Now processing move {move.TaskType} of train {move.Train} at {(int)move.Start}--{(int)move.End} from {move.FromTrack} to {move.ToTrack}");
                 if (move.TaskType == MoveTaskType.Standard)
                 {
                     var routing = (RoutingTask)move;
@@ -1045,7 +857,7 @@ namespace ServiceSiteScheduling.Solutions
                         moveaction.TaskType = new AlgoIface.TaskType();
                         moveaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Move;
                         moveaction.StartTime = (ulong)starttime;
-                        moveaction.EndTime = (ulong)(starttime + route.Duration - departurerouting.Train.Units[0].Type.CombineDuration * (tasks.Count() - 1));
+                        moveaction.EndTime = (ulong)(starttime + route.Duration);
                         moveaction.ShuntingUnit = shuntingunit;
                         // add path
                         Infrastructure previous = null;
@@ -1069,12 +881,9 @@ namespace ServiceSiteScheduling.Solutions
                             moveaction.Resources.RemoveAt(0);
                         // add to plan
                         plan.Actions.Add(moveaction);
-
                         starttime += route.Duration;
                     }
-
                     var departureshuntunit = GetShuntUnit(departurerouting.Train, trainconversion);
-
                     // Add merge
                     if (departurerouting.GetRoutes().Count > 1)
                     {
@@ -1094,190 +903,11 @@ namespace ServiceSiteScheduling.Solutions
                             departureshuntunit.ParentIDs.Add(mergeaction.ShuntingUnit.Id);
                         }
                     }
-
                     // Add departure
                     this.AddTrackAction(departurerouting.Next, trainconversion, plan);
                 }
-
                 move = move.NextMove;
             }
-
-            return plan;
-        }
-
-
-        public AlgoIface.Plan GenerateOutputPB_extended()
-        {
-            if (ProblemInstance.Current.InterfaceLocation == null || ProblemInstance.Current.InterfaceScenario == null)
-                return null;
-
-            AlgoIface.Plan plan = new AlgoIface.Plan();
-
-            Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion = new Dictionary<ShuntTrain, AlgoIface.ShuntingUnit>();
-
-            MoveTask move = this.First;
-            while (move != null)
-            {
-                if (move.TaskType == MoveTaskType.Standard)
-                {
-                    var routing = (RoutingTask)move;
-                    var endtime = (ulong)routing.End;
-
-                    // Add split
-                    if (routing.IsSplit)
-                    {
-                        var splitaction = new AlgoIface.Action();
-                        splitaction.Location = routing.ToTrack.ID;
-                        splitaction.TaskType = new AlgoIface.TaskType();
-                        splitaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Split;
-                        splitaction.EndTime = endtime;
-                        splitaction.StartTime = endtime = (ulong)(routing.End - routing.Train.Units[0].Type.SplitDuration * (routing.Next.Count - 1));
-                        splitaction.ShuntingUnit = GetShuntUnit(move.Train, trainconversion);
-                        plan.Actions.Add(splitaction);
-
-                        // add parent-child relation
-                        foreach (var task in routing.Next)
-                        {
-                            var shuntingunit = GetShuntUnit(task.Train, trainconversion);
-                            splitaction.ShuntingUnit.ChildIDs.Add(shuntingunit.Id);
-                            shuntingunit.ParentIDs.Add(splitaction.ShuntingUnit.Id);
-                        }
-                    }
-
-                    // Add move
-
-                    var moveaction = new AlgoIface.Action();
-                    moveaction.Location = routing.FromTrack.ID;
-                    moveaction.TaskType = new AlgoIface.TaskType();
-                    moveaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Move;
-                    moveaction.StartTime = (ulong)routing.Start;
-                    moveaction.EndTime = endtime;
-                    moveaction.ShuntingUnit = GetShuntUnit(move.Train, trainconversion);
-
-                    Infrastructure previous = null;
-                    foreach (var arc in routing.Route.Arcs)
-                    {
-                        foreach (var infra in arc.Path.Path)
-                        {
-                            if (infra != previous)
-                            {
-                                var resource = new AlgoIface.Resource();
-                                resource.TrackPartId = infra.ID;
-                                resource.Name = infra.ID.ToString();
-                                moveaction.Resources.Add(resource);
-
-                                previous = infra;
-                            }
-                        }
-                    }
-                    if (moveaction.Resources.Count > 0)
-                    {
-                        // remove first
-                        moveaction.Resources.RemoveAt(0);
-                    }
-                    // add to plan
-                    plan.Actions.Add(moveaction);
-
-                    // Add task
-                    AddTrackAction(routing.Previous, trainconversion, plan);
-                }
-                else
-                {
-                    var departurerouting = (DepartureRoutingTask)move;
-                    var starttime = departurerouting.Start;
-
-                    foreach (var route in departurerouting.GetRoutes())
-                    {
-                        var tasks = departurerouting.GetPrevious(task => task.Train.UnitBits.Intersects(route.Train.UnitBits));
-                        var shuntingunit = GetShuntUnit(route.Train, trainconversion);
-
-                        // Add tasks
-                        foreach (var task in tasks)
-                            AddTrackAction(task, starttime, trainconversion, plan);
-
-                        // Add merge
-                        if (tasks.Count() > 1)
-                        {
-                            foreach (var task in tasks)
-                            {
-                                var mergeaction = new AlgoIface.Action();
-                                mergeaction.Location = task.Track.ID;
-                                mergeaction.TaskType = new AlgoIface.TaskType();
-                                mergeaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Combine;
-                                mergeaction.StartTime = (ulong)starttime;
-                                mergeaction.EndTime = (ulong)(starttime + departurerouting.Train.Units[0].Type.CombineDuration * (tasks.Count() - 1));
-                                mergeaction.ShuntingUnit = GetShuntUnit(task.Train, trainconversion);
-                                plan.Actions.Add(mergeaction);
-
-                                // add parent-child-relation
-                                mergeaction.ShuntingUnit.ChildIDs.Add(shuntingunit.Id);
-                                shuntingunit.ParentIDs.Add(mergeaction.ShuntingUnit.Id);
-                            }
-                            starttime += departurerouting.Train.Units[0].Type.CombineDuration * (tasks.Count() - 1);
-                        }
-
-                        // Add move
-                        var moveaction = new AlgoIface.Action();
-                        moveaction.Location = route.Tracks[0].ID;
-                        moveaction.TaskType = new AlgoIface.TaskType();
-                        moveaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Move;
-                        moveaction.StartTime = (ulong)starttime;
-                        moveaction.EndTime = (ulong)(starttime + route.Duration - departurerouting.Train.Units[0].Type.CombineDuration * (tasks.Count() - 1));
-                        moveaction.ShuntingUnit = shuntingunit;
-                        // add path
-                        Infrastructure previous = null;
-                        foreach (var arc in route.Arcs)
-                        {
-                            foreach (var infra in arc.Path.Path)
-                            {
-                                if (infra != previous)
-                                {
-                                    var resource = new AlgoIface.Resource();
-                                    resource.TrackPartId = infra.ID;
-                                    resource.Name = infra.ID.ToString();
-                                    moveaction.Resources.Add(resource);
-
-                                    previous = infra;
-                                }
-                            }
-                        }
-                        // remove first
-                        moveaction.Resources.RemoveAt(0);
-                        // add to plan
-                        plan.Actions.Add(moveaction);
-
-                        starttime += route.Duration;
-                    }
-
-                    var departureshuntunit = GetShuntUnit(departurerouting.Train, trainconversion);
-
-                    // Add merge
-                    if (departurerouting.GetRoutes().Count > 1)
-                    {
-                        foreach (var route in departurerouting.GetRoutes())
-                        {
-                            var mergeaction = new AlgoIface.Action();
-                            mergeaction.Location = departurerouting.Next.Track.ID;
-                            mergeaction.TaskType = new AlgoIface.TaskType();
-                            mergeaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Combine;
-                            mergeaction.StartTime = (ulong)starttime;
-                            mergeaction.EndTime = (ulong)departurerouting.End;
-                            mergeaction.ShuntingUnit = GetShuntUnit(route.Train, trainconversion);
-                            plan.Actions.Add(mergeaction);
-
-                            // add parent-child-relation
-                            mergeaction.ShuntingUnit.ChildIDs.Add(departureshuntunit.Id);
-                            departureshuntunit.ParentIDs.Add(mergeaction.ShuntingUnit.Id);
-                        }
-                    }
-
-                    // Add departure
-                    this.AddTrackAction(departurerouting.Next, trainconversion, plan);
-                }
-
-                move = move.NextMove;
-            }
-
             return plan;
         }
 
@@ -1287,46 +917,16 @@ namespace ServiceSiteScheduling.Solutions
             int i = 0;
             while (move != null)
             {
-                Console.WriteLine($"Move: {i} --- {move.TaskType}");
+                Console.WriteLine($"============Move: {i} --- {move.TaskType}===============");
                 Console.WriteLine($"Start time: {(int)move.Start} - End time: {(int)move.End}");
                 Console.WriteLine($"From : {move.FromTrack} -> To : {move.ToTrack} ({move.Train})");
 
                 var routing = move as RoutingTask;
-
                 if (routing != null)
                 {
-                    Console.WriteLine("Infrastrucre used (tracks):");
+                    Console.WriteLine("Infrastructure used (tracks):");
                     var tracks = routing.Route.Tracks;
                     var lastTrack = tracks.Last();
-
-                    Console.WriteLine("All Previous tasks:");
-                    foreach (TrackTask task in routing.AllPrevious)
-                    {
-                        Console.WriteLine($"---{task} - Start Time: {(int)task.Start} - End Time: {(int)task.End}----");
-                        if (task is ParkingTask parkingTask)
-                            Console.WriteLine("@It was a ParkingTask");
-                        if (task is ServiceTask serviceTask)
-                            Console.WriteLine("@It was a ServiceTask");
-                        if (task is ArrivalTask arrivalTask)
-                            Console.WriteLine("@It was a ArrivalTask");
-                        if (task is DepartureTask departureTask)
-                            Console.WriteLine("@It was a DepartureTask");
-                    }
-
-                    Console.WriteLine("All Next tasks:");
-                    foreach (TrackTask task in routing.AllNext)
-                    {
-                        Console.WriteLine($"---{task} - Start Time: {(int)task.Start} - End Time: {(int)task.End}----");
-                        if (task is ParkingTask parkingTask)
-                            Console.WriteLine("@It was a ParkingTask");
-                        if (task is ServiceTask serviceTask)
-                            Console.WriteLine("@It was a ServiceTask");
-                        if (task is ArrivalTask arrivalTask)
-                            Console.WriteLine("@It was a ArrivalTask");
-                        if (task is DepartureTask departureTask)
-                            Console.WriteLine("@It was a DepartureTask");
-                    }
-
                     foreach (Track track in tracks)
                     {
                         if (track != lastTrack)
@@ -1339,88 +939,64 @@ namespace ServiceSiteScheduling.Solutions
                         {
                             Console.Write($" A side {track.ASide} -->");
                             Console.Write($" {track} -->");
-
                             Console.Write($" B side {track.BSide} ");
-
-
-
                         }
-
+                        Console.Write("\n");
                     }
-                    Console.WriteLine("");
-
+                    Console.WriteLine("All Previous tasks:");
+                    foreach (TrackTask task in routing.AllPrevious)
+                    {
+                        Console.WriteLine($"---{task.GetType().Name}: {task} - Start Time: {(int)task.Start} - End Time: {(int)task.End}----");
+                    }
+                    Console.WriteLine("All Next tasks:");
+                    foreach (TrackTask task in routing.AllNext)
+                    {
+                        Console.WriteLine($"---{task.GetType().Name} {task} - Start Time: {(int)task.Start} - End Time: {(int)task.End}----");
+                    }
+                }
+                else if (move.TaskType is MoveTaskType.Departure)
+                {
+                    Console.WriteLine("All Previous tasks:");
+                    foreach (TrackTask task in move.AllPrevious)
+                    {
+                        Console.WriteLine($"---{task.GetType().Name} {task} - Start Time: {(int)task.Start} - End Time: {(int)task.End}{(task.Train.InStanding ? " (Instanding Train)" : "")}----");
+                    }
+                    Console.WriteLine("All Next tasks:");
+                    foreach (TrackTask task in move.AllNext)
+                    {
+                        Console.WriteLine($"---{task.GetType().Name} {task} - Start Time: {(int)task.Start} - End Time: {(int)task.End}{(task.Train.InStanding ? " (Outstanding Train)" : "")}----");
+                    }
+                    var routingDeparture = move as DepartureRoutingTask;
+                    if (routingDeparture != null)
+                    {
+                        var listOfRoutes = routingDeparture.GetRoutes();
+                        Console.WriteLine($"Infrastructure used (tracks) number of routes {listOfRoutes.Count}:");
+                        foreach (Route route in listOfRoutes)
+                        {
+                            var Tracks = route.Tracks;
+                            var lastTrack = Tracks.Last();
+                            foreach (Track track in Tracks)
+                            {
+                                if (track != lastTrack)
+                                {
+                                    Console.Write($" A side {track.ASide} -->");
+                                    Console.Write($" {track} --> ");
+                                    Console.Write($" B side {track.BSide} -->");
+                                }
+                                else
+                                {
+                                    Console.Write($" A side {track.ASide} -->");
+                                    Console.Write($" {track} -->");
+                                    Console.Write($" B side {track.BSide} ");
+                                }
+                            }
+                            Console.Write("\n");
+                        }
+                    }
                 }
                 else
                 {
-                    if (move.TaskType is MoveTaskType.Departure)
-                    {
-                        Console.WriteLine("All Previous tasks:");
-                        foreach (TrackTask task in move.AllPrevious)
-                        {
-                            Console.WriteLine($"---{task} - Start Time: {(int)task.Start} - End Time: {(int)task.End}----");
-                            if (task is ParkingTask parkingTask)
-                                Console.WriteLine("@It was a ParkingTask");
-                            if (task is ServiceTask serviceTask)
-                                Console.WriteLine("@It was a ServiceTask");
-                            if (task is ArrivalTask arrivalTask)
-                                Console.WriteLine(task.Train.InStanding ? "@It was a ArrivalTask - ** InStanding train ** " : "@It was a ArrivalTask");
-                            if (task is DepartureTask departureTask)
-                                Console.WriteLine(task.Train.InStanding ? "@It was a DepartureTask - ** OutStanding train **" : "@It was a DepartureTask");
-                        }
-
-                        Console.WriteLine("All Next tasks:");
-                        foreach (TrackTask task in move.AllNext)
-                        {
-                            Console.WriteLine($"---{task} - Start Time: {(int)task.Start} - End Time: {(int)task.End}----");
-                            if (task is ParkingTask parkingTask)
-                                Console.WriteLine("@It was a ParkingTask");
-                            if (task is ServiceTask serviceTask)
-                                Console.WriteLine("@It was a ServiceTask");
-                            if (task is ArrivalTask arrivalTask)
-                                Console.WriteLine(task.Train.InStanding ? "@It was a ArrivalTask - ** InStanding train **" : "@It was a ArrivalTask" );
-                            if (task is DepartureTask departureTask)
-                                Console.WriteLine(task.Train.InStanding ? "@It was a DepartureTask - ** OutStanding train **" : "@It was a DepartureTask");
-                        }
-
-
-
-                        var routingDeparture = move as DepartureRoutingTask;
-                        if (routingDeparture != null)
-                        {
-                            var listOfRoutes = routingDeparture.GetRoutes();
-
-                            Console.WriteLine($"Infrastrucre used (tracks) number of routes {listOfRoutes.Count}:");
-
-
-                            foreach (Route route in listOfRoutes)
-                            {
-                                var Tracks = route.Tracks;
-                                var lastTrack = Tracks.Last();
-
-                                foreach (Track track in Tracks)
-                                {
-
-                                    if (track != lastTrack)
-                                    {
-                                        Console.Write($" A side {track.ASide} -->");
-                                        Console.Write($" {track} --> ");
-                                        Console.Write($" B side {track.BSide} -->");
-                                    }
-                                    else
-                                    {
-                                        Console.Write($" A side {track.ASide} -->");
-                                        Console.Write($" {track} -->");
-
-                                        Console.Write($" B side {track.BSide} ");
-                                    }
-
-
-                                }
-                                Console.WriteLine("");
-                            }
-                            Console.WriteLine("");
-                        }
-                    }
+                    Console.WriteLine($"WARNING: did not recognize move type: {move.TaskType}");
                 }
                 i++;
                 move = move.NextMove;
@@ -1437,18 +1013,15 @@ namespace ServiceSiteScheduling.Solutions
             var trackaction = new AlgoIface.Action();
             trackaction.Location = task.Track.ID;
             trackaction.ShuntingUnit = GetShuntUnit(task.Train, trainconversion);
-
             trackaction.TaskType = new AlgoIface.TaskType();
             switch (task.TaskType)
             {
                 case TrackTaskType.Arrival:
                     var arrival = (ArrivalTask)task;
-
                     if (task.Train.IsItInStanding())
                     {
                         trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Arrive;
                         trackaction.ShuntingUnit = GetShuntUnit(task.Train, trainconversion, "InStanding");
-
                         trackaction.StartTime = trackaction.EndTime = (ulong)arrival.ScheduledTime;
 
                         var infra = task.Track.ASide;
@@ -1463,8 +1036,6 @@ namespace ServiceSiteScheduling.Solutions
                     else
                     {
                         trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Arrive;
-
-
                         trackaction.StartTime = trackaction.EndTime = (ulong)arrival.ScheduledTime;
 
                         var gatewayconnection = ProblemInstance.Current.GatewayConversion[task.Track.ID];
@@ -1502,7 +1073,6 @@ namespace ServiceSiteScheduling.Solutions
                     break;
                 case TrackTaskType.Service:
                     var service = (ServiceTask)task;
-
                     if (service.Start > service.Previous.End)
                     {
                         var previousparking = new AlgoIface.Action();
@@ -1514,11 +1084,9 @@ namespace ServiceSiteScheduling.Solutions
                         previousparking.EndTime = (ulong)service.Start;
                         plan.Actions.Add(previousparking);
                     }
-
                     trackaction.TaskType.Other = service.Type.Name;
                     trackaction.StartTime = (ulong)service.Start;
                     trackaction.EndTime = trackaction.StartTime + (ulong)service.MinimumDuration;
-
                     if (endtime - service.Start > service.MinimumDuration)
                     {
                         var nextparking = new AlgoIface.Action();
@@ -1530,7 +1098,6 @@ namespace ServiceSiteScheduling.Solutions
                         nextparking.EndTime = (ulong)endtime;
                         plan.Actions.Add(nextparking);
                     }
-
                     var facilityresource = new AlgoIface.Resource();
                     facilityresource.FacilityId = ProblemInstance.Current.FacilityConversion[service.Type].Id;
                     facilityresource.Name = ProblemInstance.Current.FacilityConversion[service.Type].Id.ToString();
@@ -1542,14 +1109,11 @@ namespace ServiceSiteScheduling.Solutions
                         trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Exit;
                         trackaction.ShuntingUnit = GetShuntUnit(task.Train, trainconversion, "OutStanding");
                     }
-
                     else
                     {
                         trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Exit;
-
                     }
                     trackaction.StartTime = trackaction.EndTime = (ulong)task.End;
-
                     if (!task.Train.IsItInStanding())
                     {
                         var gatewayconnection = ProblemInstance.Current.GatewayConversion[task.Track.ID];
@@ -1570,7 +1134,6 @@ namespace ServiceSiteScheduling.Solutions
                     else
                     {
                         // trackaction.ShuntingUnit.StandingType = "OutStanding";
-
                         // TODO: discuss if this should be different, it might be the case that the evaluator needs a more explicit leaving track part A or B
                         // proabably in the evaluator we need a relaxation on the verification of the track part -> normally it should be a bumper
                         var infra = task.Track.ASide;
@@ -1581,17 +1144,14 @@ namespace ServiceSiteScheduling.Solutions
                             resource.Name = infra.ID.ToString();
                             trackaction.Resources.Add(resource);
                         }
-
                     }
                     break;
             }
             plan.Actions.Add(trackaction);
-
         }
 
         private AlgoIface.ShuntingUnit GetShuntUnit(ShuntTrain train, Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion, string _standingType = "")
         {
-
             AlgoIface.ShuntingUnit shuntingunit = null;
             if (!trainconversion.TryGetValue(train, out shuntingunit))
             {
@@ -1599,9 +1159,6 @@ namespace ServiceSiteScheduling.Solutions
                 foreach (var unit in train.Units)
                     shuntingunit.Members.Add(ProblemInstance.Current.TrainUnitConversion[unit.Base]);
                 shuntingunit.Id = ((trainconversion.Count > 0 ? trainconversion.Max(kvp => int.Parse(kvp.Value.Id)) : -1) + 1).ToString();
-
-
-
                 if (string.IsNullOrEmpty(_standingType))
                 {
                     shuntingunit.StandingType = "";
@@ -1611,34 +1168,24 @@ namespace ServiceSiteScheduling.Solutions
                     shuntingunit.StandingType = _standingType;
                 }
                 trainconversion[train] = shuntingunit;
-
             }
             else
             {
                 var _shuntingunit = new AlgoIface.ShuntingUnit();
-
                 _shuntingunit.MergeFrom(shuntingunit);
 
                 if (string.IsNullOrEmpty(_standingType))
                 {
                     _shuntingunit.StandingType = "";
-
                     trainconversion[train] = _shuntingunit;
-
                 }
                 else
                 {
                     _shuntingunit.StandingType = _standingType;
-
                     trainconversion[train] = _shuntingunit;
-
                 }
                 return _shuntingunit;
             }
-
-
-
-
             return shuntingunit;
         }
     }

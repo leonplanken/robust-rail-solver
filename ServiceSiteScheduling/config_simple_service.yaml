@@ -1,9 +1,8 @@
-
-LocationPath: "/workspace/scenario-planning-inputs/Scenario_settings/setting_B/location_solver.json"
-ScenarioPath: "/workspace/scenario-planning-inputs/Scenario_settings/setting_B/scenario_solver.json"
-PlanPath: "/workspace/scenario-planning-inputs/Scenario_settings/setting_B/plan.json"
+LocationPath: "/workspace/scenario-planning-inputs/Scenario_settings/SimpleService/location.json"
+ScenarioPath: "/workspace/scenario-planning-inputs/Scenario_settings/SimpleService/scenario_solver.json"
+PlanPath: "/workspace/scenario-planning-inputs/Scenario_settings/SimpleService/plan.json"
 Mode: "Standard" #Standard or DeepLook
-DebugLevel: 1
+DebugLevel: 2
 
 TabuSearch:
   Iterations: 40

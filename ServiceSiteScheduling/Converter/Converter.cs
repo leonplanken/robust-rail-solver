@@ -22,7 +22,7 @@ namespace ServiceSiteScheduling
 
         public bool StoreScenarioEvaluator(string FileName)
         {
-            var formatter = new JsonFormatter(new JsonFormatter.Settings(true));
+            var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true));
             string json_scenario_evaluator = formatter.Format(InterfaceScenarioEvaluator);
 
             // string json_scenario_evaluator = JsonFormatter.Default.Format(InterfaceScenarioEvaluator);
@@ -38,7 +38,7 @@ namespace ServiceSiteScheduling
             {
                 Console.WriteLine("----------------------------------------------------------------------");
                 string saveTo = PathToStoreEvalScenario + "/" + FileName + ".json";
-                Console.WriteLine($" Save scenario for Evaluaor to {saveTo}");
+                Console.WriteLine($" Save scenario for Evaluator to {saveTo}");
 
                 File.WriteAllText(saveTo, json_scenario_evaluator);
                 Console.WriteLine("----------------------------------------------------------------------");
@@ -88,7 +88,7 @@ namespace ServiceSiteScheduling
         // under a differnet name
         public bool StoreScenarioSolver(string FileName)
         {
-            var formatter = new JsonFormatter(new JsonFormatter.Settings(true));
+            var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true));
             string json_scenario_solver = formatter.Format(ProblemInstanceSolver.InterfaceScenario);
 
             String PathToStoreSolverScenario = PathToStoreEvalScenario;
@@ -121,7 +121,7 @@ namespace ServiceSiteScheduling
         }
         public void PrintScenarioEvaluator()
         {
-            var formatter = new JsonFormatter(new JsonFormatter.Settings(true));
+            var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true));
             string json_parsed = formatter.Format(InterfaceScenarioEvaluator);
             // string json_parsed = JsonFormatter.Default.Format(InterfaceScenarioEvaluator);
 

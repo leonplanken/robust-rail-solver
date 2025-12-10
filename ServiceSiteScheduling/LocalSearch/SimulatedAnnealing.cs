@@ -1,11 +1,9 @@
 ﻿using ServiceSiteScheduling.Solutions;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using ServiceSiteScheduling.Utilities;
 using ServiceSiteScheduling.Tasks;
-using System.Runtime.CompilerServices;
+using Google.Protobuf;
+using AlgoIface;
 
 namespace ServiceSiteScheduling.LocalSearch
 {
@@ -194,9 +192,8 @@ namespace ServiceSiteScheduling.LocalSearch
         // @reset: the current solution should be improved until that number of iteration if this number is hit, the current solution 
         // cannot be improved -> the current solution is reverted to the original solution
         // @bias: Restricted probability (e.g., 0.4)
-        // @suppressConsoleOutput: enables extra logs
         // @intensifyOnImprovement: enables further improvments
-        public void Run(Time maxduration, bool stopWhenFeasible, int iterations, double t, double a, int q, int reset, double bias = 0.4, bool suppressConsoleOutput = false, bool intensifyOnImprovement = false)
+        public void Run(Time maxduration, bool stopWhenFeasible, int iterations, double t, double a, int q, int reset, double bias = 0.4, int debugLevel = 0, bool intensifyOnImprovement = false, string tmp_plan_path = "./tmp_plans/")
         {
             double T = t, alpha = a;
             int Q = q, iterationsUntilReset = reset;
@@ -376,8 +373,7 @@ namespace ServiceSiteScheduling.LocalSearch
                             {
                                 bestcost = move.Cost;
                                 noimprovement = 0;
-                                if (!suppressConsoleOutput)
-                                    Console.WriteLine(move.Cost);
+                                if (debugLevel > 1) { Console.WriteLine($"Cost of move: {move.Cost}"); }
                                 previousimproved = true;
                             }
                             break;
@@ -436,13 +432,26 @@ namespace ServiceSiteScheduling.LocalSearch
                             {
                                 bestcost = current;
                                 noimprovement = 0;
-                                if (!suppressConsoleOutput)
-                                    Console.WriteLine(selected.Cost);
+                                if (debugLevel > 1) { Console.WriteLine($"Cost of selected move: {selected.Cost}"); }
                             }
+                            // Write JSON plan to file
+                            Plan plan_pb = this.Graph.GenerateOutputJSONformat();
+                            var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true));
+                            string jsonPlan = formatter.Format(plan_pb);
+                            string current_plan = tmp_plan_path + "sa_plan_iteration" + iteration.ToString() + ".json";
+                            if (debugLevel > 0) Console.WriteLine($"New best solution found at iteration {iteration}, writing plan to {current_plan}");
+                            File.WriteAllText(current_plan, jsonPlan);
                         }
                         else
-                            Console.WriteLine("++++++++++++++++++++++++++++ BREAK 3 ++++++++++++++++++++++");
-                        break;
+                        {
+                            if (debugLevel > 0)
+                            {
+                                Console.WriteLine($"-----------------------------------------------------------------------");
+                                Console.WriteLine($"Break from simulated annealing: no feasible moves selected: {selected}");
+                                Console.WriteLine($"-----------------------------------------------------------------------");
+                            }
+                            break;
+                        }
                     }
                 }
                 previousimproved = false;
@@ -457,29 +466,28 @@ namespace ServiceSiteScheduling.LocalSearch
 
                 if (iteration >= iterations || stopwatch.ElapsedMilliseconds > 1000 * maxduration || (stopWhenFeasible && this.Graph.Cost.IsFeasible))
                 {
-                    Console.WriteLine("++++++++++++++++++++++++++++ BREAK 2 ++++++++++++++++++++++");
-                    Console.WriteLine($" iteration {iteration}, graph cost is feasible {this.Graph.Cost.IsFeasible}");
+                    if (debugLevel > 0)
+                    {
+                        Console.WriteLine($"+++++++++++++++++++++++++++++++++++++++++++++++++++");
+                        Console.WriteLine($"Iteration {iteration}, graph cost is feasible");
+                        Console.WriteLine($"+++++++++++++++++++++++++++++++++++++++++++++++++++");
+                    }
                     break;
                 }
 
                 if (++iteration % Q == 0)
                     T *= alpha;
 
-                if (iteration % 1000 == 0 && !suppressConsoleOutput)
-                    Console.WriteLine($"{iteration} {T}");
+                if (iteration % 1000 == 0 && debugLevel > 1)
+                    Console.WriteLine($"Iteration {iteration} and temperature {T}");
             }
 
             stopwatch.Stop();
 
             this.Revert(moves, this.Graph.Cost.IsFeasible);
-            if (!suppressConsoleOutput)
-            {
-                Console.WriteLine("-----------------------");
-                Console.WriteLine($"{this.Graph.ComputeModel()}");
-                Console.WriteLine("-----------------------");
-                Console.WriteLine($"Finished after {(stopwatch.ElapsedMilliseconds / (double)1000).ToString("N2")} seconds");
-                Console.WriteLine($"Neighbors visited = {neighbors}");
-            }
+            Console.WriteLine($"Cost of solution: {this.Graph.ComputeModel()}");
+            Console.WriteLine($"Finished after {(stopwatch.ElapsedMilliseconds / (double)1000).ToString("N2")} seconds");
+            Console.WriteLine($"Neighbors visited: {neighbors}");
         }
 
         protected void Revert(List<LocalSearchMove> moves, bool fullcost, SolutionCost best = null)

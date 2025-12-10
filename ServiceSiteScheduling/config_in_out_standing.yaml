@@ -1,8 +1,8 @@
 
-LocationPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_seed/location_solver.json"
-ScenarioPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_seed/scenario_solver.json"
-PlanPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_seed/plan.json"
-Mode: "DeepLook" #Standard or DeepLook
+LocationPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_in_out_standing/location_solver.json"
+ScenarioPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_in_out_standing/scenario_solver.json"
+PlanPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_in_out_standing/plan.json"
+Mode: "Standard" #Standard or DeepLook
 
 
 TabuSearch:

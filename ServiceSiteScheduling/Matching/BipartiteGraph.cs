@@ -406,7 +406,7 @@ namespace ServiceSiteScheduling.Matching
 
         public override string ToString()
         {
-            return $"{this.Index} {this.Unit}";
+            return $"Arrival index {this.Index} {this.Unit}";
         }
     }
 
@@ -423,7 +423,7 @@ namespace ServiceSiteScheduling.Matching
 
         public override string ToString()
         {
-            return $"{this.Index} {this.Unit}";
+            return $"Departure index {this.Index} {this.Unit}";
         }
     }
 

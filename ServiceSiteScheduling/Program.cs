@@ -3,24 +3,15 @@ using YamlDotNet.Serialization;
 using Google.Protobuf;
 using AlgoIface;
 using System.Text.Json;
-using System;
 using System.Diagnostics;
-using System.Security.Cryptography.X509Certificates;
-using System.Collections;
-using Microsoft.VisualBasic;
-using System.Runtime.CompilerServices;
-using System.Numerics;
-
 
 namespace ServiceSiteScheduling
 {
     class Program
     {
-
         // Method: Run the program from a config file. This is the entry point of the application
         static void Main(string[] args)
         {
-
             if (args.Length != 0)
             {
                 string config_file = "";
@@ -29,8 +20,7 @@ namespace ServiceSiteScheduling
                     if (arg.StartsWith("--config="))
                     {
                         config_file = arg.Substring("--config=".Length);
-
-
+                        Console.WriteLine("Using config file: " + config_file);
                         if (!File.Exists(config_file))
                         {
                             Console.Error.WriteLine($"Error: Config file '{config_file}' not found.");
@@ -38,365 +28,66 @@ namespace ServiceSiteScheduling
                         }
 
                         string yaml = File.ReadAllText(config_file);
-
                         var deserializer = new Deserializer();
+                        // The config has a debugLevel value: 0=only important info, 1=some info, 2=all info
                         Config config = deserializer.Deserialize<Config>(new StringReader(yaml));
+
+                        string directoryPath = Path.GetDirectoryName(config.PlanPath);
+                        if (!Directory.Exists(directoryPath) && directoryPath != null)
+                        {
+                            Directory.CreateDirectory(directoryPath);
+                        }
+
+                        string tmpPathPlan = "";
+                        if (config.TemporaryPlanPath is null or "")
+                        {
+                            string currentDirectory = Directory.GetCurrentDirectory();
+                            tmpPathPlan = Path.Combine(currentDirectory, "tmp_plans") + "/";
+                        }
+                        else
+                        {
+                            tmpPathPlan = config.TemporaryPlanPath + "/";
+                        }
+
                         if (config.Mode == "Standard")
                         {
-                            Console.WriteLine("***************** Test_Location_Scenario_Parsing() *****************");
-
-                            Test_Location_Scenario_Parsing(config.LocationPath, config.ScenarioPath);
-
-                            Console.WriteLine("***************** CreatePlan() *****************");
-                            CreatePlan(config.LocationPath, config.ScenarioPath, config.PlanPath, config);
-
+                            if (config.DebugLevel > 1)
+                            {
+                                Console.WriteLine("***************** Reading Location and Scenario *****************");
+                            }
+                            Test_Location_Scenario_Parsing(config.LocationPath, config.ScenarioPath, config.DebugLevel);
+                            if (config.DebugLevel > 1) Console.WriteLine("***************** Creating a Plan *****************");
+                            CreatePlan(config.LocationPath, config.ScenarioPath, config.PlanPath, config, config.DebugLevel, tmpPathPlan);
                         }
                         else if (config.Mode == "DeepLook")
                         {
-                            Console.WriteLine("***************** Test_Location_Scenario_Parsing() *****************");
-
-                            Test_Location_Scenario_Parsing(config.LocationPath, config.ScenarioPath);
-
-
-
-                            // Contains all the tested scenario cases and the plan evaluation results [valid, not valid]  
-                            Dictionary<string, string> ResultSummary = new Dictionary<string, string>();
-
-                            Dictionary<string, string[]> ResultSummaryWithSeed = new Dictionary<string, string[]>();
-                            string scenarioTestCase = "";
-
-                            int testCases = config.DeepLook.TestCases;
-
-                            ulong timeToAjustCase0 = 0;
-                            ulong timeToAjustCase1 = 0;
-                            ulong timeToAjustCase2 = 0;
-                            ulong timeToAjustCase3 = 0;
-
-                            ulong consAmount = 300;
-
-                            // If teskCases is 0 and LookForSeed is true the scenario is not modified, but actually the seed is modified
-                            // it might be the case that a plan cannot be found because of the choosen random number and not
-                            // not because of the constraints in the scenarion
-                            if (testCases > 0 || config.DeepLook.DeterministicPlanning.LookForSeed)
-                            {
-                                bool validPlanFound = false;
-                                int itTest = 0;
-                                while ((validPlanFound == false) && (itTest < config.DeepLook.MaxTest))
-                                {
-
-                                    for (int testCase = -1; testCase < testCases; testCase++)
-                                    {
-
-
-                                        Console.WriteLine("***************** CreatePlan() *****************");
-                                        ProblemInstance.Current = ProblemInstance.ParseJson(config.LocationPath, config.ScenarioPath);
-
-                                        int numberOfArrivals = ProblemInstance.Current.ArrivalsOrdered.Count();
-
-                                        // It is a simple example in which the arrival and departure times are modified
-                                        if (testCase != -1)
-                                        {
-
-                                            switch (testCase % (numberOfArrivals + 1))
-                                            {
-                                                case 0:
-                                                    // Test case: Increase the time of arrival trains, but not the departure trains' 
-                                                    // timeToAjustCase0 = timeToAjustCase0 + consAmount;
-                                                    foreach (var arrivalTrain in ProblemInstance.Current.InterfaceScenario.In.Trains)
-                                                    {
-                                                        arrivalTrain.Arrival = arrivalTrain.Arrival + timeToAjustCase0;
-                                                        arrivalTrain.Departure = arrivalTrain.Departure + timeToAjustCase0;
-                                                    }
-                                                    break;
-                                                case 1:
-                                                    // Test case: Increase the time of departure trains, but not the arrival trains'
-                                                    timeToAjustCase1 = timeToAjustCase1 + consAmount;
-                                                    ProblemInstance.Current.InterfaceScenario.EndTime = ProblemInstance.Current.InterfaceScenario.EndTime + timeToAjustCase1;
-
-                                                    foreach (var departureTrain in ProblemInstance.Current.InterfaceScenario.Out.TrainRequests)
-                                                    {
-                                                        departureTrain.Arrival = departureTrain.Arrival + timeToAjustCase1;
-                                                        departureTrain.Departure = departureTrain.Departure + timeToAjustCase1;
-                                                    }
-
-                                                    break;
-                                                case 2:
-                                                    // Test case: Increase the time of arrival trains, and the departure trains'
-                                                    timeToAjustCase2 = timeToAjustCase2 + consAmount;
-                                                    ProblemInstance.Current.InterfaceScenario.EndTime = ProblemInstance.Current.InterfaceScenario.EndTime + timeToAjustCase2;
-
-                                                    foreach (var arrivalTrain in ProblemInstance.Current.InterfaceScenario.In.Trains)
-                                                    {
-                                                        arrivalTrain.Arrival = arrivalTrain.Arrival + timeToAjustCase1;
-                                                        arrivalTrain.Departure = arrivalTrain.Departure + timeToAjustCase1;
-                                                    }
-
-                                                    foreach (var departureTrain in ProblemInstance.Current.InterfaceScenario.Out.TrainRequests)
-                                                    {
-                                                        departureTrain.Arrival = departureTrain.Arrival + timeToAjustCase2;
-                                                        departureTrain.Departure = departureTrain.Departure + timeToAjustCase2;
-                                                    }
-                                                    break;
-
-                                                case 3:
-                                                    // Test case when instanding and outstanding trains are involved
-                                                    timeToAjustCase3 = timeToAjustCase3 + consAmount;
-                                                    ProblemInstance.Current.InterfaceScenario.EndTime = ProblemInstance.Current.InterfaceScenario.EndTime + timeToAjustCase2;
-
-                                                    foreach (var outStandingTrain in ProblemInstance.Current.InterfaceScenario.OutStanding.TrainRequests)
-                                                    {
-                                                        outStandingTrain.Arrival = outStandingTrain.Arrival + timeToAjustCase3;
-                                                        outStandingTrain.Departure = outStandingTrain.Departure + timeToAjustCase3;
-                                                    }
-
-                                                    break;
-                                                default:
-
-                                                    break;
-                                            }
-
-                                            // The current instance has to be reinitialized since the scenario parameters were changend in a Protobuf object level according to the test cases 
-                                            ProblemInstance.Current = ProblemInstance.Parse(ProblemInstance.Current.InterfaceLocation, ProblemInstance.Current.InterfaceScenario);
-                                        }
-
-                                        // Convert the scenario into an evaluator type scenario
-                                        // and also store it with the prefix scenario_evaluator.json
-                                        Converter converter = new Converter(ProblemInstance.Current, config.DeepLook.ConversionAndStorage.PathScenarioEval);
-
-                                        if (converter.ConvertScenario())
-                                        {
-                                            Console.WriteLine("----------------------------------------------------------------------");
-                                            Console.WriteLine("Conversion done with success");
-                                            Console.WriteLine("----------------------------------------------------------------------");
-
-                                            // Store converted scenario, this will be read by the evaluator
-                                            var fileNameEvalScenario = "scenario_evaluator";
-                                            if (!converter.StoreScenarioEvaluator(fileNameEvalScenario))
-                                                Console.WriteLine("Error while storage of evaluator format scenario");
-
-                                            // Store evaluator format scenarion per test case
-                                            var fileNameEvalScenarioCase = "scenario_evaluator" + "_case_" + testCase + "_it_" + itTest;
-                                            if (!converter.StoreScenarioEvaluator(fileNameEvalScenarioCase))
-                                                Console.WriteLine("Error while storage of evaluator format scenario");
-
-                                            // Store the modified solver format scenario in the same folder but under a different file name per test case
-                                            var fileNameSolverScenario = "scenario_solver" + "_case_" + testCase + "_it_" + itTest;
-                                            if (!converter.StoreScenarioSolver(fileNameSolverScenario))
-                                                Console.WriteLine("Error while storage of solver format scenario");
-
-                                            scenarioTestCase = fileNameSolverScenario;
-                                        }
-                                        // Create a plan corresponding to the scenario per test case
-                                        CreatePlanFromExisting(ProblemInstance.Current, config.PlanPath, config);
-
-
-                                        // Store the plan per test case
-                                        var fileNameToStorePlam = "plan" + "_case_" + testCase + "_it_" + itTest;
-                                        if (!converter.StorePlan(fileNameToStorePlam, config.DeepLook.EvaluatorInput.PathPlan))
-                                            Console.WriteLine($"Plan Path {config.DeepLook.EvaluatorInput.PathPlan}");
-
-
-                                        bool evaluatorResult;
-                                        if (Call_Evaluator(config))
-                                        {
-                                            Console.WriteLine("The plan is valid");
-                                            evaluatorResult = true;
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("The plan is not valid");
-                                            evaluatorResult = false;
-
-                                        }
-                                        if (evaluatorResult)
-                                        {
-                                            validPlanFound = true;
-                                        }
-
-                                        if (StoreScenarioAndEvaluationResults(config.DeepLook.EvaluatorInput.PathScenario, config.DeepLook.ConversionAndStorage.PathScenarioEval, config.DeepLook.ConversionAndStorage.PathEvalResult, testCase, itTest, evaluatorResult))
-                                        {
-                                            Console.WriteLine("Scenario for Evaluator and the Results are successfully stored");
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("Problemes during the storage of Scenario for Evaluator and the Results");
-                                        }
-
-                                        // Add summary of the test cases and evaluation results
-                                        ResultSummary[scenarioTestCase] = evaluatorResult ? "Valid ✅" : "Not Valid ❌";
-
-
-                                        // If the seed should be displayed
-                                        if (config.DeepLook.DeterministicPlanning.DisplaySeed)
-                                        {
-                                            if (!ResultSummaryWithSeed.ContainsKey(scenarioTestCase))
-                                            {
-                                                ResultSummaryWithSeed[scenarioTestCase] = new string[2];
-                                            }
-                                            ResultSummaryWithSeed[scenarioTestCase][0] = evaluatorResult ? "Valid ✅" : "Not Valid ❌";
-                                            if (config.DeepLook.DeterministicPlanning.LookForSeed)
-                                            {
-                                                ResultSummaryWithSeed[scenarioTestCase][1] = (config.DeepLook.DeterministicPlanning.Seed).ToString();
-                                                Console.WriteLine($">>> Seed: {config.DeepLook.DeterministicPlanning.Seed}");
-                                            }
-                                            else
-                                            {
-                                                ResultSummaryWithSeed[scenarioTestCase][1] = config.DeepLook.DeterministicPlanning.Seed.ToString();
-
-                                            }
-                                        }
-
-
-
-                                    }
-                                    if (config.DeepLook.DeterministicPlanning.LookForSeed)
-                                    {
-                                        config.DeepLook.DeterministicPlanning.Seed++;
-                                    }
-
-                                    timeToAjustCase0 = 0;
-                                    timeToAjustCase1 = 0;
-                                    timeToAjustCase2 = 0;
-                                    itTest++;
-                                }
-
-                                // Print the sumarry of the test cases and their evaluation results
-                                PrintSummary(ResultSummary);
-
-                                // Print the results with the seed values
-                                if (config.DeepLook.DeterministicPlanning.DisplaySeed)
-                                    PrintSummaryWithSeeds(ResultSummaryWithSeed);
-
-                                if (ResultSummary.ContainsValue("Valid ✅"))
-                                {
-                                    Console.WriteLine($"Valid plan found in {itTest} iterations");
-                                }
-                                else
-                                {
-                                    Console.WriteLine($"No valid pland was found");
-
-                                }
-
-                            }
-                            else
-                            {
-                                // The current instance has to be reinitialized since the scenario parameters were changend in a Protobuf object level according to the test cases 
-                                ProblemInstance.Current = ProblemInstance.Parse(ProblemInstance.Current.InterfaceLocation, ProblemInstance.Current.InterfaceScenario);
-
-                                var testCase = 0;
-                                Converter converter = new Converter(ProblemInstance.Current, config.DeepLook.ConversionAndStorage.PathScenarioEval);
-
-                                if (converter.ConvertScenario())
-                                {
-                                    Console.WriteLine("----------------------------------------------------------------------");
-                                    Console.WriteLine("Conversion done with success");
-                                    Console.WriteLine("----------------------------------------------------------------------");
-
-                                    // Store converted scenario, this will be read by the evaluator
-                                    var fileNameEvalScenario = "scenario_evaluator";
-                                    if (!converter.StoreScenarioEvaluator(fileNameEvalScenario))
-                                        Console.WriteLine("Error while storage of evaluator format scenario");
-
-                                    // Store evaluator format scenarion per test case
-                                    var fileNameEvalScenarioCase = "scenario_evaluator" + "_case_" + testCase;
-                                    if (!converter.StoreScenarioEvaluator(fileNameEvalScenarioCase))
-                                        Console.WriteLine("Error while storage of evaluator format scenario");
-
-                                    // Store the modified solver format scenario in the same folder but under a different file name per test case
-                                    var fileNameSolverScenario = "scenario_solver" + "_case_" + testCase;
-                                    if (!converter.StoreScenarioSolver(fileNameSolverScenario))
-                                        Console.WriteLine("Error while storage of solver format scenario");
-
-                                    scenarioTestCase = fileNameSolverScenario;
-                                }
-
-                                // Create a plan corresponding to the scenario per test case
-                                CreatePlanFromExisting(ProblemInstance.Current, config.PlanPath, config);
-                                if (config.DeepLook.DeterministicPlanning.LookForSeed)
-                                {
-                                    config.DeepLook.DeterministicPlanning.Seed++;
-                                }
-                                // Store the plan per test case
-                                var fileNameToStorePlam = "plan" + "_case_" + testCase;
-                                if (!converter.StorePlan(fileNameToStorePlam, config.DeepLook.EvaluatorInput.PathPlan))
-                                    Console.WriteLine($"Plan Path {config.DeepLook.EvaluatorInput.PathPlan}");
-
-
-                                bool evaluatorResult;
-                                if (Call_Evaluator(config))
-                                {
-                                    Console.WriteLine("The plan is valid");
-                                    evaluatorResult = true;
-                                }
-                                else
-                                {
-                                    Console.WriteLine("The plan is not valid");
-                                    evaluatorResult = false;
-
-                                }
-                                if (StoreScenarioAndEvaluationResults(config.DeepLook.EvaluatorInput.PathScenario, config.DeepLook.ConversionAndStorage.PathScenarioEval, config.DeepLook.ConversionAndStorage.PathEvalResult, testCase, 0, evaluatorResult))
-                                {
-                                    Console.WriteLine("Scenario for Evaluator and the Results are successfully stored");
-                                }
-                                else
-                                {
-                                    Console.WriteLine("Problemes during the storage of Scenario for Evaluator and the Results");
-                                }
-
-                                // Add summary of the test cases and evaluation results
-
-                                ResultSummary[scenarioTestCase] = evaluatorResult ? "Valid ✅" : "Not Valid ❌";
-                                // Print the sumarry of the test cases and their evaluation results
-
-                                // If the seed should be displayed
-                                if (config.DeepLook.DeterministicPlanning.DisplaySeed)
-                                {
-                                    if (!ResultSummaryWithSeed.ContainsKey(scenarioTestCase))
-                                    {
-                                        ResultSummaryWithSeed[scenarioTestCase] = new string[2];
-                                    }
-                                    ResultSummaryWithSeed[scenarioTestCase][0] = evaluatorResult ? "Valid ✅" : "Not Valid ❌";
-                                    if (config.DeepLook.DeterministicPlanning.LookForSeed)
-                                    {
-                                        ResultSummaryWithSeed[scenarioTestCase][1] = (config.DeepLook.DeterministicPlanning.Seed - 1).ToString();
-                                    }
-                                    else
-                                    {
-                                        ResultSummaryWithSeed[scenarioTestCase][1] = config.DeepLook.DeterministicPlanning.Seed.ToString();
-
-                                    }
-                                }
-
-                                // Print the sumarry of the test cases and their evaluation results
-                                PrintSummary(ResultSummary);
-                                // Print the results with the seed values
-                                if (config.DeepLook.DeterministicPlanning.DisplaySeed)
-                                    PrintSummaryWithSeeds(ResultSummaryWithSeed);
-                            }
+                            TestCasesDeepLook(config);
                         }
                         else
                         {
                             Console.WriteLine("Unknown parameter for Mode");
                         }
-
                     }
                     else
                     {
-                        Console.Error.WriteLine("Unknown --parameter name");
+                        Console.Error.WriteLine("Unknown --parameter name: " + arg);
                         Environment.Exit(1);
                     }
                 }
             }
-
             else
             {
-                Test_Location_Scenario_Parsing("./database/TUSS-Instance-Generator/scenario_settings/setting_A/location_solver.json", "./database/TUSS-Instance-Generator/scenario_settings/setting_A/scenario_solver.json");
+                string directory = "setting_A";
+                Console.WriteLine($"No config file provided, running with default test files: {directory}");
+                Test_Location_Scenario_Parsing(
+                    $"./database/TUSS-Instance-Generator/scenario_settings/{directory}/location_solver.json",
+                    $"./database/TUSS-Instance-Generator/scenario_settings/{directory}/scenario_solver.json");
                 Console.WriteLine("***************** CreatePlan() *****************");
-                CreatePlan("./database/TUSS-Instance-Generator/scenario_settings/setting_A/location_solver.json", "./database/TUSS-Instance-Generator/scenario_settings/setting_A/scenario_solver.json", "./database/TUSS-Instance-Generator/plan.json");
+                CreatePlan(
+                    $"./database/TUSS-Instance-Generator/scenario_settings/{directory}/location_solver.json",
+                    $"./database/TUSS-Instance-Generator/scenario_settings/{directory}/scenario_solver.json",
+                    $"./database/TUSS-Instance-Generator/scenario_settings/{directory}/plan.json");
             }
-
-
-
         }
 
         // Input:   @location_path: path to the location (.json) file
@@ -405,34 +96,49 @@ namespace ServiceSiteScheduling
         // Output:  @plan_path: path to where the plan (.json) file will be written
         // Method: First it calls a Tabu Search method to find an initial plan (Graph) that is used by 
         //         a Simulated Annealing method to find the final schedle plan (Totally Ordered Graph)
-        static void CreatePlan(string location_path, string scenario_path, string plan_path, Config config = null)
+        static void CreatePlan(string location_path, string scenario_path, string plan_path, Config config = null, int debugLevel = 0, string tmp_plan_path = "./tmp_plans/")
         {
-
+            if (!Directory.Exists(tmp_plan_path))
+            {
+                Directory.CreateDirectory(tmp_plan_path);
+            }
+            foreach (var file in Directory.GetFiles(tmp_plan_path, "*.json"))
+            {
+                File.Delete(file);
+            }
             // If a seed was specified in the config file and it's value is not 0, then we can use the seed for deterministic plan creation
             Random random;
-            if (config != null && config.DeepLook.DeterministicPlanning != null && config.DeepLook.DeterministicPlanning.Seed != 0)
+            if (config != null && config.Mode == "DeepLook" && config.DeepLook.DeterministicPlanning != null && config.DeepLook.DeterministicPlanning.Seed != 0)
             {
                 random = new Random(config.DeepLook.DeterministicPlanning.Seed);
+            }
+            else if (config != null && config.Seed > 0)
+            {
+                Console.WriteLine($"Using random seed <{config.Seed}> from config.");
+                random = new Random(config.Seed);
             }
             else
             {
                 random = new Random();
+                Console.WriteLine("Using default random seed");
             }
 
-            // Random random = new Random();
             Solutions.SolutionCost best = null;
             Solutions.PlanGraph graph = null;
-
             ProblemInstance.Current = ProblemInstance.ParseJson(location_path, scenario_path);
 
             int solved = 0;
+            // TODO how many iterations should be used here?
             for (int i = 0; i < 1; i++)
             {
-                Console.WriteLine(i);
-                LocalSearch.TabuSearch ts = new LocalSearch.TabuSearch(random);
+                if (debugLevel > 0)
+                {
+                    Console.WriteLine($"Create Plan Iteration: {i}");
+                }
+                LocalSearch.TabuSearch ts = new LocalSearch.TabuSearch(random, debugLevel);
                 if (config != null)
                 {
-                    ts.Run(config.TabuSearch.Iterations, config.TabuSearch.IterationsUntilReset, config.TabuSearch.TabuListLength, config.TabuSearch.Bias, config.TabuSearch.SuppressConsoleOutput);
+                    ts.Run(config.TabuSearch.Iterations, config.TabuSearch.IterationsUntilReset, config.TabuSearch.TabuListLength, config.TabuSearch.Bias, debugLevel, tmp_plan_path);
                 }
                 else
                 {
@@ -441,38 +147,29 @@ namespace ServiceSiteScheduling
                 LocalSearch.SimulatedAnnealing sa = new LocalSearch.SimulatedAnnealing(random, ts.Graph);
                 if (config != null)
                 {
-                    sa.Run(new Time(config.SimulatedAnnealing.MaxDuration), config.SimulatedAnnealing.StopWhenFeasible, config.SimulatedAnnealing.IterationsUntilReset, config.SimulatedAnnealing.T, config.SimulatedAnnealing.A, config.SimulatedAnnealing.Q, config.SimulatedAnnealing.Reset, config.SimulatedAnnealing.Bias, config.SimulatedAnnealing.SuppressConsoleOutput, config.SimulatedAnnealing.IintensifyOnImprovement);
+                    sa.Run(new Time(config.SimulatedAnnealing.MaxDuration), config.SimulatedAnnealing.StopWhenFeasible, config.SimulatedAnnealing.IterationsUntilReset, config.SimulatedAnnealing.T, config.SimulatedAnnealing.A, config.SimulatedAnnealing.Q, config.SimulatedAnnealing.Reset, config.SimulatedAnnealing.Bias, debugLevel, config.SimulatedAnnealing.IntensifyOnImprovement, tmp_plan_path);
                 }
                 else
                 {
-                    sa.Run(Time.Hour, true, 150000, 15, 0.97, 2000, 2000, 0.2, false);
-
+                    sa.Run(Time.Hour, true, 150000, 15, 0.97, 2000, 2000, 0.2);
                 }
-
-                Console.WriteLine("--------------------------");
-                Console.WriteLine(" Output Movement Schedule ");
-                Console.WriteLine("--------------------------");
-
-                sa.Graph.OutputMovementSchedule();
-                Console.WriteLine("--------------------------");
-                Console.WriteLine("");
-
-
-                Console.WriteLine("----------------------------");
-                Console.WriteLine(" Output Train Unit Schedule ");
-                Console.WriteLine("----------------------------");
-                Console.WriteLine("");
-                sa.Graph.OutputTrainUnitSchedule();
-                Console.WriteLine("----------------------------");
-
-                Console.WriteLine("");
-                Console.WriteLine("------------------------------");
-                Console.WriteLine(" Output Constraint Violations ");
-                Console.WriteLine("------------------------------");
-
-                sa.Graph.OutputConstraintViolations();
-                Console.WriteLine(sa.Graph.Cost);
-                Console.WriteLine("--------------------------");
+                if (debugLevel > 0)
+                {
+                    Console.WriteLine("--------------------------");
+                    Console.WriteLine(" Output Movement Schedule ");
+                    Console.WriteLine("--------------------------");
+                    sa.Graph.OutputMovementSchedule();
+                    Console.WriteLine("--------------------------");
+                    Console.WriteLine(" Output Train Unit Schedule ");
+                    Console.WriteLine("----------------------------");
+                    sa.Graph.OutputTrainUnitSchedule();
+                    Console.WriteLine("----------------------------");
+                    Console.WriteLine(" Output Constraint Violations ");
+                    Console.WriteLine("------------------------------");
+                    sa.Graph.OutputConstraintViolations();
+                    Console.WriteLine(sa.Graph.Cost);
+                    Console.WriteLine("--------------------------");
+                }
 
                 if (sa.Graph.Cost.ArrivalDelays + sa.Graph.Cost.DepartureDelays + sa.Graph.Cost.TrackLengthViolations + sa.Graph.Cost.Crossings + sa.Graph.Cost.CombineOnDepartureTrack <= 2)
                 {
@@ -484,41 +181,38 @@ namespace ServiceSiteScheduling
                     best = sa.Graph.Cost;
                     graph = sa.Graph;
                 }
-                Console.WriteLine($"solved: {solved}");
-                Console.WriteLine($"best = {best}");
-                Console.WriteLine("------------------------------");
-                Console.WriteLine($"Generate JSON format plan");
-                Console.WriteLine("------------------------------");
-
-                Plan plan_pb = sa.Graph.GenerateOutputPB();
-
-                string jsonPlan = JsonFormatter.Default.Format(plan_pb);
-
-                // Console.WriteLine(jsonPlan);
-
-                string directoryPath = Path.GetDirectoryName(plan_path);
-
-                if (!Directory.Exists(directoryPath) && directoryPath != null)
+                if (debugLevel > 1)
                 {
-
-                    Directory.CreateDirectory(directoryPath);
-                    Console.WriteLine($"Directory created: {directoryPath}");
+                    Console.WriteLine($"solved: {solved}");
+                    Console.WriteLine($"best = {best}");
+                    Console.WriteLine("------------------------------");
+                    Console.WriteLine($"Generate JSON format plan");
+                    Console.WriteLine("------------------------------");
                 }
 
+                // Write JSON plan to file
+                Plan plan_pb = sa.Graph.GenerateOutputJSONformat();
+                var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true)); 
+                string jsonPlan = formatter.Format(plan_pb);
                 File.WriteAllText(plan_path, jsonPlan);
+                Console.WriteLine("Plan written to: " + plan_path);
 
-                Console.WriteLine("----------------------------------------------------------------------");
-
-
-                sa.Graph.DisplayMovements();
+                File.WriteAllText(Path.ChangeExtension(plan_path, ".txt"), sa.Graph.OutputTrainUnitSchedule());
+                Console.WriteLine("Wrote resulting schedule for train units to text file: " + Path.ChangeExtension(plan_path, "_train_unit_schedule.txt"));
+                if (debugLevel > 1)
+                {
+                    Console.WriteLine("----------------------------------------------------------------------");
+                    sa.Graph.DisplayMovements();
+                }
                 sa.Graph.Clear();
-
+                Console.WriteLine("------------------ Found a plan ---------------------------");
+                sa.Graph.GetShortPlanStatistics();
             }
-
-            Console.WriteLine("------------ OVERALL BEST --------------");
-            Console.WriteLine(best);
-
-            // Console.ReadLine();
+            if (debugLevel > 0)
+            {
+                Console.WriteLine("------------ OVERALL BEST --------------");
+                Console.WriteLine(best);
+            }
         }
 
         // Input:   @currentInstance: an already existing problem instance with scenario and location -
@@ -540,8 +234,6 @@ namespace ServiceSiteScheduling
                 random = new Random();
             }
 
-            // Random random = new Random();
-
             Solutions.SolutionCost best = null;
             Solutions.PlanGraph graph = null;
 
@@ -550,11 +242,11 @@ namespace ServiceSiteScheduling
             int solved = 0;
             for (int i = 0; i < 1; i++)
             {
-                Console.WriteLine(i);
+                Console.WriteLine($"Create Plan Iteration: {i}");
                 LocalSearch.TabuSearch ts = new LocalSearch.TabuSearch(random);
                 if (config != null)
                 {
-                    ts.Run(config.TabuSearch.Iterations, config.TabuSearch.IterationsUntilReset, config.TabuSearch.TabuListLength, config.TabuSearch.Bias, config.TabuSearch.SuppressConsoleOutput);
+                    ts.Run(config.TabuSearch.Iterations, config.TabuSearch.IterationsUntilReset, config.TabuSearch.TabuListLength, config.TabuSearch.Bias, config.DebugLevel);
                 }
                 else
                 {
@@ -563,11 +255,11 @@ namespace ServiceSiteScheduling
                 LocalSearch.SimulatedAnnealing sa = new LocalSearch.SimulatedAnnealing(random, ts.Graph);
                 if (config != null)
                 {
-                    sa.Run(new Time(config.SimulatedAnnealing.MaxDuration), config.SimulatedAnnealing.StopWhenFeasible, config.SimulatedAnnealing.IterationsUntilReset, config.SimulatedAnnealing.T, config.SimulatedAnnealing.A, config.SimulatedAnnealing.Q, config.SimulatedAnnealing.Reset, config.SimulatedAnnealing.Bias, config.SimulatedAnnealing.SuppressConsoleOutput, config.SimulatedAnnealing.IintensifyOnImprovement);
+                    sa.Run(new Time(config.SimulatedAnnealing.MaxDuration), config.SimulatedAnnealing.StopWhenFeasible, config.SimulatedAnnealing.IterationsUntilReset, config.SimulatedAnnealing.T, config.SimulatedAnnealing.A, config.SimulatedAnnealing.Q, config.SimulatedAnnealing.Reset, config.SimulatedAnnealing.Bias, config.DebugLevel, config.SimulatedAnnealing.IntensifyOnImprovement);
                 }
                 else
                 {
-                    sa.Run(Time.Hour, true, 150000, 15, 0.97, 2000, 2000, 0.2, false);
+                    sa.Run(Time.Hour, true, 150000, 15, 0.97, 2000, 2000, 0.2);
 
                 }
 
@@ -611,38 +303,336 @@ namespace ServiceSiteScheduling
                 Console.WriteLine("------------------------------");
                 Console.WriteLine($"Generate JSON format plan");
                 Console.WriteLine("------------------------------");
-
-                Plan plan_pb = sa.Graph.GenerateOutputPB();
-
-                string jsonPlan = JsonFormatter.Default.Format(plan_pb);
-
-                // Console.WriteLine(jsonPlan);
-
-                string directoryPath = Path.GetDirectoryName(plan_path);
-
-                if (!Directory.Exists(directoryPath) && directoryPath != null)
-                {
-
-                    Directory.CreateDirectory(directoryPath);
-                    Console.WriteLine($"Directory created: {directoryPath}");
-                }
-
+                // Write Plan to json file
+                Plan plan_pb = sa.Graph.GenerateOutputJSONformat();
+                var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true)); 
+                string jsonPlan = formatter.Format(plan_pb);
                 File.WriteAllText(plan_path, jsonPlan);
-
                 Console.WriteLine("----------------------------------------------------------------------");
-
-
                 sa.Graph.DisplayMovements();
                 sa.Graph.Clear();
-
             }
-
             Console.WriteLine("------------ OVERALL BEST --------------");
             Console.WriteLine(best);
-
-            // Console.ReadLine();
         }
 
+        static void TestCasesDeepLook(Config config)
+        {
+            Console.WriteLine("***************** Test_Location_Scenario_Parsing() *****************");
+
+            Test_Location_Scenario_Parsing(config.LocationPath, config.ScenarioPath, config.DebugLevel);
+
+            // Contains all the tested scenario cases and the plan evaluation results [valid, not valid]  
+            Dictionary<string, string> ResultSummary = new Dictionary<string, string>();
+
+            Dictionary<string, string[]> ResultSummaryWithSeed = new Dictionary<string, string[]>();
+            string scenarioTestCase = "";
+
+            int testCases = config.DeepLook.TestCases;
+
+            ulong timeToAjustCase0 = 0;
+            ulong timeToAjustCase1 = 0;
+            ulong timeToAjustCase2 = 0;
+            ulong timeToAjustCase3 = 0;
+
+            ulong consAmount = 300;
+
+            // If testCases is 0 and LookForSeed is true the scenario is not modified, but actually the seed is modified
+            // it might be the case that a plan cannot be found because of the choosen random number and not
+            // not because of the constraints in the scenarion
+            if (testCases > 0 || config.DeepLook.DeterministicPlanning.LookForSeed)
+            {
+                bool validPlanFound = false;
+                int itTest = 0;
+                while ((validPlanFound == false) && (itTest < config.DeepLook.MaxTest))
+                {
+                    for (int testCase = -1; testCase < testCases; testCase++)
+                    {
+                        Console.WriteLine("***************** CreatePlan() *****************");
+                        ProblemInstance.Current = ProblemInstance.ParseJson(config.LocationPath, config.ScenarioPath);
+
+                        int numberOfArrivals = ProblemInstance.Current.ArrivalsOrdered.Count();
+
+                        // It is a simple example in which the arrival and departure times are modified
+                        if (testCase != -1)
+                        {
+                            switch (testCase % (numberOfArrivals + 1))
+                            {
+                                case 0:
+                                    // Test case: Increase the time of arrival trains, but not the departure trains' 
+                                    // timeToAjustCase0 = timeToAjustCase0 + consAmount;
+                                    foreach (var arrivalTrain in ProblemInstance.Current.InterfaceScenario.In.Trains)
+                                    {
+                                        arrivalTrain.Arrival = arrivalTrain.Arrival + timeToAjustCase0;
+                                        arrivalTrain.Departure = arrivalTrain.Departure + timeToAjustCase0;
+                                    }
+                                    break;
+                                case 1:
+                                    // Test case: Increase the time of departure trains, but not the arrival trains'
+                                    timeToAjustCase1 = timeToAjustCase1 + consAmount;
+                                    ProblemInstance.Current.InterfaceScenario.EndTime = ProblemInstance.Current.InterfaceScenario.EndTime + timeToAjustCase1;
+
+                                    foreach (var departureTrain in ProblemInstance.Current.InterfaceScenario.Out.TrainRequests)
+                                    {
+                                        departureTrain.Arrival = departureTrain.Arrival + timeToAjustCase1;
+                                        departureTrain.Departure = departureTrain.Departure + timeToAjustCase1;
+                                    }
+
+                                    break;
+                                case 2:
+                                    // Test case: Increase the time of arrival trains, and the departure trains'
+                                    timeToAjustCase2 = timeToAjustCase2 + consAmount;
+                                    ProblemInstance.Current.InterfaceScenario.EndTime = ProblemInstance.Current.InterfaceScenario.EndTime + timeToAjustCase2;
+
+                                    foreach (var arrivalTrain in ProblemInstance.Current.InterfaceScenario.In.Trains)
+                                    {
+                                        arrivalTrain.Arrival = arrivalTrain.Arrival + timeToAjustCase1;
+                                        arrivalTrain.Departure = arrivalTrain.Departure + timeToAjustCase1;
+                                    }
+
+                                    foreach (var departureTrain in ProblemInstance.Current.InterfaceScenario.Out.TrainRequests)
+                                    {
+                                        departureTrain.Arrival = departureTrain.Arrival + timeToAjustCase2;
+                                        departureTrain.Departure = departureTrain.Departure + timeToAjustCase2;
+                                    }
+                                    break;
+
+                                case 3:
+                                    // Test case when instanding and outstanding trains are involved
+                                    timeToAjustCase3 = timeToAjustCase3 + consAmount;
+                                    ProblemInstance.Current.InterfaceScenario.EndTime = ProblemInstance.Current.InterfaceScenario.EndTime + timeToAjustCase2;
+
+                                    foreach (var outStandingTrain in ProblemInstance.Current.InterfaceScenario.OutStanding.TrainRequests)
+                                    {
+                                        outStandingTrain.Arrival = outStandingTrain.Arrival + timeToAjustCase3;
+                                        outStandingTrain.Departure = outStandingTrain.Departure + timeToAjustCase3;
+                                    }
+
+                                    break;
+                                default:
+
+                                    break;
+                            }
+
+                            // The current instance has to be reinitialized since the scenario parameters were changend in a Protobuf object level according to the test cases 
+                            ProblemInstance.Current = ProblemInstance.Parse(ProblemInstance.Current.InterfaceLocation, ProblemInstance.Current.InterfaceScenario);
+                        }
+
+                        // Convert the scenario into an evaluator type scenario
+                        // and also store it with the prefix scenario_evaluator.json
+                        Converter converter = new Converter(ProblemInstance.Current, config.DeepLook.ConversionAndStorage.PathScenarioEval);
+
+                        if (converter.ConvertScenario())
+                        {
+                            Console.WriteLine("----------------------------------------------------------------------");
+                            Console.WriteLine("Conversion done with success");
+                            Console.WriteLine("----------------------------------------------------------------------");
+
+                            // Store converted scenario, this will be read by the evaluator
+                            var fileNameEvalScenario = "scenario_evaluator";
+                            if (!converter.StoreScenarioEvaluator(fileNameEvalScenario))
+                                Console.WriteLine("Error while storage of evaluator format scenario");
+
+                            // Store evaluator format scenarion per test case
+                            var fileNameEvalScenarioCase = "scenario_evaluator" + "_case_" + testCase + "_it_" + itTest;
+                            if (!converter.StoreScenarioEvaluator(fileNameEvalScenarioCase))
+                                Console.WriteLine("Error while storage of evaluator format scenario");
+
+                            // Store the modified solver format scenario in the same folder but under a different file name per test case
+                            var fileNameSolverScenario = "scenario_solver" + "_case_" + testCase + "_it_" + itTest;
+                            if (!converter.StoreScenarioSolver(fileNameSolverScenario))
+                                Console.WriteLine("Error while storage of solver format scenario");
+
+                            scenarioTestCase = fileNameSolverScenario;
+                        }
+                        // Create a plan corresponding to the scenario per test case
+                        CreatePlanFromExisting(ProblemInstance.Current, config.PlanPath, config);
+
+
+                        // Store the plan per test case
+                        var fileNameToStorePlam = "plan" + "_case_" + testCase + "_it_" + itTest;
+                        if (!converter.StorePlan(fileNameToStorePlam, config.DeepLook.EvaluatorInput.PathPlan))
+                            Console.WriteLine($"Plan Path {config.DeepLook.EvaluatorInput.PathPlan}");
+
+
+                        bool evaluatorResult;
+                        if (Call_Evaluator(config))
+                        {
+                            Console.WriteLine("The plan is valid");
+                            evaluatorResult = true;
+                        }
+                        else
+                        {
+                            Console.WriteLine("The plan is not valid");
+                            evaluatorResult = false;
+
+                        }
+                        if (evaluatorResult)
+                        {
+                            validPlanFound = true;
+                        }
+
+                        if (StoreScenarioAndEvaluationResults(config.DeepLook.EvaluatorInput.PathScenario, config.DeepLook.ConversionAndStorage.PathScenarioEval, config.DeepLook.ConversionAndStorage.PathEvalResult, testCase, itTest, evaluatorResult))
+                        {
+                            Console.WriteLine("Scenario for Evaluator and the Results are successfully stored");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Problemes during the storage of Scenario for Evaluator and the Results");
+                        }
+
+                        // Add summary of the test cases and evaluation results
+                        ResultSummary[scenarioTestCase] = evaluatorResult ? "Valid ✅" : "Not Valid ❌";
+
+
+                        // If the seed should be displayed
+                        if (config.DeepLook.DeterministicPlanning.DisplaySeed)
+                        {
+                            if (!ResultSummaryWithSeed.ContainsKey(scenarioTestCase))
+                            {
+                                ResultSummaryWithSeed[scenarioTestCase] = new string[2];
+                            }
+                            ResultSummaryWithSeed[scenarioTestCase][0] = evaluatorResult ? "Valid ✅" : "Not Valid ❌";
+                            if (config.DeepLook.DeterministicPlanning.LookForSeed)
+                            {
+                                ResultSummaryWithSeed[scenarioTestCase][1] = (config.DeepLook.DeterministicPlanning.Seed).ToString();
+                                Console.WriteLine($">>> Seed: {config.DeepLook.DeterministicPlanning.Seed}");
+                            }
+                            else
+                            {
+                                ResultSummaryWithSeed[scenarioTestCase][1] = config.DeepLook.DeterministicPlanning.Seed.ToString();
+
+                            }
+                        }
+
+
+
+                    }
+                    if (config.DeepLook.DeterministicPlanning.LookForSeed)
+                    {
+                        config.DeepLook.DeterministicPlanning.Seed++;
+                    }
+
+                    timeToAjustCase0 = 0;
+                    timeToAjustCase1 = 0;
+                    timeToAjustCase2 = 0;
+                    itTest++;
+                }
+
+                // Print the sumarry of the test cases and their evaluation results
+                PrintSummary(ResultSummary);
+
+                // Print the results with the seed values
+                if (config.DeepLook.DeterministicPlanning.DisplaySeed)
+                    PrintSummaryWithSeeds(ResultSummaryWithSeed);
+
+                if (ResultSummary.ContainsValue("Valid ✅"))
+                {
+                    Console.WriteLine($"Valid plan found in {itTest} iterations");
+                }
+                else
+                {
+                    Console.WriteLine($"No valid pland was found");
+
+                }
+
+            }
+            else
+            {
+                // The current instance has to be reinitialized since the scenario parameters were changend in a Protobuf object level according to the test cases 
+                ProblemInstance.Current = ProblemInstance.Parse(ProblemInstance.Current.InterfaceLocation, ProblemInstance.Current.InterfaceScenario);
+
+                var testCase = 0;
+                Converter converter = new Converter(ProblemInstance.Current, config.DeepLook.ConversionAndStorage.PathScenarioEval);
+
+                if (converter.ConvertScenario())
+                {
+                    Console.WriteLine("----------------------------------------------------------------------");
+                    Console.WriteLine("Conversion done with success");
+                    Console.WriteLine("----------------------------------------------------------------------");
+
+                    // Store converted scenario, this will be read by the evaluator
+                    var fileNameEvalScenario = "scenario_evaluator";
+                    if (!converter.StoreScenarioEvaluator(fileNameEvalScenario))
+                        Console.WriteLine("Error while storage of evaluator format scenario");
+
+                    // Store evaluator format scenarion per test case
+                    var fileNameEvalScenarioCase = "scenario_evaluator" + "_case_" + testCase;
+                    if (!converter.StoreScenarioEvaluator(fileNameEvalScenarioCase))
+                        Console.WriteLine("Error while storage of evaluator format scenario");
+
+                    // Store the modified solver format scenario in the same folder but under a different file name per test case
+                    var fileNameSolverScenario = "scenario_solver" + "_case_" + testCase;
+                    if (!converter.StoreScenarioSolver(fileNameSolverScenario))
+                        Console.WriteLine("Error while storage of solver format scenario");
+
+                    scenarioTestCase = fileNameSolverScenario;
+                }
+
+                // Create a plan corresponding to the scenario per test case
+                CreatePlanFromExisting(ProblemInstance.Current, config.PlanPath, config);
+                if (config.DeepLook.DeterministicPlanning.LookForSeed)
+                {
+                    config.DeepLook.DeterministicPlanning.Seed++;
+                }
+                // Store the plan per test case
+                var fileNameToStorePlam = "plan" + "_case_" + testCase;
+                if (!converter.StorePlan(fileNameToStorePlam, config.DeepLook.EvaluatorInput.PathPlan))
+                    Console.WriteLine($"Plan Path {config.DeepLook.EvaluatorInput.PathPlan}");
+
+
+                bool evaluatorResult;
+                if (Call_Evaluator(config))
+                {
+                    Console.WriteLine("The plan is valid");
+                    evaluatorResult = true;
+                }
+                else
+                {
+                    Console.WriteLine("The plan is not valid");
+                    evaluatorResult = false;
+
+                }
+                if (StoreScenarioAndEvaluationResults(config.DeepLook.EvaluatorInput.PathScenario, config.DeepLook.ConversionAndStorage.PathScenarioEval, config.DeepLook.ConversionAndStorage.PathEvalResult, testCase, 0, evaluatorResult))
+                {
+                    Console.WriteLine("Scenario for Evaluator and the Results are successfully stored");
+                }
+                else
+                {
+                    Console.WriteLine("Problemes during the storage of Scenario for Evaluator and the Results");
+                }
+
+                // Add summary of the test cases and evaluation results
+
+                ResultSummary[scenarioTestCase] = evaluatorResult ? "Valid ✅" : "Not Valid ❌";
+                // Print the sumarry of the test cases and their evaluation results
+
+                // If the seed should be displayed
+                if (config.DeepLook.DeterministicPlanning.DisplaySeed)
+                {
+                    if (!ResultSummaryWithSeed.ContainsKey(scenarioTestCase))
+                    {
+                        ResultSummaryWithSeed[scenarioTestCase] = new string[2];
+                    }
+                    ResultSummaryWithSeed[scenarioTestCase][0] = evaluatorResult ? "Valid ✅" : "Not Valid ❌";
+                    if (config.DeepLook.DeterministicPlanning.LookForSeed)
+                    {
+                        ResultSummaryWithSeed[scenarioTestCase][1] = (config.DeepLook.DeterministicPlanning.Seed - 1).ToString();
+                    }
+                    else
+                    {
+                        ResultSummaryWithSeed[scenarioTestCase][1] = config.DeepLook.DeterministicPlanning.Seed.ToString();
+
+                    }
+                }
+
+                // Print the sumarry of the test cases and their evaluation results
+                PrintSummary(ResultSummary);
+                // Print the results with the seed values
+                if (config.DeepLook.DeterministicPlanning.DisplaySeed)
+                    PrintSummaryWithSeeds(ResultSummaryWithSeed);
+            }            
+        }
         static void Test()
         {
 
@@ -656,9 +646,6 @@ namespace ServiceSiteScheduling
                 Console.WriteLine("Location:");
 
                 string json = JsonFormatter.Default.Format(location);
-
-                // Console.WriteLine("JSON: \n " + json);
-
 
                 byte[] locationBytes = location.ToByteArray();
                 Console.WriteLine("Location :" + locationBytes.Length);
@@ -764,36 +751,37 @@ namespace ServiceSiteScheduling
         // As partial results, the function displays the details about the infrstructure of the location, and the incoming and outgoing trains of the scenario
         // Input:   @location_path: path to the location (.json) file
         //          @scenario_path: path to the scenario (.json) file
-        static void Test_Location_Scenario_Parsing(string location_path, string scenario_path)
+        //          @debugLevel: 0 - no debug, 1 - some debug, 2 - full debug
+        // Output:  Prints out the details about the location and scenario, and if the parsing was successful or not
+        static void Test_Location_Scenario_Parsing(string location_path, string scenario_path, int debugLevel = 2)
         {
 
             ProblemInstance.Current = ProblemInstance.ParseJson(location_path, scenario_path);
             try
             {
                 var location_TrackParts = ProblemInstance.Current.InterfaceLocation.TrackParts;
-
                 if (location_TrackParts == null)
                 {
                     throw new NullReferenceException("Parsed location is null.");
-
                 }
 
                 string json_parsed = JsonFormatter.Default.Format(ProblemInstance.Current.InterfaceLocation);
-
                 string json_original = ProblemInstance.ParseJsonToString(location_path);
-
 
                 var token_parsed = JsonDocument.Parse(json_parsed);
                 var token_original = JsonDocument.Parse(json_original);
 
-                if (token_parsed.ToString() == token_parsed.ToString())
+                if (token_original.ToString() == token_parsed.ToString())
                 {
-                    Console.WriteLine("The Location file parsing was successful !");
-                    // Console.WriteLine("JSON: \n " + json_parsed);
+                    if (debugLevel > 0)
+                    {
+                        Console.WriteLine("The Location file parsing was successful");
+                        Console.WriteLine($"    Location with {ProblemInstance.Current.Tracks.Length} tracks and {ProblemInstance.Current.InterfaceLocation.TrackParts.Count} track parts, including {ProblemInstance.Current.InterfaceLocation.TrackParts.Count(tp => tp.Type == AlgoIface.TrackPartType.RailRoad && tp.ParkingAllowed)} parking tracks, {ProblemInstance.Current.InterfaceLocation.TrackParts.Count(tp => tp.Type != AlgoIface.TrackPartType.RailRoad && tp.Type != AlgoIface.TrackPartType.Bumper)} crossings and {ProblemInstance.Current.InterfaceLocation.Facilities.Count} servicing tracks");
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("The Location file parsing was not successful! ");
+                    Console.WriteLine("***The Location file parsing was not successful***");
                 }
             }
             catch (Exception e)
@@ -803,65 +791,59 @@ namespace ServiceSiteScheduling
 
             try
             {
-
                 string json_parsed = JsonFormatter.Default.Format(ProblemInstance.Current.InterfaceScenario);
 
                 var scenario_in = ProblemInstance.Current.InterfaceScenario.In;
                 var scenario_out = ProblemInstance.Current.InterfaceScenario.Out;
-
+                
                 if (scenario_in == null)
                 {
-                    throw new NullReferenceException("Parsed scenario in filed is null.");
+                    throw new NullReferenceException("Parsed scenario in field is null.");
                 }
-
-
                 if (scenario_out == null)
                 {
                     throw new NullReferenceException("Parsed scenario out field is null.");
                 }
-
                 string json_original = ProblemInstance.ParseJsonToString(scenario_path);
 
                 var token_parsed = JsonDocument.Parse(json_parsed);
                 var token_original = JsonDocument.Parse(json_original);
 
-                if (token_parsed.ToString() == token_parsed.ToString())
+                if (token_original.ToString() == token_parsed.ToString())
                 {
-                    Console.WriteLine("The Scenario file parsing was successful !");
-                    // Console.WriteLine("JSON: \n " + json_parsed);
+                    if (debugLevel > 0)
+                    {
+                        Console.WriteLine("The Scenario file parsing was successful");
+                        Console.WriteLine($"    Scenario with {scenario_in.Trains.Count} incoming trains {scenario_out.TrainRequests.Count} outgoing trains, {ProblemInstance.Current.InterfaceScenario.InStanding.Trains.Count} instanding trains {ProblemInstance.Current.InterfaceScenario.OutStanding.TrainRequests.Count} outstanding trains.");
+                        Console.WriteLine($"    Number of train units {ProblemInstance.Current.TrainUnits.Length} of different train unit types {ProblemInstance.Current.TrainUnitsByType.Count}: " + string.Join(", ", ProblemInstance.Current.TrainUnitsByType.Select(t => t.Key.Name + " (" + t.Value.Length + " units)")));
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("The Location file parsing was not successful! ");
+                    Console.WriteLine("***The Scenario file parsing was not successful***");
                 }
 
-                Console.WriteLine("Scenario details: ");
-                Console.WriteLine("---- Incoming Trains ----");
-                List<AlgoIface.IncomingTrain> incomingTrains = new List<AlgoIface.IncomingTrain>(scenario_in.Trains);
-                foreach (AlgoIface.IncomingTrain train in scenario_in.Trains)
+                List<AlgoIface.IncomingTrain> incomingTrains = new List<AlgoIface.IncomingTrain>(scenario_in.Trains);                
+                if (debugLevel > 1)
                 {
-                    incomingTrains.Add(train);
-                }
-
-                Console.WriteLine("---- Outgoing Trains ----");
-                foreach (AlgoIface.IncomingTrain train in incomingTrains)
-                {
-                    Console.WriteLine("Parcking track " + train.FirstParkingTrackPart + " for train (id) " + train.Id);
+                    Console.WriteLine("Scenario details: ");
+                    Console.WriteLine("---- Incoming Trains ----");
+                    foreach (AlgoIface.IncomingTrain train in incomingTrains)
+                    {
+                        Console.WriteLine("Arrival track " + train.FirstParkingTrackPart + " for train (id) " + train.Id + " at time " + train.Arrival);
+                    }
                 }
 
                 List<AlgoIface.TrainRequest> outgoingTrains = new List<AlgoIface.TrainRequest>(scenario_out.TrainRequests);
-                foreach (AlgoIface.TrainRequest train in scenario_out.TrainRequests)
+                if (debugLevel > 1)
                 {
-                    outgoingTrains.Add(train);
+                    Console.WriteLine("---- Outgoing Trains ----");
+                    foreach (AlgoIface.TrainRequest train in outgoingTrains)
+                    {
+                        Console.WriteLine("Departure track " + train.LastParkingTrackPart + " for train (id) " + train.DisplayName + " at time " + train.Departure);
+
+                    }                    
                 }
-
-                foreach (AlgoIface.TrainRequest train in outgoingTrains)
-                {
-                    Console.WriteLine("Parcking track " + train.LastParkingTrackPart + " for train (id) " + train.DisplayName);
-
-                }
-
-
             }
             catch (Exception e)
             {
@@ -914,6 +896,7 @@ namespace ServiceSiteScheduling
     class Config
     {
         public ConfigTabuSearch TabuSearch { get; set; }
+
         public ConfigSimulatedAnnealing SimulatedAnnealing { get; set; }
 
         public ConfigDeepLook DeepLook { get; set; }
@@ -924,8 +907,6 @@ namespace ServiceSiteScheduling
             public int IterationsUntilReset { get; set; }
             public int TabuListLength { get; set; }
             public float Bias { get; set; }
-            public bool SuppressConsoleOutput { get; set; }
-
         }
         public class ConfigSimulatedAnnealing
         {
@@ -937,9 +918,7 @@ namespace ServiceSiteScheduling
             public int Q { get; set; }
             public int Reset { get; set; }
             public float Bias { get; set; }
-            public bool SuppressConsoleOutput { get; set; }
-            public bool IintensifyOnImprovement { get; set; }
-
+            public bool IntensifyOnImprovement { get; set; }
         }
 
         public class ConfigEvaluatorInput
@@ -996,12 +975,12 @@ namespace ServiceSiteScheduling
 
         public int Seed { get; set; }
         public int MaxDuration { get; set; }
+        public int DebugLevel { get; set; } // 0 - no debug, 1 - some information given, 2 - all information given
         public bool StopWhenFeasible { get; set; }
         public string LocationPath { get; set; }
         public string ScenarioPath { get; set; }
         public string PlanPath { get; set; }
-        public string OutputPath { get; set; }
+        public string TemporaryPlanPath { get; set; }
         public string Mode { get; set; }
-
     }
 }

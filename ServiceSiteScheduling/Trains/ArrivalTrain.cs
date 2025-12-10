@@ -15,7 +15,7 @@ namespace ServiceSiteScheduling.Trains
         public bool InStanding {get; set;}
 
         public double StandingIndex { get; set; }
-        // TODO: add bolean isInstanding
+
         public ArrivalTrain(TrainUnit[] units, Track track, Side side, Time time, bool inStanding = false, double standingIndex = 0.0)
         {
             this.Units = units;
