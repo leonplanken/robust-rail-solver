@@ -753,39 +753,35 @@ namespace ServiceSiteScheduling
         //          @scenario_path: path to the scenario (.json) file
         //          @debugLevel: 0 - no debug, 1 - some debug, 2 - full debug
         // Output:  Prints out the details about the location and scenario, and if the parsing was successful or not
-        static void Test_Location_Scenario_Parsing(string location_path, string scenario_path, int debugLevel = 1)
+        static void Test_Location_Scenario_Parsing(string location_path, string scenario_path, int debugLevel = 2)
         {
 
             ProblemInstance.Current = ProblemInstance.ParseJson(location_path, scenario_path);
             try
             {
                 var location_TrackParts = ProblemInstance.Current.InterfaceLocation.TrackParts;
-
                 if (location_TrackParts == null)
                 {
                     throw new NullReferenceException("Parsed location is null.");
-
                 }
 
                 string json_parsed = JsonFormatter.Default.Format(ProblemInstance.Current.InterfaceLocation);
-
                 string json_original = ProblemInstance.ParseJsonToString(location_path);
-
 
                 var token_parsed = JsonDocument.Parse(json_parsed);
                 var token_original = JsonDocument.Parse(json_original);
 
-                if (debugLevel > 0)
+                if (token_original.ToString() == token_parsed.ToString())
                 {
-                    if (token_parsed.ToString() == token_parsed.ToString())
+                    if (debugLevel > 0)
                     {
                         Console.WriteLine("The Location file parsing was successful");
                         Console.WriteLine($"    Location with {ProblemInstance.Current.Tracks.Length} tracks and {ProblemInstance.Current.InterfaceLocation.TrackParts.Count} track parts, including {ProblemInstance.Current.InterfaceLocation.TrackParts.Count(tp => tp.Type == AlgoIface.TrackPartType.RailRoad && tp.ParkingAllowed)} parking tracks, {ProblemInstance.Current.InterfaceLocation.TrackParts.Count(tp => tp.Type != AlgoIface.TrackPartType.RailRoad && tp.Type != AlgoIface.TrackPartType.Bumper)} crossings and {ProblemInstance.Current.InterfaceLocation.Facilities.Count} servicing tracks");
                     }
-                    else
-                    {
-                        Console.WriteLine("***The Location file parsing was not successful***");
-                    }
+                }
+                else
+                {
+                    Console.WriteLine("***The Location file parsing was not successful***");
                 }
             }
             catch (Exception e)
@@ -799,35 +795,32 @@ namespace ServiceSiteScheduling
 
                 var scenario_in = ProblemInstance.Current.InterfaceScenario.In;
                 var scenario_out = ProblemInstance.Current.InterfaceScenario.Out;
-
+                
                 if (scenario_in == null)
                 {
                     throw new NullReferenceException("Parsed scenario in field is null.");
                 }
-
-
                 if (scenario_out == null)
                 {
                     throw new NullReferenceException("Parsed scenario out field is null.");
                 }
-
                 string json_original = ProblemInstance.ParseJsonToString(scenario_path);
 
                 var token_parsed = JsonDocument.Parse(json_parsed);
                 var token_original = JsonDocument.Parse(json_original);
 
-                if (debugLevel > 0)
+                if (token_original.ToString() == token_parsed.ToString())
                 {
-                    if (token_original.ToString() == token_parsed.ToString())
+                    if (debugLevel > 0)
                     {
                         Console.WriteLine("The Scenario file parsing was successful");
                         Console.WriteLine($"    Scenario with {scenario_in.Trains.Count} incoming trains {scenario_out.TrainRequests.Count} outgoing trains, {ProblemInstance.Current.InterfaceScenario.InStanding.Trains.Count} instanding trains {ProblemInstance.Current.InterfaceScenario.OutStanding.TrainRequests.Count} outstanding trains.");
                         Console.WriteLine($"    Number of train units {ProblemInstance.Current.TrainUnits.Length} of different train unit types {ProblemInstance.Current.TrainUnitsByType.Count}: " + string.Join(", ", ProblemInstance.Current.TrainUnitsByType.Select(t => t.Key.Name + " (" + t.Value.Length + " units)")));
                     }
-                    else
-                    {
-                        Console.WriteLine("***The Scenario file parsing was not successful***");
-                    }
+                }
+                else
+                {
+                    Console.WriteLine("***The Scenario file parsing was not successful***");
                 }
 
                 List<AlgoIface.IncomingTrain> incomingTrains = new List<AlgoIface.IncomingTrain>(scenario_in.Trains);                
