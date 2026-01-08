@@ -198,7 +198,7 @@ namespace ServiceSiteScheduling
                 Console.WriteLine("Plan written to: " + plan_path);
 
                 File.WriteAllText(Path.ChangeExtension(plan_path, ".txt"), sa.Graph.OutputTrainUnitSchedule());
-                Console.WriteLine("Wrote resulting schedule for train units to text file: " + Path.ChangeExtension(plan_path, "_train_unit_schedule.txt"));
+                Console.WriteLine("Wrote resulting schedule for train units to text file: " + Path.ChangeExtension(plan_path, ".txt"));
                 if (debugLevel > 1)
                 {
                     Console.WriteLine("----------------------------------------------------------------------");
