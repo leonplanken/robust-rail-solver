@@ -4,7 +4,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{E7CD08D5-9F45-4FD7-8DA1-1274D8C58A81}</ProjectGuid>
     <OutputType>Exe</OutputType>
-     <AppDesignerFolder>Properties</AppDesignerFolder>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ServiceSiteScheduling</RootNamespace>
     <AssemblyName>ServiceSiteScheduling</AssemblyName>
     <TargetFramework>net8.0</TargetFramework>
@@ -14,7 +14,7 @@
 
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
-   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -40,7 +40,7 @@
       <Private>True</Private>
     </Reference> -->
     <PackageReference Include="Google.Protobuf" Version="3.28.3" />
-  
+
     <Reference Include="Priority Queue, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>../packages/OptimizedPriorityQueue.2.0.0/lib/net45/Priority Queue.dll</HintPath>
       <Private>True</Private>
@@ -58,9 +58,8 @@
       <Private>True</Private>
     </Reference>
   </ItemGroup>
-  
+
   <!-- <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup> -->
-
 </Project>

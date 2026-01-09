@@ -1,9 +1,10 @@
-﻿
-namespace ServiceSiteScheduling.Parking
+﻿namespace ServiceSiteScheduling.Parking
 {
-    abstract class DequeNode<T> where T : DequeNode<T>
+    abstract class DequeNode<T>
+        where T : DequeNode<T>
     {
-        public T A, B;
+        public T A,
+            B;
 
         public T Next(Side side)
         {

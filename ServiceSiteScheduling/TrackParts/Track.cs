@@ -16,7 +16,16 @@ namespace ServiceSiteScheduling.TrackParts
 
         public bool CanPark;
 
-        public Track(ulong id, string name, ServiceType[] services, int length, Side access, bool canpark, bool canreverse) : base(id, name)
+        public Track(
+            ulong id,
+            string name,
+            ServiceType[] services,
+            int length,
+            Side access,
+            bool canpark,
+            bool canreverse
+        )
+            : base(id, name)
         {
             this.Services = services;
             this.Length = length;
@@ -26,7 +35,15 @@ namespace ServiceSiteScheduling.TrackParts
             this.IsActive = canpark | canreverse;
         }
 
-        public Track(ulong id, string name, ServiceType service, int length, Side access, bool canpark, bool canreverse)
+        public Track(
+            ulong id,
+            string name,
+            ServiceType service,
+            int length,
+            Side access,
+            bool canpark,
+            bool canreverse
+        )
             : this(id, name, new ServiceType[1] { service }, length, access, canpark, canreverse)
         { }
 
@@ -60,18 +77,37 @@ namespace ServiceSiteScheduling.TrackParts
             throw new ArgumentException("Side is not valid");
         }
 
-        public override IList<TrackSwitchContainer> GetTracksConnectedTo(Infrastructure infrastructure, int switches, List<Infrastructure> path, bool ignoreInactive = true)
+        public override IList<TrackSwitchContainer> GetTracksConnectedTo(
+            Infrastructure infrastructure,
+            int switches,
+            List<Infrastructure> path,
+            bool ignoreInactive = true
+        )
         {
             if (infrastructure == this.ASide || infrastructure == this.BSide)
             {
                 path.Add(this);
                 IList<TrackSwitchContainer> result = null;
                 if (this.IsActive || !ignoreInactive)
-                    result = new TrackSwitchContainer[1] { new TrackSwitchContainer(this, switches, this.GetSide(infrastructure), path.ToArray()) };
+                    result = new TrackSwitchContainer[1]
+                    {
+                        new TrackSwitchContainer(
+                            this,
+                            switches,
+                            this.GetSide(infrastructure),
+                            path.ToArray()
+                        ),
+                    };
                 else if (infrastructure == this.ASide)
-                    result = this.BSide == null ? new TrackSwitchContainer[0] : this.BSide.GetTracksConnectedTo(this, switches, path);
+                    result =
+                        this.BSide == null
+                            ? new TrackSwitchContainer[0]
+                            : this.BSide.GetTracksConnectedTo(this, switches, path);
                 else
-                    result = this.ASide == null ? new TrackSwitchContainer[0] : this.ASide.GetTracksConnectedTo(this, switches, path);
+                    result =
+                        this.ASide == null
+                            ? new TrackSwitchContainer[0]
+                            : this.ASide.GetTracksConnectedTo(this, switches, path);
                 path.RemoveAt(path.Count - 1);
                 return result;
             }

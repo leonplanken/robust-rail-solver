@@ -2,10 +2,16 @@
 
 namespace ServiceSiteScheduling.Servicing
 {
-    public enum ServiceLocationType { Fixed, Free }
+    public enum ServiceLocationType
+    {
+        Fixed,
+        Free,
+    }
+
     class ServiceType
     {
-        public static ServiceType None { get; } = new ServiceType(0, "None", ServiceLocationType.Free);
+        public static ServiceType None { get; } =
+            new ServiceType(0, "None", ServiceLocationType.Free);
 
         public int Index { get; private set; }
         public string Name { get; private set; }

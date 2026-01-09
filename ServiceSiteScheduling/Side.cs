@@ -12,7 +12,10 @@
         public string Name;
         public abstract Side Flip { get; }
 
-        private Side(string name) { this.Name = name; }
+        private Side(string name)
+        {
+            this.Name = name;
+        }
 
         public abstract bool HasFlag(Side side);
 
@@ -23,8 +26,14 @@
 
         private class NoSide : Side
         {
-            public NoSide() : base("None") { }
-            public override Side Flip { get { return Both; } }
+            public NoSide()
+                : base("None") { }
+
+            public override Side Flip
+            {
+                get { return Both; }
+            }
+
             public override bool HasFlag(Side side)
             {
                 return this == side;
@@ -33,8 +42,14 @@
 
         private class ASide : Side
         {
-            public ASide() : base("A") { }
-            public override Side Flip { get { return B; } }
+            public ASide()
+                : base("A") { }
+
+            public override Side Flip
+            {
+                get { return B; }
+            }
+
             public override bool HasFlag(Side side)
             {
                 return this == side || side == None;
@@ -43,8 +58,14 @@
 
         private class BSide : Side
         {
-            public BSide() : base("B") { }
-            public override Side Flip { get { return A; } }
+            public BSide()
+                : base("B") { }
+
+            public override Side Flip
+            {
+                get { return A; }
+            }
+
             public override bool HasFlag(Side side)
             {
                 return this == side || side == None;
@@ -53,8 +74,14 @@
 
         private class BothSides : Side
         {
-            public BothSides() : base("Both") { }
-            public override Side Flip { get { return None; } }
+            public BothSides()
+                : base("Both") { }
+
+            public override Side Flip
+            {
+                get { return None; }
+            }
+
             public override bool HasFlag(Side side)
             {
                 return true;

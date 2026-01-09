@@ -1,5 +1,4 @@
-﻿
-namespace ServiceSiteScheduling.Matching
+﻿namespace ServiceSiteScheduling.Matching
 {
     class Unit
     {
@@ -7,11 +6,16 @@ namespace ServiceSiteScheduling.Matching
         public int Index { get; set; }
         public Train Train { get; set; }
         public Part Part { get; set; }
-        public bool IsFixed { get { return this.Departure.IsFixed; } }
+        public bool IsFixed
+        {
+            get { return this.Departure.IsFixed; }
+        }
+
         public Unit(Trains.DepartureTrainUnit unit)
         {
             this.Departure = unit;
         }
+
         public override string ToString()
         {
             return $"{this.Departure} ({this.Index})";

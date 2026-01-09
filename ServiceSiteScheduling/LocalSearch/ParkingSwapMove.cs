@@ -7,10 +7,17 @@ namespace ServiceSiteScheduling.LocalSearch
         public IList<Tasks.TrackTask> ParkingFirst { get; private set; }
         public IList<Tasks.TrackTask> ParkingSecond { get; private set; }
 
-        protected TrackParts.Track[] firsttracks, secondtracks;
-        protected Side[] firstsides, secondsides;
+        protected TrackParts.Track[] firsttracks,
+            secondtracks;
+        protected Side[] firstsides,
+            secondsides;
 
-        public ParkingSwapMove(PlanGraph graph, IList<Tasks.TrackTask> parkingfirst, IList<Tasks.TrackTask> parkingsecond) : base(graph)
+        public ParkingSwapMove(
+            PlanGraph graph,
+            IList<Tasks.TrackTask> parkingfirst,
+            IList<Tasks.TrackTask> parkingsecond
+        )
+            : base(graph)
         {
             this.ParkingFirst = parkingfirst;
             this.ParkingSecond = parkingsecond;
@@ -34,8 +41,10 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public override SolutionCost Execute()
         {
-            TrackParts.Track firsttrack = this.ParkingFirst.First().Track, secondtrack = this.ParkingSecond.First().Track;
-            Side firstside = this.ParkingFirst.First().ArrivalSide, secondside = this.ParkingSecond.First().ArrivalSide;
+            TrackParts.Track firsttrack = this.ParkingFirst.First().Track,
+                secondtrack = this.ParkingSecond.First().Track;
+            Side firstside = this.ParkingFirst.First().ArrivalSide,
+                secondside = this.ParkingSecond.First().ArrivalSide;
 
             changeTrack(this.ParkingSecond, firsttrack, firstside);
             changeTrack(this.ParkingFirst, secondtrack, secondside);
@@ -45,8 +54,10 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public override SolutionCost Revert()
         {
-            TrackParts.Track firsttrack = this.ParkingFirst.First().Track, secondtrack = this.ParkingSecond.First().Track;
-            Side firstside = this.ParkingFirst.First().ArrivalSide, secondside = this.ParkingSecond.First().ArrivalSide;
+            TrackParts.Track firsttrack = this.ParkingFirst.First().Track,
+                secondtrack = this.ParkingSecond.First().Track;
+            Side firstside = this.ParkingFirst.First().ArrivalSide,
+                secondside = this.ParkingSecond.First().ArrivalSide;
 
             changeTrack(this.ParkingSecond, firsttrack, firstside);
             changeTrack(this.ParkingFirst, secondtrack, secondside);
@@ -54,7 +65,11 @@ namespace ServiceSiteScheduling.LocalSearch
             return base.Revert();
         }
 
-        private void changeTrack(IEnumerable<Tasks.TrackTask> set, TrackParts.Track track, Side side)
+        private void changeTrack(
+            IEnumerable<Tasks.TrackTask> set,
+            TrackParts.Track track,
+            Side side
+        )
         {
             foreach (var task in set)
             {
@@ -75,10 +90,10 @@ namespace ServiceSiteScheduling.LocalSearch
             if (swapmove == null)
                 return false;
 
-            return this.ParkingFirst.Intersect(swapmove.ParkingFirst).Count() > 0 || 
-                this.ParkingFirst.Intersect(swapmove.ParkingSecond).Count() > 0 ||
-                this.ParkingSecond.Intersect(swapmove.ParkingFirst).Count() > 0 ||
-                this.ParkingSecond.Intersect(swapmove.ParkingSecond).Count() > 0;
+            return this.ParkingFirst.Intersect(swapmove.ParkingFirst).Count() > 0
+                || this.ParkingFirst.Intersect(swapmove.ParkingSecond).Count() > 0
+                || this.ParkingSecond.Intersect(swapmove.ParkingFirst).Count() > 0
+                || this.ParkingSecond.Intersect(swapmove.ParkingSecond).Count() > 0;
         }
 
         public override string ToString()
@@ -98,28 +113,65 @@ namespace ServiceSiteScheduling.LocalSearch
                 if (routing != null)
                 {
                     // Check if all tasks are parking tasks
-                    if (routing.Next.All(task => task.TaskType == Tasks.TrackTaskType.Parking || (task as Tasks.ServiceTask)?.Type.LocationType == Servicing.ServiceLocationType.Free))
+                    if (
+                        routing.Next.All(task =>
+                            task.TaskType == Tasks.TrackTaskType.Parking
+                            || (task as Tasks.ServiceTask)?.Type.LocationType
+                                == Servicing.ServiceLocationType.Free
+                        )
+                    )
                     {
-                        if (routing.Next.Any(task => task.Next.TaskType == Tasks.MoveTaskType.Departure && task.Next.AllPrevious.Count > 1))
+                        if (
+                            routing.Next.Any(task =>
+                                task.Next.TaskType == Tasks.MoveTaskType.Departure
+                                && task.Next.AllPrevious.Count > 1
+                            )
+                        )
                             continue;
 
                         var end = routing.LatestNext()?.MoveOrder ?? double.PositiveInfinity;
 
-                        for (var nextmovetask = routing.NextMove; nextmovetask != null && nextmovetask.MoveOrder < end; nextmovetask = nextmovetask.NextMove)
+                        for (
+                            var nextmovetask = routing.NextMove;
+                            nextmovetask != null && nextmovetask.MoveOrder < end;
+                            nextmovetask = nextmovetask.NextMove
+                        )
                         {
-                            if (nextmovetask.TaskType != Tasks.MoveTaskType.Standard || nextmovetask.Train.UnitBits.Intersects(routing.Train.UnitBits) || nextmovetask.ToTrack == routing.ToTrack)
+                            if (
+                                nextmovetask.TaskType != Tasks.MoveTaskType.Standard
+                                || nextmovetask.Train.UnitBits.Intersects(routing.Train.UnitBits)
+                                || nextmovetask.ToTrack == routing.ToTrack
+                            )
                                 continue;
 
-                            if (nextmovetask.AllNext.Any(task => task.Next.TaskType == Tasks.MoveTaskType.Departure && task.Next.AllPrevious.Count > 0))
+                            if (
+                                nextmovetask.AllNext.Any(task =>
+                                    task.Next.TaskType == Tasks.MoveTaskType.Departure
+                                    && task.Next.AllPrevious.Count > 0
+                                )
+                            )
                                 continue;
 
-                            if (!nextmovetask.AllNext.All(task => task.TaskType == Tasks.TrackTaskType.Parking || (task as Tasks.ServiceTask)?.Type.LocationType == Servicing.ServiceLocationType.Free))
+                            if (
+                                !nextmovetask.AllNext.All(task =>
+                                    task.TaskType == Tasks.TrackTaskType.Parking
+                                    || (task as Tasks.ServiceTask)?.Type.LocationType
+                                        == Servicing.ServiceLocationType.Free
+                                )
+                            )
                                 continue;
 
-                            if (!nextmovetask.Train.ParkingLocations.Contains(routing.ToTrack) || !routing.Train.ParkingLocations.Contains(nextmovetask.ToTrack))
+                            if (
+                                !nextmovetask.Train.ParkingLocations.Contains(routing.ToTrack)
+                                || !routing.Train.ParkingLocations.Contains(nextmovetask.ToTrack)
+                            )
                                 continue;
 
-                            var move = new ParkingSwapMove(graph, routing.Next, nextmovetask.AllNext.ToList());
+                            var move = new ParkingSwapMove(
+                                graph,
+                                routing.Next,
+                                nextmovetask.AllNext.ToList()
+                            );
                             moves.Add(move);
                         }
                     }

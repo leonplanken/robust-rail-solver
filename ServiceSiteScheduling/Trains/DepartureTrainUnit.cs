@@ -1,5 +1,4 @@
-﻿
-namespace ServiceSiteScheduling.Trains
+﻿namespace ServiceSiteScheduling.Trains
 {
     class DepartureTrainUnit : IEquatable<DepartureTrainUnit>
     {

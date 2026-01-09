@@ -1,14 +1,16 @@
-﻿
-namespace ServiceSiteScheduling.Tasks
+﻿namespace ServiceSiteScheduling.Tasks
 {
     class ServiceTask : TrackTask
     {
         public Servicing.ServiceType Type { get; private set; }
-        public Utilities.Time MinimumDuration {
+        public Utilities.Time MinimumDuration
+        {
             get
             {
                 if (this.minimumDuration < 0)
-                    this.minimumDuration = this.Train.Units.Sum(unit => unit.ServiceDurations[this.Type.Index]);
+                    this.minimumDuration = this.Train.Units.Sum(unit =>
+                        unit.ServiceDurations[this.Type.Index]
+                    );
                 return this.minimumDuration;
             }
         }
@@ -19,7 +21,13 @@ namespace ServiceSiteScheduling.Tasks
 
         private Utilities.Time minimumDuration = -1;
 
-        public ServiceTask(Trains.ShuntTrain train, TrackParts.Track track, Servicing.ServiceType type, Servicing.ServiceResource resource) : base(train, track, TrackTaskType.Service)
+        public ServiceTask(
+            Trains.ShuntTrain train,
+            TrackParts.Track track,
+            Servicing.ServiceType type,
+            Servicing.ServiceResource resource
+        )
+            : base(train, track, TrackTaskType.Service)
         {
             this.Type = type;
             this.Resource = resource;
@@ -91,7 +99,6 @@ namespace ServiceSiteScheduling.Tasks
                 }
                 else
                 {
-
                     if (position.Resource == resource)
                     {
                         ServiceTask next = position.NextServiceTask;
@@ -130,15 +137,14 @@ namespace ServiceSiteScheduling.Tasks
                 this.NextServiceTask.PreviousServiceTask = this.PreviousServiceTask;
 
             this.NextServiceTask = this.PreviousServiceTask = null;
-
         }
 
         private static void sameTrainSwap(ServiceTask first, ServiceTask second)
         {
             RoutingTask firstprev = first.Previous as RoutingTask,
-                        firstnext = first.Next as RoutingTask,
-                        secondprev = second.Previous as RoutingTask,
-                        secondnext = second.Next as RoutingTask;
+                firstnext = first.Next as RoutingTask,
+                secondprev = second.Previous as RoutingTask,
+                secondnext = second.Next as RoutingTask;
 
             foreach (var task in firstnext.Next)
                 task.Previous = secondnext;

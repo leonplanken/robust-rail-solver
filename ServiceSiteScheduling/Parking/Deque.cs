@@ -1,7 +1,7 @@
-﻿
-namespace ServiceSiteScheduling.Parking
+﻿namespace ServiceSiteScheduling.Parking
 {
-    class Deque<T> where T : DequeNode<T>
+    class Deque<T>
+        where T : DequeNode<T>
     {
         public T A { get; private set; }
         public T B { get; private set; }

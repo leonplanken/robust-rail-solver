@@ -26,7 +26,8 @@ namespace ServiceSiteScheduling.Utilities
                 this.mask = ulong.MaxValue >> (elementSize - remainder);
         }
 
-        public BitSet(int length, int index) : this(length)
+        public BitSet(int length, int index)
+            : this(length)
         {
             this[index] = true;
             this.count = 1;
@@ -42,7 +43,8 @@ namespace ServiceSiteScheduling.Utilities
             this.count = b.count;
         }
 
-        public BitSet(int length, ulong[] bits) : this(length)
+        public BitSet(int length, ulong[] bits)
+            : this(length)
         {
             Array.Copy(bits, this.elements, bits.Length);
         }
@@ -97,8 +99,13 @@ namespace ServiceSiteScheduling.Utilities
                 {
                     ulong element = this.elements[i];
                     element = element - ((element >> 1) & 0x5555555555555555UL);
-                    element = (element & 0x3333333333333333UL) + ((element >> 2) & 0x3333333333333333UL);
-                    this.count += (int)(unchecked(((element + (element >> 4)) & 0xF0F0F0F0F0F0F0FUL) * 0x101010101010101UL) >> 56);
+                    element =
+                        (element & 0x3333333333333333UL) + ((element >> 2) & 0x3333333333333333UL);
+                    this.count += (int)(
+                        unchecked(
+                            ((element + (element >> 4)) & 0xF0F0F0F0F0F0F0FUL) * 0x101010101010101UL
+                        ) >> 56
+                    );
                 }
                 this.changed = false;
                 return this.count;

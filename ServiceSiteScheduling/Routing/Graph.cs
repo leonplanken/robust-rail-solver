@@ -20,24 +20,42 @@ namespace ServiceSiteScheduling.Routing
         public RoutingGraph(SuperVertex[] supervertices)
         {
             this.SuperVertices = supervertices;
-            this.storages = new Storage[ProblemInstance.Current.Tracks.Length, ProblemInstance.Current.Tracks.Length];
+            this.storages = new Storage[
+                ProblemInstance.Current.Tracks.Length,
+                ProblemInstance.Current.Tracks.Length
+            ];
             for (int i = 0; i < ProblemInstance.Current.Tracks.Length; i++)
-                for (int j = 0; j < ProblemInstance.Current.Tracks.Length; j++)
-                    this.storages[i, j] = new Storage(ProblemInstance.Current.Tracks[i], ProblemInstance.Current.Tracks[j]);
+            for (int j = 0; j < ProblemInstance.Current.Tracks.Length; j++)
+                this.storages[i, j] = new Storage(
+                    ProblemInstance.Current.Tracks[i],
+                    ProblemInstance.Current.Tracks[j]
+                );
 
             this.Vertices = new Vertex[4 * supervertices.Length];
             this.ArcMatrix = new Arc[this.Vertices.Length, this.Vertices.Length];
             for (int i = 0; i < supervertices.Length; i++)
-                for (int j = 0; j < 4; j++)
-                    this.Vertices[4 * i + j] = supervertices[i].SubVertices[j];
+            for (int j = 0; j < 4; j++)
+                this.Vertices[4 * i + j] = supervertices[i].SubVertices[j];
 
             foreach (Vertex vertex in this.Vertices)
-                foreach (Arc arc in vertex.Arcs)
-                    this.ArcMatrix[vertex.Index, arc.Head.Index] = arc;
+            foreach (Arc arc in vertex.Arcs)
+                this.ArcMatrix[vertex.Index, arc.Head.Index] = arc;
 
             this.priorityqueue = new FastPriorityQueue<Vertex>(4 * supervertices.Length);
 
-            ShuntTrain train = new ShuntTrain(new ShuntTrainUnit[] { new ShuntTrainUnit(new TrainUnit(-1, ProblemInstance.Current.TrainTypes[0], new Servicing.Service[0], ProblemInstance.Current.ServiceTypes)) });
+            ShuntTrain train = new ShuntTrain(
+                new ShuntTrainUnit[]
+                {
+                    new ShuntTrainUnit(
+                        new TrainUnit(
+                            -1,
+                            ProblemInstance.Current.TrainTypes[0],
+                            new Servicing.Service[0],
+                            ProblemInstance.Current.ServiceTypes
+                        )
+                    ),
+                }
+            );
             this.SwitchCount = new int[this.Vertices.Length][];
             this.TrackCount = new int[this.Vertices.Length][];
             this.ReversalCount = new int[this.Vertices.Length][];
@@ -68,7 +86,10 @@ namespace ServiceSiteScheduling.Routing
 
                     if (w.ArrivalSide != w.TrackSide && v.ArrivalSide == v.TrackSide)
                     {
-                        var storage = this.storages[w.SuperVertex.Track.Index, v.SuperVertex.Track.Index];
+                        var storage = this.storages[
+                            w.SuperVertex.Track.Index,
+                            v.SuperVertex.Track.Index
+                        ];
                         storage.Add(w.TrackSide, v.TrackSide, storage.EmptyState, route);
                     }
 
@@ -80,7 +101,10 @@ namespace ServiceSiteScheduling.Routing
 
                     if (v.ArrivalSide != v.TrackSide && w.ArrivalSide == w.TrackSide)
                     {
-                        var storage = this.storages[v.SuperVertex.Track.Index, w.SuperVertex.Track.Index];
+                        var storage = this.storages[
+                            v.SuperVertex.Track.Index,
+                            w.SuperVertex.Track.Index
+                        ];
                         storage.Add(v.TrackSide, w.TrackSide, storage.EmptyState, route);
                     }
                 }
@@ -102,16 +126,88 @@ namespace ServiceSiteScheduling.Routing
                 aa.SuperVertex = ab.SuperVertex = ba.SuperVertex = bb.SuperVertex = v;
 
                 // Add track arcs
-                aa.Arcs.Add(new Arc(aa, ba, ArcType.Track, new TrackSwitchContainer(track, 0, Side.None, new Infrastructure[1] { track })));
-                bb.Arcs.Add(new Arc(bb, ab, ArcType.Track, new TrackSwitchContainer(track, 0, Side.None, new Infrastructure[1] { track })));
+                aa.Arcs.Add(
+                    new Arc(
+                        aa,
+                        ba,
+                        ArcType.Track,
+                        new TrackSwitchContainer(
+                            track,
+                            0,
+                            Side.None,
+                            new Infrastructure[1] { track }
+                        )
+                    )
+                );
+                bb.Arcs.Add(
+                    new Arc(
+                        bb,
+                        ab,
+                        ArcType.Track,
+                        new TrackSwitchContainer(
+                            track,
+                            0,
+                            Side.None,
+                            new Infrastructure[1] { track }
+                        )
+                    )
+                );
 
                 // Add reversal arcs
                 if (track.CanReverse)
                 {
-                    aa.Arcs.Add(new Arc(aa, ab, ArcType.Reverse, new TrackSwitchContainer(track, 0, Side.None, new Infrastructure[1] { track })));
-                    ab.Arcs.Add(new Arc(ab, aa, ArcType.Reverse, new TrackSwitchContainer(track, 0, Side.None, new Infrastructure[1] { track })));
-                    bb.Arcs.Add(new Arc(bb, ba, ArcType.Reverse, new TrackSwitchContainer(track, 0, Side.None, new Infrastructure[1] { track })));
-                    ba.Arcs.Add(new Arc(ba, bb, ArcType.Reverse, new TrackSwitchContainer(track, 0, Side.None, new Infrastructure[1] { track })));
+                    aa.Arcs.Add(
+                        new Arc(
+                            aa,
+                            ab,
+                            ArcType.Reverse,
+                            new TrackSwitchContainer(
+                                track,
+                                0,
+                                Side.None,
+                                new Infrastructure[1] { track }
+                            )
+                        )
+                    );
+                    ab.Arcs.Add(
+                        new Arc(
+                            ab,
+                            aa,
+                            ArcType.Reverse,
+                            new TrackSwitchContainer(
+                                track,
+                                0,
+                                Side.None,
+                                new Infrastructure[1] { track }
+                            )
+                        )
+                    );
+                    bb.Arcs.Add(
+                        new Arc(
+                            bb,
+                            ba,
+                            ArcType.Reverse,
+                            new TrackSwitchContainer(
+                                track,
+                                0,
+                                Side.None,
+                                new Infrastructure[1] { track }
+                            )
+                        )
+                    );
+                    ba.Arcs.Add(
+                        new Arc(
+                            ba,
+                            bb,
+                            ArcType.Reverse,
+                            new TrackSwitchContainer(
+                                track,
+                                0,
+                                Side.None,
+                                new Infrastructure[1] { track }
+                            )
+                        )
+                    );
                 }
             }
 
@@ -124,10 +220,8 @@ namespace ServiceSiteScheduling.Routing
                 SuperVertex v = supervertices[track.Index];
                 var tmp = track.GetConnectionsAtSide(Side.A).Count();
 
-
                 if (track.Access.HasFlag(Side.A))
-                {   
-                    
+                {
                     foreach (var connection in track.GetConnectionsAtSide(Side.A))
                     {
                         SuperVertex w = supervertices[connection.Track.Index];
@@ -161,7 +255,14 @@ namespace ServiceSiteScheduling.Routing
             return new RoutingGraph(supervertices);
         }
 
-        public Route ComputeRoute(Parking.TrackOccupation[] occupations, ShuntTrain train, Track departureTrack, Side departureSide, Track arrivalTrack, Side arrivalSide)
+        public Route ComputeRoute(
+            Parking.TrackOccupation[] occupations,
+            ShuntTrain train,
+            Track departureTrack,
+            Side departureSide,
+            Track arrivalTrack,
+            Side arrivalSide
+        )
         {
             if (departureTrack == arrivalTrack && departureSide == arrivalSide)
                 return Route.EmptyRoute(train, this, departureTrack, departureSide);
@@ -187,10 +288,25 @@ namespace ServiceSiteScheduling.Routing
             return route;
         }
 
-        public Route ComputeRoute(Parking.TrackOccupation[] occupations, ShuntTrain train, Track departureTrack, Side departureSide, Track arrivalTrack, Side arrivalSide, BitSet bitstate)
+        public Route ComputeRoute(
+            Parking.TrackOccupation[] occupations,
+            ShuntTrain train,
+            Track departureTrack,
+            Side departureSide,
+            Track arrivalTrack,
+            Side arrivalSide,
+            BitSet bitstate
+        )
         {
             if (bitstate == null)
-                return this.ComputeRoute(occupations, train, departureTrack, departureSide, arrivalTrack, arrivalSide);
+                return this.ComputeRoute(
+                    occupations,
+                    train,
+                    departureTrack,
+                    departureSide,
+                    arrivalTrack,
+                    arrivalSide
+                );
 
             if (departureTrack == arrivalTrack && departureSide == arrivalSide)
                 return Route.EmptyRoute(train, this, departureTrack, departureSide);
@@ -215,7 +331,13 @@ namespace ServiceSiteScheduling.Routing
             return route;
         }
 
-        public bool RoutePossible(ShuntTrain train, Track departureTrack, Side departureSide, Track arrivalTrack, Side arrivalSide)
+        public bool RoutePossible(
+            ShuntTrain train,
+            Track departureTrack,
+            Side departureSide,
+            Track arrivalTrack,
+            Side arrivalSide
+        )
         {
             if (departureTrack == arrivalTrack && departureSide == arrivalSide)
                 return true;
@@ -225,20 +347,43 @@ namespace ServiceSiteScheduling.Routing
             SuperVertex end = this.SuperVertices[arrivalTrack.Index];
             Vertex destination = arrivalSide == Side.A ? end.AA : end.BB;
 
-            return this.SwitchCount[destination.Index][origin.Index] < Settings.SwitchesIfInvalidRoute;
+            return this.SwitchCount[destination.Index][origin.Index]
+                < Settings.SwitchesIfInvalidRoute;
         }
 
-        protected Route Dijkstra(ShuntTrain train, Vertex start, Vertex end, Side departureside, bool useEstimate = true)
+        protected Route Dijkstra(
+            ShuntTrain train,
+            Vertex start,
+            Vertex end,
+            Side departureside,
+            bool useEstimate = true
+        )
         {
             foreach (Vertex v in this.Vertices)
                 v.Discovered = v.Explored = false;
             this.priorityqueue.Clear();
 
-            int[] switchcount = this.SwitchCount[end.Index], reversalcount = this.ReversalCount[end.Index], trackcount = this.TrackCount[end.Index];
+            int[] switchcount = this.SwitchCount[end.Index],
+                reversalcount = this.ReversalCount[end.Index],
+                trackcount = this.TrackCount[end.Index];
 
             start.Distance = 0;
             start.Discovered = true;
-            priorityqueue.Enqueue(start, (useEstimate ? (int)this.ComputeEstimate(train, start.Index, switchcount, trackcount, reversalcount) : 0));
+            priorityqueue.Enqueue(
+                start,
+                (
+                    useEstimate
+                        ? (int)
+                            this.ComputeEstimate(
+                                train,
+                                start.Index,
+                                switchcount,
+                                trackcount,
+                                reversalcount
+                            )
+                        : 0
+                )
+            );
 
             while (priorityqueue.Count > 0)
             {
@@ -261,10 +406,40 @@ namespace ServiceSiteScheduling.Routing
                         neighbor.Distance = vertex.Distance + arc.Cost;
 
                         if (neighbor.Discovered)
-                            priorityqueue.UpdatePriority(neighbor, neighbor.Distance + (useEstimate ? (int)this.ComputeEstimate(train, neighbor.Index, switchcount, trackcount, reversalcount) : 0));
+                            priorityqueue.UpdatePriority(
+                                neighbor,
+                                neighbor.Distance
+                                    + (
+                                        useEstimate
+                                            ? (int)
+                                                this.ComputeEstimate(
+                                                    train,
+                                                    neighbor.Index,
+                                                    switchcount,
+                                                    trackcount,
+                                                    reversalcount
+                                                )
+                                            : 0
+                                    )
+                            );
                         else
                         {
-                            priorityqueue.Enqueue(neighbor, neighbor.Distance + (useEstimate ? (int)this.ComputeEstimate(train, neighbor.Index, switchcount, trackcount, reversalcount) : 0));
+                            priorityqueue.Enqueue(
+                                neighbor,
+                                neighbor.Distance
+                                    + (
+                                        useEstimate
+                                            ? (int)
+                                                this.ComputeEstimate(
+                                                    train,
+                                                    neighbor.Index,
+                                                    switchcount,
+                                                    trackcount,
+                                                    reversalcount
+                                                )
+                                            : 0
+                                    )
+                            );
                             neighbor.Discovered = true;
                         }
                     }
@@ -303,13 +478,32 @@ namespace ServiceSiteScheduling.Routing
                 current = current.Previous.Tail;
             }
 
-            return new Route(train, this, route.ToArray(), arcs.ToArray(), crossings, crossingtracks, departureside, switches, reversals);
+            return new Route(
+                train,
+                this,
+                route.ToArray(),
+                arcs.ToArray(),
+                crossings,
+                crossingtracks,
+                departureside,
+                switches,
+                reversals
+            );
         }
 
-        protected Time ComputeEstimate(ShuntTrain train, int index, int[] switchcount, int[] trackcount, int[] reversalcount)
+        protected Time ComputeEstimate(
+            ShuntTrain train,
+            int index,
+            int[] switchcount,
+            int[] trackcount,
+            int[] reversalcount
+        )
         {
             int reversals = reversalcount[index];
-            Time result = switchcount[index] * Settings.SwitchCrossingTime + (reversals + trackcount[index]) * Settings.TrackCrossingTime + reversals * train.ReversalDuration;
+            Time result =
+                switchcount[index] * Settings.SwitchCrossingTime
+                + (reversals + trackcount[index]) * Settings.TrackCrossingTime
+                + reversals * train.ReversalDuration;
             return result;
         }
     }

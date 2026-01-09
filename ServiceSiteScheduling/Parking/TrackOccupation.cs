@@ -37,10 +37,14 @@ namespace ServiceSiteScheduling.Parking
             task.State.HasDeparted = true;
         }
 
-        public virtual void UpdateDepartureOrder(IList<TrackTask> tasks, ShuntTrain train, Side side)
+        public virtual void UpdateDepartureOrder(
+            IList<TrackTask> tasks,
+            ShuntTrain train,
+            Side side
+        )
         {
-            
-            int unitindex = 0, taskindex = 0;
+            int unitindex = 0,
+                taskindex = 0;
             foreach (State state in (side == Side.A ? this.StateDeque.A2B : this.StateDeque.B2A))
             {
                 TrackTask task = state.Task;
@@ -48,7 +52,11 @@ namespace ServiceSiteScheduling.Parking
                 {
                     tasks[tasks.IndexOf(task)] = tasks[taskindex];
                     tasks[taskindex++] = task;
-                    foreach (ShuntTrainUnit unit in (side == task.ArrivalSide ? task.Train.B2A : task.Train.A2B))
+                    foreach (
+                        ShuntTrainUnit unit in (
+                            side == task.ArrivalSide ? task.Train.B2A : task.Train.A2B
+                        )
+                    )
                         if (train.UnitBits[unit.Index])
                             train.Units[unitindex++] = unit;
                 }
@@ -61,7 +69,7 @@ namespace ServiceSiteScheduling.Parking
         public abstract int CountCrossingsIfTurning(ShuntTrain train, Side side);
 
         public abstract bool HasSufficientSpace(ShuntTrain train, double start, double end);
-    
+
         public virtual void Reset()
         {
             this.StateDeque.Clear();
@@ -78,16 +86,22 @@ namespace ServiceSiteScheduling.Parking
         protected Side side;
         int crossings = 0;
 
-        public int Crossings { get { return this.crossings; } }
+        public int Crossings
+        {
+            get { return this.crossings; }
+        }
 
-        public LIFOTrackOccupation(Track track) : base(track)
+        public LIFOTrackOccupation(Track track)
+            : base(track)
         {
             this.side = track.Access;
         }
 
         public override void Arrive(TrackTask task)
         {
-            int distance = (this.StateDeque.Head(this.side)?.GetDistance(this.side) ?? this.Track.Length) - task.Train.Length;
+            int distance =
+                (this.StateDeque.Head(this.side)?.GetDistance(this.side) ?? this.Track.Length)
+                - task.Train.Length;
 
             task.State.SetDistance(this.side, distance);
             if (distance < 0)
@@ -131,7 +145,8 @@ namespace ServiceSiteScheduling.Parking
 
     class FreeTrackOccupation : TrackOccupation
     {
-        public FreeTrackOccupation(Track track) : base(track) { }
+        public FreeTrackOccupation(Track track)
+            : base(track) { }
 
         public override void Arrive(TrackTask task)
         {
@@ -162,10 +177,15 @@ namespace ServiceSiteScheduling.Parking
         {
             int length = state.Task.Train.Length;
 
-            if (side.HasFlag(Side.A) && (state.StatesA.Count == 0 || state.StatesA.Last().HasDeparted))
+            if (
+                side.HasFlag(Side.A)
+                && (state.StatesA.Count == 0 || state.StatesA.Last().HasDeparted)
+            )
             {
                 if (state.StatesA.Count > 0)
-                    state.DistanceA = state.StatesA.Max(neighbor => neighbor.DistanceA + neighbor.Task.Train.Length);
+                    state.DistanceA = state.StatesA.Max(neighbor =>
+                        neighbor.DistanceA + neighbor.Task.Train.Length
+                    );
                 foreach (State neighbor in state.StatesB)
                 {
                     if (neighbor.HasDeparted)
@@ -175,10 +195,15 @@ namespace ServiceSiteScheduling.Parking
                 }
             }
 
-            if (side.HasFlag(Side.B) && (state.StatesB.Count == 0 || state.StatesB.Last().HasDeparted))
+            if (
+                side.HasFlag(Side.B)
+                && (state.StatesB.Count == 0 || state.StatesB.Last().HasDeparted)
+            )
             {
                 if (state.StatesB.Count > 0)
-                    state.DistanceB = state.StatesB.Max(neighbor => neighbor.DistanceB + neighbor.Task.Train.Length);
+                    state.DistanceB = state.StatesB.Max(neighbor =>
+                        neighbor.DistanceB + neighbor.Task.Train.Length
+                    );
                 foreach (State neighbor in state.StatesA)
                 {
                     if (neighbor.HasDeparted)
@@ -188,7 +213,13 @@ namespace ServiceSiteScheduling.Parking
                 }
             }
 
-            if (!state.ExceedsTrackLength && (state.DistanceA + length > this.Track.Length || state.DistanceB + length > this.Track.Length))
+            if (
+                !state.ExceedsTrackLength
+                && (
+                    state.DistanceA + length > this.Track.Length
+                    || state.DistanceB + length > this.Track.Length
+                )
+            )
             {
                 state.ExceedsTrackLength = true;
                 this.TrackLengthViolations++;
@@ -237,14 +268,19 @@ namespace ServiceSiteScheduling.Parking
         List<double> order = new List<double>();
         List<int> space = new List<int>();
 
-        public SimpleTrackOccupation(Track track) : base(track)
-        {
-        }
+        public SimpleTrackOccupation(Track track)
+            : base(track) { }
 
         public override void Arrive(TrackTask task)
         {
             this.occupation += task.Train.Length;
-            if (task.Previous != null && (this.space.Count == 0 || this.order[this.space.Count - 1] != task.Previous.MoveOrder))
+            if (
+                task.Previous != null
+                && (
+                    this.space.Count == 0
+                    || this.order[this.space.Count - 1] != task.Previous.MoveOrder
+                )
+            )
             {
                 this.order.Add(task.Previous.MoveOrder);
                 this.space.Add(this.Track.Length - this.occupation);
@@ -253,7 +289,10 @@ namespace ServiceSiteScheduling.Parking
             {
                 this.TrackLengthViolations++;
                 this.ViolatingStates.Add(task.State);
-                this.TrackLengthViolationSum = Math.Max(this.TrackLengthViolationSum, this.occupation - this.Track.Length);
+                this.TrackLengthViolationSum = Math.Max(
+                    this.TrackLengthViolationSum,
+                    this.occupation - this.Track.Length
+                );
             }
             base.Arrive(task);
         }
@@ -261,7 +300,12 @@ namespace ServiceSiteScheduling.Parking
         public override void Depart(TrackTask task)
         {
             this.occupation -= task.Train.Length;
-            if (task.Next != null && (this.space.Count == 0 || this.order[this.space.Count - 1] != task.Next.MoveOrder))
+            if (
+                task.Next != null
+                && (
+                    this.space.Count == 0 || this.order[this.space.Count - 1] != task.Next.MoveOrder
+                )
+            )
             {
                 this.order.Add(task.Next.MoveOrder);
                 this.space.Add(this.Track.Length - this.occupation);

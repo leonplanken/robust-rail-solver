@@ -15,7 +15,16 @@ namespace ServiceSiteScheduling.Trains
         public Time CombineDuration { get; set; }
         public Time SplitDuration { get; set; }
 
-        public TrainType(int index, string name, int length, Track[] locations, Time reversalbase, Time reversalvariable, Time combineduration, Time splitduration)
+        public TrainType(
+            int index,
+            string name,
+            int length,
+            Track[] locations,
+            Time reversalbase,
+            Time reversalvariable,
+            Time combineduration,
+            Time splitduration
+        )
         {
             this.Index = index;
             this.Name = name;

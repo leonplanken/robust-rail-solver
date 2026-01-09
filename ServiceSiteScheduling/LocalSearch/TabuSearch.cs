@@ -1,15 +1,16 @@
-﻿using ServiceSiteScheduling.Solutions;
-using ServiceSiteScheduling.Utilities;
-using System.Diagnostics;
-using Google.Protobuf;
+﻿using System.Diagnostics;
 using AlgoIface;
-
+using Google.Protobuf;
+using ServiceSiteScheduling.Solutions;
+using ServiceSiteScheduling.Utilities;
 
 namespace ServiceSiteScheduling.LocalSearch
 {
     class TabuSearch
     {
-        public static int Iterations = 2500, IterationsUntilReset = 60, TabuListLength = 12;
+        public static int Iterations = 2500,
+            IterationsUntilReset = 60,
+            TabuListLength = 12;
 
         Random random;
         public PlanGraph Graph { get; private set; }
@@ -17,7 +18,7 @@ namespace ServiceSiteScheduling.LocalSearch
         public TabuSearch(Random random, int debugLevel = 0)
         {
             var graph = Initial.SimpleHeuristic.Construct(random, debugLevel);
-            graph.Cost = graph.ComputeModel();         
+            graph.Cost = graph.ComputeModel();
 
             this.Graph = graph;
             this.random = random;
@@ -31,22 +32,34 @@ namespace ServiceSiteScheduling.LocalSearch
 
         //@iterations: maximum iterations in the searching algorithm if it is achieved the search ends
         //@iterationsUntilReset: the current solution should be improved until that number of iteration if this number is hit, the current solution  cannot be improved -> the current solution is reverted to the original solution
-        //@tabuListLength: lenght of tabu list conaining LocalSerachMoves -> solution graphs (e.g., 16) 
+        //@tabuListLength: lenght of tabu list conaining LocalSerachMoves -> solution graphs (e.g., 16)
         //@bias: restricted probability (e.g., 0.75)
         //@suppressConsoleOutput: enables extra logs
-        public void Run(int iterations, int iterationsUntilReset, int tabuListLength, double bias = 0.75, int debugLevel = 0, string tmp_plan_path = "./tmp_plans/")
+        public void Run(
+            int iterations,
+            int iterationsUntilReset,
+            int tabuListLength,
+            double bias = 0.75,
+            int debugLevel = 0,
+            string tmp_plan_path = "./tmp_plans/"
+        )
         {
             // Write initial JSON plan to file
             Plan plan_pb = this.Graph.GenerateOutputJSONformat();
-            var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true));
+            var formatter = new JsonFormatter(
+                JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true)
+            );
             string jsonPlan = formatter.Format(plan_pb);
             string current_plan = tmp_plan_path + "tabu_plan_initial.json";
             File.WriteAllText(current_plan, jsonPlan);
 
             List<LocalSearchMove> moves = new List<LocalSearchMove>();
             moves.Add(new IdentityMove(this.Graph));
-            int noimprovement = 0, iteration = 0, neighborsvisited = 0;
-            SolutionCost bestcost = this.Graph.ComputeModel(), current = bestcost;
+            int noimprovement = 0,
+                iteration = 0,
+                neighborsvisited = 0;
+            SolutionCost bestcost = this.Graph.ComputeModel(),
+                current = bestcost;
             LinkedList<LocalSearchMove> tabu = new LinkedList<LocalSearchMove>();
 
             Stopwatch stopwatch = new Stopwatch();
@@ -87,7 +100,12 @@ namespace ServiceSiteScheduling.LocalSearch
                     move.Execute();
                     move.Revert();
 
-                    if (move.Cost.Cost(fullcost) + SolutionCost.CombineDepartureWeight < bestcost.Cost(fullcost) || move.Cost.Cost(fullcost) + 5 * SolutionCost.CombineDepartureWeight < current.Cost(fullcost))
+                    if (
+                        move.Cost.Cost(fullcost) + SolutionCost.CombineDepartureWeight
+                            < bestcost.Cost(fullcost)
+                        || move.Cost.Cost(fullcost) + 5 * SolutionCost.CombineDepartureWeight
+                            < current.Cost(fullcost)
+                    )
                         break;
                 }
 
@@ -113,20 +131,30 @@ namespace ServiceSiteScheduling.LocalSearch
                 if (next.Cost.Cost(fullcost) < bestcost.Cost(fullcost))
                 {
                     current = bestcost = next.Cost;
-                    if (debugLevel > 1) { Console.WriteLine($"Cost of next node: {next.Cost}"); }
+                    if (debugLevel > 1)
+                    {
+                        Console.WriteLine($"Cost of next node: {next.Cost}");
+                    }
                     noimprovement = 0;
 
                     // Write JSON plan to file
                     plan_pb = this.Graph.GenerateOutputJSONformat();
                     jsonPlan = formatter.Format(plan_pb);
-                    current_plan = tmp_plan_path + "tabu_plan_iteration" + iteration.ToString() + ".json";
-                    if (debugLevel > 1) Console.WriteLine($"New best solution found at iteration {iteration}, writing plan to {current_plan}");
+                    current_plan =
+                        tmp_plan_path + "tabu_plan_iteration" + iteration.ToString() + ".json";
+                    if (debugLevel > 1)
+                        Console.WriteLine(
+                            $"New best solution found at iteration {iteration}, writing plan to {current_plan}"
+                        );
                     File.WriteAllText(current_plan, jsonPlan);
                 }
                 else
                 {
                     // If there was no improvement for several iterations
-                    if (noimprovement++ > iterationsUntilReset || next.Cost.Cost(fullcost) > 1.5 * bestcost.Cost(fullcost))
+                    if (
+                        noimprovement++ > iterationsUntilReset
+                        || next.Cost.Cost(fullcost) > 1.5 * bestcost.Cost(fullcost)
+                    )
                     {
                         // Revert to previous best
                         Revert(moves, fullcost);
@@ -142,55 +170,123 @@ namespace ServiceSiteScheduling.LocalSearch
                         bool selected = false;
                         if (this.random.NextDouble() < bias)
                         {
-                            possiblemoves.AddRange(parkingshiftmoves.Where(move =>
-                                this.Graph.Cost.ProblemTracks[move.Track.Index] ||
-                                move.RelatedTasks.Any(task => this.Graph.Cost.ProblemTrains.Intersects(task.Train.UnitBits))));
-                            possiblemoves.AddRange(parkingswapmoves.Where(move =>
-                                this.Graph.Cost.ProblemTracks[move.ParkingFirst.First().Track.Index] ||
-                                this.Graph.Cost.ProblemTracks[move.ParkingSecond.First().Track.Index] ||
-                                move.ParkingFirst.Any(task => this.Graph.Cost.ProblemTrains.Intersects(task.Train.UnitBits)) ||
-                                move.ParkingSecond.Any(task => this.Graph.Cost.ProblemTrains.Intersects(task.Train.UnitBits))));
-                            possiblemoves.AddRange(servicemachineordermoves.Where(move =>
-                                this.Graph.Cost.ProblemTracks[move.First.Track.Index] ||
-                                this.Graph.Cost.ProblemTracks[move.Second.Track.Index] ||
-                                this.Graph.Cost.ProblemTrains.Intersects(move.First.Train.UnitBits) ||
-                                this.Graph.Cost.ProblemTrains.Intersects(move.Second.Train.UnitBits)));
-                            possiblemoves.AddRange(servicemachineswapmoves.Where(move =>
-                                this.Graph.Cost.ProblemTracks[move.First.Track.Index] ||
-                                this.Graph.Cost.ProblemTracks[move.Second.Track.Index] ||
-                                this.Graph.Cost.ProblemTrains.Intersects(move.First.Train.UnitBits) ||
-                                this.Graph.Cost.ProblemTrains.Intersects(move.Second.Train.UnitBits)));
-                            possiblemoves.AddRange(servicemachineswitchmoves.Where(move =>
-                                this.Graph.Cost.ProblemTracks[move.Selected.Track.Index] ||
-                                this.Graph.Cost.ProblemTrains.Intersects(move.Selected.Train.UnitBits)));
-                            possiblemoves.AddRange(servicetrainordermoves.Where(move =>
-                                this.Graph.Cost.ProblemTracks[move.First.Track.Index] ||
-                                this.Graph.Cost.ProblemTracks[move.Second.Track.Index] ||
-                                this.Graph.Cost.ProblemTrains.Intersects(move.First.Train.UnitBits)));
-                            possiblemoves.AddRange(matchingswapmoves.Where(move =>
-                                this.Graph.Cost.ProblemTrains.Intersects(move.First.Matching.GetShuntTrain(move.First.Train).UnitBits) ||
-                                this.Graph.Cost.ProblemTrains.Intersects(move.Second.Matching.GetShuntTrain(move.Second.Train).UnitBits)));
-                            possiblemoves.AddRange(routingshiftmoves.Where(move =>
-                            {
-                                var shift = move as RoutingShiftMove;
-                                if (shift != null)
+                            possiblemoves.AddRange(
+                                parkingshiftmoves.Where(move =>
+                                    this.Graph.Cost.ProblemTracks[move.Track.Index]
+                                    || move.RelatedTasks.Any(task =>
+                                        this.Graph.Cost.ProblemTrains.Intersects(
+                                            task.Train.UnitBits
+                                        )
+                                    )
+                                )
+                            );
+                            possiblemoves.AddRange(
+                                parkingswapmoves.Where(move =>
+                                    this.Graph.Cost.ProblemTracks[
+                                        move.ParkingFirst.First().Track.Index
+                                    ]
+                                    || this.Graph.Cost.ProblemTracks[
+                                        move.ParkingSecond.First().Track.Index
+                                    ]
+                                    || move.ParkingFirst.Any(task =>
+                                        this.Graph.Cost.ProblemTrains.Intersects(
+                                            task.Train.UnitBits
+                                        )
+                                    )
+                                    || move.ParkingSecond.Any(task =>
+                                        this.Graph.Cost.ProblemTrains.Intersects(
+                                            task.Train.UnitBits
+                                        )
+                                    )
+                                )
+                            );
+                            possiblemoves.AddRange(
+                                servicemachineordermoves.Where(move =>
+                                    this.Graph.Cost.ProblemTracks[move.First.Track.Index]
+                                    || this.Graph.Cost.ProblemTracks[move.Second.Track.Index]
+                                    || this.Graph.Cost.ProblemTrains.Intersects(
+                                        move.First.Train.UnitBits
+                                    )
+                                    || this.Graph.Cost.ProblemTrains.Intersects(
+                                        move.Second.Train.UnitBits
+                                    )
+                                )
+                            );
+                            possiblemoves.AddRange(
+                                servicemachineswapmoves.Where(move =>
+                                    this.Graph.Cost.ProblemTracks[move.First.Track.Index]
+                                    || this.Graph.Cost.ProblemTracks[move.Second.Track.Index]
+                                    || this.Graph.Cost.ProblemTrains.Intersects(
+                                        move.First.Train.UnitBits
+                                    )
+                                    || this.Graph.Cost.ProblemTrains.Intersects(
+                                        move.Second.Train.UnitBits
+                                    )
+                                )
+                            );
+                            possiblemoves.AddRange(
+                                servicemachineswitchmoves.Where(move =>
+                                    this.Graph.Cost.ProblemTracks[move.Selected.Track.Index]
+                                    || this.Graph.Cost.ProblemTrains.Intersects(
+                                        move.Selected.Train.UnitBits
+                                    )
+                                )
+                            );
+                            possiblemoves.AddRange(
+                                servicetrainordermoves.Where(move =>
+                                    this.Graph.Cost.ProblemTracks[move.First.Track.Index]
+                                    || this.Graph.Cost.ProblemTracks[move.Second.Track.Index]
+                                    || this.Graph.Cost.ProblemTrains.Intersects(
+                                        move.First.Train.UnitBits
+                                    )
+                                )
+                            );
+                            possiblemoves.AddRange(
+                                matchingswapmoves.Where(move =>
+                                    this.Graph.Cost.ProblemTrains.Intersects(
+                                        move.First.Matching.GetShuntTrain(move.First.Train).UnitBits
+                                    )
+                                    || this.Graph.Cost.ProblemTrains.Intersects(
+                                        move.Second.Matching.GetShuntTrain(
+                                            move.Second.Train
+                                        ).UnitBits
+                                    )
+                                )
+                            );
+                            possiblemoves.AddRange(
+                                routingshiftmoves.Where(move =>
                                 {
-                                    return
-                                        this.Graph.Cost.ProblemTracks[shift.Selected.ToTrack.Index] ||
-                                        shift.Selected.AllNext.Any(task => this.Graph.Cost.ProblemTracks[task.Track.Index]) ||
-                                        this.Graph.Cost.ProblemTrains.Intersects(shift.Selected.Train.UnitBits);
-                                }
-                                else
-                                {
-                                    var merge = move as RoutingMergeMove;
-                                    return
-                                        this.Graph.Cost.ProblemTracks[merge.To.ToTrack.Index] ||
-                                        this.Graph.Cost.ProblemTrains.Intersects(merge.From.Train.UnitBits);
-                                }
-                            }));
+                                    var shift = move as RoutingShiftMove;
+                                    if (shift != null)
+                                    {
+                                        return this.Graph.Cost.ProblemTracks[
+                                                shift.Selected.ToTrack.Index
+                                            ]
+                                            || shift.Selected.AllNext.Any(task =>
+                                                this.Graph.Cost.ProblemTracks[task.Track.Index]
+                                            )
+                                            || this.Graph.Cost.ProblemTrains.Intersects(
+                                                shift.Selected.Train.UnitBits
+                                            );
+                                    }
+                                    else
+                                    {
+                                        var merge = move as RoutingMergeMove;
+                                        return this.Graph.Cost.ProblemTracks[merge.To.ToTrack.Index]
+                                            || this.Graph.Cost.ProblemTrains.Intersects(
+                                                merge.From.Train.UnitBits
+                                            );
+                                    }
+                                })
+                            );
                             possiblemoves.AddRange(parkinginsertmoves);
                             possiblemoves.AddRange(parkingroutingtemporarymoves);
-                            possiblemoves = possiblemoves.Where(m => (m.Cost?.Cost(fullcost) ?? double.PositiveInfinity) < current.Cost(fullcost) + 50).ToList();
+                            possiblemoves = possiblemoves
+                                .Where(m =>
+                                    (m.Cost?.Cost(fullcost) ?? double.PositiveInfinity)
+                                    < current.Cost(fullcost) + 50
+                                )
+                                .ToList();
                             if (possiblemoves.Count > 0)
                                 selected = true;
                         }
@@ -213,7 +309,10 @@ namespace ServiceSiteScheduling.LocalSearch
                 current = next.Cost;
                 if (iteration >= iterations)
                     break;
-                if (++iteration % 100 == 0 && debugLevel > 1) { Console.WriteLine($"Iteration {iteration}"); }
+                if (++iteration % 100 == 0 && debugLevel > 1)
+                {
+                    Console.WriteLine($"Iteration {iteration}");
+                }
             }
 
             stopwatch.Stop();
@@ -223,7 +322,9 @@ namespace ServiceSiteScheduling.LocalSearch
                 Console.WriteLine("-----------------------");
                 Console.WriteLine($"{this.Graph.ComputeModel()}");
                 Console.WriteLine("-----------------------");
-                Console.WriteLine($"Finished after {(stopwatch.ElapsedMilliseconds / (double)1000).ToString("N2")} seconds");
+                Console.WriteLine(
+                    $"Finished after {(stopwatch.ElapsedMilliseconds / (double)1000).ToString("N2")} seconds"
+                );
                 Console.WriteLine($"Neighbors visited = {neighborsvisited}");
             }
         }

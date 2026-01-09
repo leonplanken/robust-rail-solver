@@ -11,7 +11,10 @@ namespace ServiceSiteScheduling.Routing
         private Dictionary<BitSet, Entry> BB;
         private int[] indices;
         private const int maxsize = 10000;
-        private LinkedList<BitSet> AAhistory, ABhistory, BAhistory, BBhistory;
+        private LinkedList<BitSet> AAhistory,
+            ABhistory,
+            BAhistory,
+            BBhistory;
 
         public TrackParts.Track From { get; private set; }
         public TrackParts.Track To { get; private set; }
@@ -103,7 +106,12 @@ namespace ServiceSiteScheduling.Routing
             }
         }
 
-        private bool tryGetValue(Dictionary<BitSet, Entry> hashmap, LinkedList<BitSet> history, BitSet key, out Route value)
+        private bool tryGetValue(
+            Dictionary<BitSet, Entry> hashmap,
+            LinkedList<BitSet> history,
+            BitSet key,
+            out Route value
+        )
         {
             Entry entry = default(Entry);
             bool success = hashmap.TryGetValue(key, out entry);
@@ -119,7 +127,12 @@ namespace ServiceSiteScheduling.Routing
             return success;
         }
 
-        private void add(Dictionary<BitSet, Entry> hashmap, LinkedList<BitSet> history, BitSet key, Route value)
+        private void add(
+            Dictionary<BitSet, Entry> hashmap,
+            LinkedList<BitSet> history,
+            BitSet key,
+            Route value
+        )
         {
             hashmap[key] = new Entry(value, history.AddLast(key));
             if (history.Count > maxsize)
@@ -139,7 +152,8 @@ namespace ServiceSiteScheduling.Routing
             string result = string.Empty;
             foreach (var track in ProblemInstance.Current.Tracks)
                 if (track.IsActive)
-                    result += $"{track.PrettyName} = {state[this.indices[track.Index]]} {(track.Access == Side.Both ? state[this.indices[track.Index] + 1].ToString() : "?")} \r\n";
+                    result +=
+                        $"{track.PrettyName} = {state[this.indices[track.Index]]} {(track.Access == Side.Both ? state[this.indices[track.Index] + 1].ToString() : "?")} \r\n";
             return result;
         }
 

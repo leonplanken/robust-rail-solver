@@ -12,7 +12,14 @@ namespace ServiceSiteScheduling.Trains
         public RoutingTask Split { get; set; }
         public RoutingTask Combine { get; set; }
 
-        public ShuntTrainUnit(TrainUnit unit) : base(unit.Name, unit.Index, unit.Type, unit.RequiredServices, ProblemInstance.Current.ServiceTypes)
+        public ShuntTrainUnit(TrainUnit unit)
+            : base(
+                unit.Name,
+                unit.Index,
+                unit.Type,
+                unit.RequiredServices,
+                ProblemInstance.Current.ServiceTypes
+            )
         {
             this.Base = unit;
         }

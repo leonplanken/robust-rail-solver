@@ -4,9 +4,8 @@ namespace ServiceSiteScheduling.LocalSearch
 {
     abstract class RoutingMove : LocalSearchMove
     {
-        public RoutingMove(PlanGraph graph) : base(graph)
-        {
-        }
+        public RoutingMove(PlanGraph graph)
+            : base(graph) { }
 
         public static IList<RoutingMove> GetMoves(PlanGraph graph)
         {
@@ -31,7 +30,11 @@ namespace ServiceSiteScheduling.LocalSearch
                 // Check merge
                 if (RoutingMergeMove.Allowed(position, selected))
                 {
-                    RoutingMergeMove move = new RoutingMergeMove(graph, position.AllNext.First() as Tasks.ParkingTask, false);
+                    RoutingMergeMove move = new RoutingMergeMove(
+                        graph,
+                        position.AllNext.First() as Tasks.ParkingTask,
+                        false
+                    );
                     moves.Add(move);
                 }
 
@@ -50,7 +53,11 @@ namespace ServiceSiteScheduling.LocalSearch
                 // Check merge
                 if (RoutingMergeMove.Allowed(selected, position))
                 {
-                    RoutingMergeMove move = new RoutingMergeMove(graph, selected.AllNext.First() as Tasks.ParkingTask, true);
+                    RoutingMergeMove move = new RoutingMergeMove(
+                        graph,
+                        selected.AllNext.First() as Tasks.ParkingTask,
+                        true
+                    );
                     moves.Add(move);
                 }
 

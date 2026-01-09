@@ -7,26 +7,39 @@ using ServiceSiteScheduling.Trains;
 using ServiceSiteScheduling.Utilities;
 
 namespace ServiceSiteScheduling.Initial
-{   
+{
     class SimpleHeuristic
     {
         public static PlanGraph Construct(Random random, int debugLevel = 0)
         {
-            ShuntTrainUnit[] shunttrainunits = ProblemInstance.Current.TrainUnits.Select(tu => new ShuntTrainUnit(tu)).ToArray();
-            ShuntTrain[] arrivalshunttrains = ProblemInstance.Current.ArrivalsOrdered.Select(t => new ShuntTrain(t.Units.Select(tu => shunttrainunits[tu.Index]), t.IsItInStanding())).ToArray();
+            ShuntTrainUnit[] shunttrainunits = ProblemInstance
+                .Current.TrainUnits.Select(tu => new ShuntTrainUnit(tu))
+                .ToArray();
+            ShuntTrain[] arrivalshunttrains = ProblemInstance
+                .Current.ArrivalsOrdered.Select(t => new ShuntTrain(
+                    t.Units.Select(tu => shunttrainunits[tu.Index]),
+                    t.IsItInStanding()
+                ))
+                .ToArray();
 
             Matching.BipartiteGraph g = new Matching.BipartiteGraph();
             var initialmatching = g.MaximumMatching();
 
             // Matching
-            Matching.TrainMatching matching = g.LocalSearch(initialmatching, random, shunttrainunits);
-            Dictionary<ShuntTrainUnit, Matching.Unit> reversematching = new Dictionary<ShuntTrainUnit, Matching.Unit>();
+            Matching.TrainMatching matching = g.LocalSearch(
+                initialmatching,
+                random,
+                shunttrainunits
+            );
+            Dictionary<ShuntTrainUnit, Matching.Unit> reversematching =
+                new Dictionary<ShuntTrainUnit, Matching.Unit>();
             foreach (Matching.Train dt in matching.DepartureTrains)
-                foreach (Matching.Unit du in dt)
-                    reversematching[shunttrainunits[du.Index]] = du;
+            foreach (Matching.Unit du in dt)
+                reversematching[shunttrainunits[du.Index]] = du;
 
             // Determine how to split
-            Dictionary<ShuntTrain, List<ShuntTrain>> splitparts = new Dictionary<ShuntTrain, List<ShuntTrain>>();
+            Dictionary<ShuntTrain, List<ShuntTrain>> splitparts =
+                new Dictionary<ShuntTrain, List<ShuntTrain>>();
             List<ShuntTrain> partialshunttrains = new List<ShuntTrain>();
             foreach (ShuntTrain st in arrivalshunttrains)
             {
@@ -45,50 +58,68 @@ namespace ServiceSiteScheduling.Initial
                     partialshunttrains.Add(st);
                 }
                 if (debugLevel > 1)
-                    Console.WriteLine($"Split part shunt train {st} to {string.Join(",", splitparts[st].Select(un => un.ToString()))}");
+                    Console.WriteLine(
+                        $"Split part shunt train {st} to {string.Join(",", splitparts[st].Select(un => un.ToString()))}"
+                    );
             }
             // Add arrival and initial routing tasks
             List<ArrivalTask> arrivals = new List<ArrivalTask>();
             List<RoutingTask> routings = new List<RoutingTask>();
-            BinaryHeap<MoveTask> moveheap = new BinaryHeap<MoveTask>((a, b) =>
-            {
-                int compare = a.Start.CompareTo(b.Start);
-                if (compare == 0)
+            BinaryHeap<MoveTask> moveheap = new BinaryHeap<MoveTask>(
+                (a, b) =>
                 {
-                    if (a.AllNext.Intersect(b.AllPrevious).Count() > 0)
-                        return -1;
-                    if (b.AllNext.Intersect(a.AllPrevious).Count() > 0)
-                        return 1;
+                    int compare = a.Start.CompareTo(b.Start);
+                    if (compare == 0)
+                    {
+                        if (a.AllNext.Intersect(b.AllPrevious).Count() > 0)
+                            return -1;
+                        if (b.AllNext.Intersect(a.AllPrevious).Count() > 0)
+                            return 1;
 
-                    if (a.AllPrevious.Any(task => task is ArrivalTask) && b.AllPrevious.Any(task => task is ArrivalTask))
-                        return 0;
-                    if (a.AllPrevious.Any(task => task is ArrivalTask))
-                        return -1;
-                    if (b.AllPrevious.Any(task => task is ArrivalTask))
-                        return 1;
+                        if (
+                            a.AllPrevious.Any(task => task is ArrivalTask)
+                            && b.AllPrevious.Any(task => task is ArrivalTask)
+                        )
+                            return 0;
+                        if (a.AllPrevious.Any(task => task is ArrivalTask))
+                            return -1;
+                        if (b.AllPrevious.Any(task => task is ArrivalTask))
+                            return 1;
 
-                    if (a.AllPrevious.Any(task => task is ServiceTask) && b.AllPrevious.Any(task => task is ServiceTask))
+                        if (
+                            a.AllPrevious.Any(task => task is ServiceTask)
+                            && b.AllPrevious.Any(task => task is ServiceTask)
+                        )
+                            return 0;
+                        if (a.AllPrevious.Any(task => task is ServiceTask))
+                            return -1;
+                        if (b.AllPrevious.Any(task => task is ServiceTask))
+                            return 1;
                         return 0;
-                    if (a.AllPrevious.Any(task => task is ServiceTask))
-                        return -1;
-                    if (b.AllPrevious.Any(task => task is ServiceTask))
-                        return 1;
-                    return 0;
+                    }
+                    return compare;
                 }
-                return compare;
-            });
-            Dictionary<ShuntTrain, RoutingTask> previousTask = new Dictionary<ShuntTrain, RoutingTask>();
+            );
+            Dictionary<ShuntTrain, RoutingTask> previousTask =
+                new Dictionary<ShuntTrain, RoutingTask>();
             for (int i = 0; i < ProblemInstance.Current.ArrivalsOrdered.Length; i++)
             {
                 ArrivalTrain train = ProblemInstance.Current.ArrivalsOrdered[i];
                 ShuntTrain shunttrain = arrivalshunttrains[i];
 
-                Time departuretime = shunttrain.Units.Max(u => reversematching[u].Train.Departure.Time);
+                Time departuretime = shunttrain.Units.Max(u =>
+                    reversematching[u].Train.Departure.Time
+                );
                 // Due date including service time
                 Time due = departuretime - shunttrain.ServiceDuration;
 
                 // Add arrival operation
-                ArrivalTask arrival = new ArrivalTask(shunttrain, train.Track, train.Side, train.Time);
+                ArrivalTask arrival = new ArrivalTask(
+                    shunttrain,
+                    train.Track,
+                    train.Side,
+                    train.Time
+                );
                 arrivals.Add(arrival);
                 foreach (ShuntTrainUnit stu in shunttrain)
                     stu.Arrival = arrival;
@@ -102,28 +133,39 @@ namespace ServiceSiteScheduling.Initial
                 moveheap.Insert(routing);
                 routings.Add(routing);
                 if (debugLevel > 1)
-                    Console.WriteLine($"Add routing task {routing} from arrival on track {arrival.Track}at time {routing.Start}--{routing.End}");
+                    Console.WriteLine(
+                        $"Add routing task {routing} from arrival on track {arrival.Track}at time {routing.Start}--{routing.End}"
+                    );
 
                 foreach (ShuntTrain part in splitparts[shunttrain])
                     previousTask[part] = routing;
             }
             // Add departure tasks
             List<DepartureTask> departures = new List<DepartureTask>();
-            Dictionary<ShuntTrainUnit, DepartureRoutingTask> departuremapping = new Dictionary<ShuntTrainUnit, DepartureRoutingTask>();
+            Dictionary<ShuntTrainUnit, DepartureRoutingTask> departuremapping =
+                new Dictionary<ShuntTrainUnit, DepartureRoutingTask>();
             foreach (Matching.Train dt in matching.DepartureTrains)
             {
                 var shunttrain = matching.GetShuntTrain(dt);
-                DepartureTask departure = new DepartureTask(shunttrain, dt.Departure.Track, dt.Departure.Side, dt.Departure.Time);
+                DepartureTask departure = new DepartureTask(
+                    shunttrain,
+                    dt.Departure.Track,
+                    dt.Departure.Side,
+                    dt.Departure.Time
+                );
                 dt.Task = departure;
                 departures.Add(departure);
 
                 // add route to departure
-                var todeparture = new DepartureRoutingTask(new ShuntTrain(shunttrain, shunttrain.InStanding));
+                var todeparture = new DepartureRoutingTask(
+                    new ShuntTrain(shunttrain, shunttrain.InStanding)
+                );
                 todeparture.Start = todeparture.End = departure.Start;
                 todeparture.Next = departure;
                 departure.Previous = todeparture;
 
-                departure.ArrivalSide = departure.ArrivalSide = departure.Track.Access == Side.Both ? Side.A : departure.Track.Access;
+                departure.ArrivalSide = departure.ArrivalSide =
+                    departure.Track.Access == Side.Both ? Side.A : departure.Track.Access;
                 todeparture.ToSide = departure.ArrivalSide;
                 todeparture.ToTrack = departure.Track;
                 dt.Routing = todeparture;
@@ -135,13 +177,14 @@ namespace ServiceSiteScheduling.Initial
             // create the schedule data structure
             var schedule = new Dictionary<ServiceResource, LinkedList<ServiceTask>>();
             foreach (var type in ProblemInstance.Current.ServiceTypes)
-                foreach (var resource in type.Resources)
-                    schedule[resource] = new LinkedList<ServiceTask>();
-                                
+            foreach (var resource in type.Resources)
+                schedule[resource] = new LinkedList<ServiceTask>();
+
             List<ServiceTask> services = new List<ServiceTask>();
             List<ServiceTask> candidates = new List<ServiceTask>();
             List<ParkingTask> parkings = new List<ParkingTask>();
-            Dictionary<ShuntTrain, LinkedList<ServiceTask>> orderedservices = new Dictionary<ShuntTrain, LinkedList<ServiceTask>>();
+            Dictionary<ShuntTrain, LinkedList<ServiceTask>> orderedservices =
+                new Dictionary<ShuntTrain, LinkedList<ServiceTask>>();
             Dictionary<ShuntTrain, Time> earlieststart = new Dictionary<ShuntTrain, Time>();
 
             // Add shunting trains
@@ -150,12 +193,22 @@ namespace ServiceSiteScheduling.Initial
                 RoutingTask previousroute = previousTask[partial_shunttrain];
                 DepartureRoutingTask departure = departuremapping[partial_shunttrain.Units.First()];
 
-                Time departuretime = partial_shunttrain.Units.Max(u => reversematching[u].Train.Departure.Time);
+                Time departuretime = partial_shunttrain.Units.Max(u =>
+                    reversematching[u].Train.Departure.Time
+                );
                 Time releasedate = previousroute.Start;
                 Time duedate = departuretime - partial_shunttrain.ServiceDuration;
-                ServiceTask service = null, first = null;
+                ServiceTask service = null,
+                    first = null;
 
-                var trainservicetypes = partial_shunttrain.Units.Aggregate(new ServiceType[0], (set, unit) => set.Concat(unit.RequiredServices.Select(s => s.Type)).ToArray()).Distinct().ToList();
+                var trainservicetypes = partial_shunttrain
+                    .Units.Aggregate(
+                        new ServiceType[0],
+                        (set, unit) =>
+                            set.Concat(unit.RequiredServices.Select(s => s.Type)).ToArray()
+                    )
+                    .Distinct()
+                    .ToList();
                 // randomize
                 Shuffle(trainservicetypes, random);
                 foreach (ServiceType type in trainservicetypes)
@@ -214,9 +267,21 @@ namespace ServiceSiteScheduling.Initial
             }
             Comparison<ServiceTask> comparison = (a, b) =>
             {
-                Time aStart = Math.Max(a.Previous.Start, schedule.Where(kvp => a.Type.Resources.Contains(kvp.Key)).Select(kvp => kvp.Value?.Last?.Value?.End ?? 0).Min());
+                Time aStart = Math.Max(
+                    a.Previous.Start,
+                    schedule
+                        .Where(kvp => a.Type.Resources.Contains(kvp.Key))
+                        .Select(kvp => kvp.Value?.Last?.Value?.End ?? 0)
+                        .Min()
+                );
                 Time aEnd = aStart + a.MinimumDuration;
-                Time bStart = Math.Max(b.Previous.Start, schedule.Where(kvp => b.Type.Resources.Contains(kvp.Key)).Select(kvp => kvp.Value?.Last?.Value?.End ?? 0).Min());
+                Time bStart = Math.Max(
+                    b.Previous.Start,
+                    schedule
+                        .Where(kvp => b.Type.Resources.Contains(kvp.Key))
+                        .Select(kvp => kvp.Value?.Last?.Value?.End ?? 0)
+                        .Min()
+                );
                 Time bEnd = bStart + b.MinimumDuration;
 
                 if (aEnd <= bStart)
@@ -238,7 +303,11 @@ namespace ServiceSiteScheduling.Initial
                 // Select the best
                 int selectedindex = candidates.Count - 1;
                 var selected = candidates[selectedindex];
-                while (selectedindex > 0 && random.NextDouble() < 0.5 && comparison(candidates[selectedindex - 1], selected) == 0)
+                while (
+                    selectedindex > 0
+                    && random.NextDouble() < 0.5
+                    && comparison(candidates[selectedindex - 1], selected) == 0
+                )
                 {
                     selectedindex--;
                     selected = candidates[selectedindex];
@@ -246,7 +315,9 @@ namespace ServiceSiteScheduling.Initial
                 ServiceResource resource = null;
                 Time t = int.MaxValue;
                 // Find the machine with earliest completion time
-                foreach (var kvp in schedule.Where(kvp => selected.Type.Resources.Contains(kvp.Key)))
+                foreach (
+                    var kvp in schedule.Where(kvp => selected.Type.Resources.Contains(kvp.Key))
+                )
                     if ((kvp.Value?.Last?.Value?.End ?? 0) < t)
                     {
                         resource = kvp.Key;
@@ -276,12 +347,12 @@ namespace ServiceSiteScheduling.Initial
                 if (location != null)
                 {
                     selected.Track = location.Track;
-                    selected.ArrivalSide = location.Track.Access == Side.Both ? Side.A : location.Track.Access;
+                    selected.ArrivalSide =
+                        location.Track.Access == Side.Both ? Side.A : location.Track.Access;
                 }
 
                 foreach (var task in selected.Next.AllNext)
                     earlieststart[task.Train] = selected.End + Time.Minute;
-
 
                 // Update route to service
                 RoutingTask to = selected.Previous as RoutingTask;
@@ -313,7 +384,13 @@ namespace ServiceSiteScheduling.Initial
                 moveheap.Insert(routing);
             }
             var routinggraph = Routing.RoutingGraph.Construct();
-            PlanGraph graph = new PlanGraph(matching, routinggraph, shunttrainunits, arrivals.ToArray(), departures.ToArray());
+            PlanGraph graph = new PlanGraph(
+                matching,
+                routinggraph,
+                shunttrainunits,
+                arrivals.ToArray(),
+                departures.ToArray()
+            );
 
             // Connect movetasks
             MoveTask prev = null;
@@ -322,8 +399,10 @@ namespace ServiceSiteScheduling.Initial
             {
                 MoveTask current = moveheap.ExtractFirst();
                 if (debugLevel > 1)
-                    Console.WriteLine($"<Intial> Add {order}th move task {current} at time {current.Start}--{current.End}");
-                
+                    Console.WriteLine(
+                        $"<Intial> Add {order}th move task {current} at time {current.Start}--{current.End}"
+                    );
+
                 current.MoveOrder = order++;
                 current.PreviousMove = prev;
                 current.Graph = graph;
@@ -348,32 +427,102 @@ namespace ServiceSiteScheduling.Initial
                 if (!(routing.Previous is ArrivalTask))
                     space[routing.Previous.Track] += routing.Previous.Train.Length;
 
-                if (!routing.Next.All(task => task is ParkingTask || (task as ServiceTask)?.Type.LocationType == ServiceLocationType.Free))
+                if (
+                    !routing.Next.All(task =>
+                        task is ParkingTask
+                        || (task as ServiceTask)?.Type.LocationType == ServiceLocationType.Free
+                    )
+                )
                     continue;
 
                 Track parkingtrack = null;
-                if (routing.Next.Count == 1 && routing.Next[0].Next.TaskType == MoveTaskType.Departure && routing.Next[0].Next.AllPrevious.Any(task => task.Track != null))
+                if (
+                    routing.Next.Count == 1
+                    && routing.Next[0].Next.TaskType == MoveTaskType.Departure
+                    && routing.Next[0].Next.AllPrevious.Any(task => task.Track != null)
+                )
                 {
-                    parkingtrack = routing.Next[0].Next.AllPrevious.Where(task => task.Track != null).First().Track;
+                    parkingtrack = routing
+                        .Next[0]
+                        .Next.AllPrevious.Where(task => task.Track != null)
+                        .First()
+                        .Track;
                 }
                 else
                 {
                     // Find track with maximal space
-                    var reachable = routing.Train.ParkingLocations.Where(track =>
-                        (routinggraph.RoutePossible(routing.Train, routing.Previous.Track, Side.A, track, Side.A) ||
-                        routinggraph.RoutePossible(routing.Train, routing.Previous.Track, Side.B, track, Side.A) ||
-                        routinggraph.RoutePossible(routing.Train, routing.Previous.Track, Side.A, track, Side.B) ||
-                        routinggraph.RoutePossible(routing.Train, routing.Previous.Track, Side.B, track, Side.B)) &&
-                        routing.AllNext.All(task =>
-                            task.Next.ToTrack == null ||
-                            routinggraph.RoutePossible(task.Train, track, Side.A, task.Next.ToTrack, Side.A) ||
-                            routinggraph.RoutePossible(task.Train, track, Side.B, task.Next.ToTrack, Side.A) ||
-                            routinggraph.RoutePossible(task.Train, track, Side.A, task.Next.ToTrack, Side.B) ||
-                            routinggraph.RoutePossible(task.Train, track, Side.B, task.Next.ToTrack, Side.B)
-                        )).ToArray();
+                    var reachable = routing
+                        .Train.ParkingLocations.Where(track =>
+                            (
+                                routinggraph.RoutePossible(
+                                    routing.Train,
+                                    routing.Previous.Track,
+                                    Side.A,
+                                    track,
+                                    Side.A
+                                )
+                                || routinggraph.RoutePossible(
+                                    routing.Train,
+                                    routing.Previous.Track,
+                                    Side.B,
+                                    track,
+                                    Side.A
+                                )
+                                || routinggraph.RoutePossible(
+                                    routing.Train,
+                                    routing.Previous.Track,
+                                    Side.A,
+                                    track,
+                                    Side.B
+                                )
+                                || routinggraph.RoutePossible(
+                                    routing.Train,
+                                    routing.Previous.Track,
+                                    Side.B,
+                                    track,
+                                    Side.B
+                                )
+                            )
+                            && routing.AllNext.All(task =>
+                                task.Next.ToTrack == null
+                                || routinggraph.RoutePossible(
+                                    task.Train,
+                                    track,
+                                    Side.A,
+                                    task.Next.ToTrack,
+                                    Side.A
+                                )
+                                || routinggraph.RoutePossible(
+                                    task.Train,
+                                    track,
+                                    Side.B,
+                                    task.Next.ToTrack,
+                                    Side.A
+                                )
+                                || routinggraph.RoutePossible(
+                                    task.Train,
+                                    track,
+                                    Side.A,
+                                    task.Next.ToTrack,
+                                    Side.B
+                                )
+                                || routinggraph.RoutePossible(
+                                    task.Train,
+                                    track,
+                                    Side.B,
+                                    task.Next.ToTrack,
+                                    Side.B
+                                )
+                            )
+                        )
+                        .ToArray();
                     if (reachable.Count() == 0)
-                        throw new InvalidOperationException($"No routing possible for train {routing.Train} of length {routing.Train.Length} from previous track <{routing.Previous.Track}> with sufficient length and possible route.");
-                    var possibletracks = reachable.Where(track => space[track] >= routing.Train.Length);
+                        throw new InvalidOperationException(
+                            $"No routing possible for train {routing.Train} of length {routing.Train.Length} from previous track <{routing.Previous.Track}> with sufficient length and possible route."
+                        );
+                    var possibletracks = reachable.Where(track =>
+                        space[track] >= routing.Train.Length
+                    );
                     if (possibletracks.Count() == 0)
                         possibletracks = reachable;
                     var candidatetracks = possibletracks.OrderBy(track => -space[track]).ToList();
@@ -386,9 +535,25 @@ namespace ServiceSiteScheduling.Initial
                 Side side = Side.None;
                 if (parkingtrack.Access == Side.Both)
                 {
-                    if (routinggraph.RoutePossible(routing.Train, routing.FromTrack, Side.A, parkingtrack, Side.A))
+                    if (
+                        routinggraph.RoutePossible(
+                            routing.Train,
+                            routing.FromTrack,
+                            Side.A,
+                            parkingtrack,
+                            Side.A
+                        )
+                    )
                         side = Side.A;
-                    else if (routinggraph.RoutePossible(routing.Train, routing.FromTrack, Side.B, parkingtrack, Side.A))
+                    else if (
+                        routinggraph.RoutePossible(
+                            routing.Train,
+                            routing.FromTrack,
+                            Side.B,
+                            parkingtrack,
+                            Side.A
+                        )
+                    )
                         side = Side.A;
                     else
                         side = Side.B;
@@ -408,7 +573,7 @@ namespace ServiceSiteScheduling.Initial
                     task.ArrivalSide = side;
                 }
                 space[parkingtrack] -= routing.Train.Length;
-                
+
                 foreach (TrackTask task in routing.Next)
                 {
                     var departure = task.Next as DepartureRoutingTask;
@@ -417,7 +582,22 @@ namespace ServiceSiteScheduling.Initial
                         side = Side.None;
                         if (departure.Next.Track.Access == Side.Both)
                         {
-                            if (routinggraph.RoutePossible(task.Train, parkingtrack, Side.A, departure.Next.Track, Side.A) || routinggraph.RoutePossible(task.Train, parkingtrack, Side.B, departure.Next.Track, Side.A))
+                            if (
+                                routinggraph.RoutePossible(
+                                    task.Train,
+                                    parkingtrack,
+                                    Side.A,
+                                    departure.Next.Track,
+                                    Side.A
+                                )
+                                || routinggraph.RoutePossible(
+                                    task.Train,
+                                    parkingtrack,
+                                    Side.B,
+                                    departure.Next.Track,
+                                    Side.A
+                                )
+                            )
                                 side = Side.A;
                             else
                                 side = Side.B;
@@ -429,7 +609,9 @@ namespace ServiceSiteScheduling.Initial
                     }
                 }
                 if (debugLevel > 1)
-                    Console.WriteLine($"Set parking track on routing {routing} to parking track {parkingtrack}");
+                    Console.WriteLine(
+                        $"Set parking track on routing {routing} to parking track {parkingtrack}"
+                    );
             }
             return graph;
         }

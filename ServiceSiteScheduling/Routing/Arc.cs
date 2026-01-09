@@ -4,10 +4,17 @@ using ServiceSiteScheduling.Utilities;
 
 namespace ServiceSiteScheduling.Routing
 {
-    public enum ArcType { Reverse, Switch, Track }
+    public enum ArcType
+    {
+        Reverse,
+        Switch,
+        Track,
+    }
+
     class Arc
     {
-        public Vertex Tail, Head;
+        public Vertex Tail,
+            Head;
         public ArcType Type;
         public TrackSwitchContainer Path;
 
@@ -15,7 +22,10 @@ namespace ServiceSiteScheduling.Routing
         public int Crossings;
         public int Cost;
 
-        public int Switches { get { return this.Path.Switches; } }
+        public int Switches
+        {
+            get { return this.Path.Switches; }
+        }
 
         public Arc(Vertex tail, Vertex head, ArcType type, TrackSwitchContainer path)
         {
@@ -33,12 +43,17 @@ namespace ServiceSiteScheduling.Routing
                 case ArcType.Track:
                     this.Cost = this.Duration = Settings.TrackCrossingTime;
                     if (trackOccupation != null)
-                        this.Cost += Settings.CrossingWeight * (this.Crossings = trackOccupation.StateDeque.Count > 0 ? 1 : 0);
+                        this.Cost +=
+                            Settings.CrossingWeight
+                            * (this.Crossings = trackOccupation.StateDeque.Count > 0 ? 1 : 0);
                     break;
                 case ArcType.Reverse:
                     this.Duration = Settings.TrackCrossingTime + train.ReversalDuration;
                     if (trackOccupation != null)
-                        this.Crossings = trackOccupation.CountCrossingsIfTurning(train, this.Head.TrackSide);
+                        this.Crossings = trackOccupation.CountCrossingsIfTurning(
+                            train,
+                            this.Head.TrackSide
+                        );
                     this.Cost = this.Duration + Settings.CrossingWeight * this.Crossings;
                     break;
                 case ArcType.Switch:

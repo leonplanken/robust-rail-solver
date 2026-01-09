@@ -1,5 +1,4 @@
-﻿
-namespace ServiceSiteScheduling.Utilities
+﻿namespace ServiceSiteScheduling.Utilities
 {
     /// <summary>
     /// A Generic Binary Heap Class
@@ -12,9 +11,18 @@ namespace ServiceSiteScheduling.Utilities
         #endregion
 
         #region Properties
-        public int Size { get { return this.nodes.Count; } }
-        public T First { get { return this.nodes.Count > 0 ? this.nodes[0].Item : default(T); } }
-        public bool IsEmpty { get { return this.nodes.Count == 0; } }
+        public int Size
+        {
+            get { return this.nodes.Count; }
+        }
+        public T First
+        {
+            get { return this.nodes.Count > 0 ? this.nodes[0].Item : default(T); }
+        }
+        public bool IsEmpty
+        {
+            get { return this.nodes.Count == 0; }
+        }
         #endregion
 
         #region Constructors
@@ -158,7 +166,8 @@ namespace ServiceSiteScheduling.Utilities
             this.index = index;
         }
 
-        public BinaryHeapNode(T item, Comparison<T> compare) : this(item, compare, -1) { }
+        public BinaryHeapNode(T item, Comparison<T> compare)
+            : this(item, compare, -1) { }
         #endregion
 
         #region Public Methods

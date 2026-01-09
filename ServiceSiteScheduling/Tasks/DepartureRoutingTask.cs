@@ -11,28 +11,66 @@ namespace ServiceSiteScheduling.Tasks
         public List<TrackTask> Previous { get; set; }
         public DepartureTask Next { get; set; }
 
-        public override bool SkipsParking { get { return this.Previous.Any(task => task.TaskType != TrackTaskType.Parking); } }
+        public override bool SkipsParking
+        {
+            get { return this.Previous.Any(task => task.TaskType != TrackTaskType.Parking); }
+        }
 
-        public override IList<TrackTask> AllPrevious { get {return this.Previous;} }
-        public override IList<TrackTask> AllNext { get { return new TrackTask[1] { this.Next }; } }
+        public override IList<TrackTask> AllPrevious
+        {
+            get { return this.Previous; }
+        }
+        public override IList<TrackTask> AllNext
+        {
+            get { return new TrackTask[1] { this.Next }; }
+        }
 
-        public override Side FromSide { get { return this.routes.Count > 0 ? this.routes[0].DepartureSide : Side.None; } }
+        public override Side FromSide
+        {
+            get { return this.routes.Count > 0 ? this.routes[0].DepartureSide : Side.None; }
+        }
 
-        public override Time Duration { get { return this.duration + (this.Previous.Count - 1) * this.Train.Units[0].Type.CombineDuration; } }
-        public override int Crossings { get { return this.crossings; } }
-        public override int DepartureCrossings { get { return this.departurecrossings; } }
-        public override int NumberOfRoutes { get { return this.numberofroutes; } }
+        public override Time Duration
+        {
+            get
+            {
+                return this.duration
+                    + (this.Previous.Count - 1) * this.Train.Units[0].Type.CombineDuration;
+            }
+        }
+        public override int Crossings
+        {
+            get { return this.crossings; }
+        }
+        public override int DepartureCrossings
+        {
+            get { return this.departurecrossings; }
+        }
+        public override int NumberOfRoutes
+        {
+            get { return this.numberofroutes; }
+        }
 
-        public override BitSet CrossingTracks { get { return this.crossingtracks; } }
+        public override BitSet CrossingTracks
+        {
+            get { return this.crossingtracks; }
+        }
 
-        public override BitSet DepartureCrossingTracks { get { return this.departurecrossingtracks; } }
+        public override BitSet DepartureCrossingTracks
+        {
+            get { return this.departurecrossingtracks; }
+        }
 
         private Time duration;
 
-        private int crossings, departurecrossings, numberofroutes;
-        private BitSet crossingtracks, departurecrossingtracks;
+        private int crossings,
+            departurecrossings,
+            numberofroutes;
+        private BitSet crossingtracks,
+            departurecrossingtracks;
 
-        public DepartureRoutingTask(Trains.ShuntTrain train) : base(train, MoveTaskType.Departure)
+        public DepartureRoutingTask(Trains.ShuntTrain train)
+            : base(train, MoveTaskType.Departure)
         {
             this.routes = new List<Routing.Route>();
             this.routetoskippedparkings = new Dictionary<Trains.ShuntTrain, Stack<RoutingTask>>();
@@ -47,7 +85,12 @@ namespace ServiceSiteScheduling.Tasks
             if (this.Previous.Count <= 1)
                 return;
 
-            this.Previous.Sort((a, b) => this.Train.Units.IndexOf(a.Train.Units[0]).CompareTo(this.Train.Units.IndexOf(b.Train.Units[0])));
+            this.Previous.Sort(
+                (a, b) =>
+                    this
+                        .Train.Units.IndexOf(a.Train.Units[0])
+                        .CompareTo(this.Train.Units.IndexOf(b.Train.Units[0]))
+            );
         }
 
         public override void AddRoute(Routing.Route route)
@@ -88,7 +131,9 @@ namespace ServiceSiteScheduling.Tasks
 
         public override bool IsParkingSkipped(Trains.ShuntTrain train)
         {
-            return this.Previous.Any(task => task.TaskType != TrackTaskType.Parking && task.Train.Equals(train));
+            return this.Previous.Any(task =>
+                task.TaskType != TrackTaskType.Parking && task.Train.Equals(train)
+            );
         }
 
         public override ParkingTask GetSkippedParking(Trains.ShuntTrain train)

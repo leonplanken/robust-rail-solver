@@ -10,8 +10,10 @@ namespace ServiceSiteScheduling.Routing
         public List<Arc> Arcs { get; private set; }
 
         public Arc Previous;
-        public int Index, Distance;
-        public bool Discovered, Explored;
+        public int Index,
+            Distance;
+        public bool Discovered,
+            Explored;
 
         public Vertex(Side trackside, Side arrivalside)
         {

@@ -1,7 +1,13 @@
-﻿
-namespace ServiceSiteScheduling.Tasks
+﻿namespace ServiceSiteScheduling.Tasks
 {
-    public enum TrackTaskType { Arrival, Departure, Service, Parking }
+    public enum TrackTaskType
+    {
+        Arrival,
+        Departure,
+        Service,
+        Parking,
+    }
+
     abstract class TrackTask
     {
         public Trains.ShuntTrain Train { get; set; }
@@ -12,7 +18,10 @@ namespace ServiceSiteScheduling.Tasks
         public Utilities.Time End { get; set; }
         public Parking.State State { get; set; }
         public Side ArrivalSide { get; set; }
-        public TrackTaskType TaskType { get { return this.tasktype; } }
+        public TrackTaskType TaskType
+        {
+            get { return this.tasktype; }
+        }
         protected readonly TrackTaskType tasktype;
 
         private Parking.State originalState { get; set; }

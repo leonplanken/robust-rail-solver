@@ -1,7 +1,11 @@
-﻿
-namespace ServiceSiteScheduling.Tasks
+﻿namespace ServiceSiteScheduling.Tasks
 {
-    public enum MoveTaskType { Standard, Departure }
+    public enum MoveTaskType
+    {
+        Standard,
+        Departure,
+    }
+
     abstract class MoveTask
     {
         public Solutions.PlanGraph Graph { get; set; }
@@ -9,7 +13,6 @@ namespace ServiceSiteScheduling.Tasks
         public Trains.ShuntTrain Train { get; set; }
         public abstract IList<TrackTask> AllPrevious { get; }
         public abstract IList<TrackTask> AllNext { get; }
-
 
         public Utilities.Time Start { get; set; }
         public Utilities.Time End { get; set; }
@@ -33,9 +36,11 @@ namespace ServiceSiteScheduling.Tasks
         public TrackParts.Track FromTrack { get; set; }
         public abstract Side FromSide { get; }
 
-        public MoveTaskType TaskType { get { return this.tasktype; } }
+        public MoveTaskType TaskType
+        {
+            get { return this.tasktype; }
+        }
         protected readonly MoveTaskType tasktype;
-
 
         public MoveTask(Trains.ShuntTrain train, MoveTaskType tasktype)
         {
@@ -145,7 +150,10 @@ namespace ServiceSiteScheduling.Tasks
         public abstract void ReplacePreviousTask(TrackTask task);
         public abstract void ReplaceNextTask(TrackTask task);
 
-        public virtual TrackTask FindFirstNext(Func<TrackTask, bool> predicate, Func<TrackTask, Utilities.Time> value)
+        public virtual TrackTask FindFirstNext(
+            Func<TrackTask, bool> predicate,
+            Func<TrackTask, Utilities.Time> value
+        )
         {
             Utilities.Time time = int.MaxValue;
             TrackTask first = null;
@@ -169,7 +177,10 @@ namespace ServiceSiteScheduling.Tasks
             return first;
         }
 
-        public virtual TrackTask FindLastPrevious(Func<TrackTask, bool> predicate, Func<TrackTask, Utilities.Time> value)
+        public virtual TrackTask FindLastPrevious(
+            Func<TrackTask, bool> predicate,
+            Func<TrackTask, Utilities.Time> value
+        )
         {
             Utilities.Time time = int.MinValue;
             TrackTask first = null;

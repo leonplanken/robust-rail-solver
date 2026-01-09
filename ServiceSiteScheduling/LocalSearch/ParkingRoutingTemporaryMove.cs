@@ -11,7 +11,15 @@ namespace ServiceSiteScheduling.LocalSearch
         public Tasks.RoutingTask ToMove { get; }
         public Tasks.RoutingTask FromMove { get; }
 
-        public ParkingRoutingTemporaryMove(PlanGraph graph, Tasks.ParkingTask parking, TrackParts.Track track, Side temporaryside, Side returnside, Tasks.MoveTask target) : base(graph)
+        public ParkingRoutingTemporaryMove(
+            PlanGraph graph,
+            Tasks.ParkingTask parking,
+            TrackParts.Track track,
+            Side temporaryside,
+            Side returnside,
+            Tasks.MoveTask target
+        )
+            : base(graph)
         {
             this.OriginalParking = parking;
             this.Target = target;
@@ -86,18 +94,32 @@ namespace ServiceSiteScheduling.LocalSearch
                     if (task.TaskType != Tasks.TrackTaskType.Parking)
                         continue;
 
-                    if (!graph.Cost.ProblemTracks[task.Track.Index] && !graph.Cost.ProblemTrains.Intersects(task.Train.UnitBits))
+                    if (
+                        !graph.Cost.ProblemTracks[task.Track.Index]
+                        && !graph.Cost.ProblemTrains.Intersects(task.Train.UnitBits)
+                    )
                         continue;
 
-                    if (task.Next.TaskType == Tasks.MoveTaskType.Departure && task.Next.AllNext.Count > 1)
+                    if (
+                        task.Next.TaskType == Tasks.MoveTaskType.Departure
+                        && task.Next.AllNext.Count > 1
+                    )
                         continue;
 
-                    for (var nextmovetask = movetask.NextMove.NextMove; nextmovetask != null && nextmovetask.MoveOrder < task.Next.MoveOrder; nextmovetask = nextmovetask.NextMove)
+                    for (
+                        var nextmovetask = movetask.NextMove.NextMove;
+                        nextmovetask != null && nextmovetask.MoveOrder < task.Next.MoveOrder;
+                        nextmovetask = nextmovetask.NextMove
+                    )
                     {
                         if (!graph.Cost.ProblemTrains.Intersects(nextmovetask.Train.UnitBits))
                             continue;
 
-                        if (!nextmovetask.DepartureCrossingTracks[task.Track.Index] && !nextmovetask.CrossingTracks[task.Track.Index] && nextmovetask.ToTrack != task.Track)
+                        if (
+                            !nextmovetask.DepartureCrossingTracks[task.Track.Index]
+                            && !nextmovetask.CrossingTracks[task.Track.Index]
+                            && nextmovetask.ToTrack != task.Track
+                        )
                             continue;
 
                         foreach (var track in task.Train.ParkingLocations)
@@ -108,16 +130,52 @@ namespace ServiceSiteScheduling.LocalSearch
                             if (track.Access.HasFlag(Side.A))
                             {
                                 if (task.Track.Access.HasFlag(Side.A))
-                                    moves.Add(new ParkingRoutingTemporaryMove(graph, task as Tasks.ParkingTask, track, Side.A, Side.A, nextmovetask));
+                                    moves.Add(
+                                        new ParkingRoutingTemporaryMove(
+                                            graph,
+                                            task as Tasks.ParkingTask,
+                                            track,
+                                            Side.A,
+                                            Side.A,
+                                            nextmovetask
+                                        )
+                                    );
                                 if (task.Track.Access.HasFlag(Side.B))
-                                    moves.Add(new ParkingRoutingTemporaryMove(graph, task as Tasks.ParkingTask, track, Side.A, Side.B, nextmovetask));
+                                    moves.Add(
+                                        new ParkingRoutingTemporaryMove(
+                                            graph,
+                                            task as Tasks.ParkingTask,
+                                            track,
+                                            Side.A,
+                                            Side.B,
+                                            nextmovetask
+                                        )
+                                    );
                             }
                             if (track.Access.HasFlag(Side.B))
                             {
                                 if (task.Track.Access.HasFlag(Side.A))
-                                    moves.Add(new ParkingRoutingTemporaryMove(graph, task as Tasks.ParkingTask, track, Side.B, Side.A, nextmovetask));
+                                    moves.Add(
+                                        new ParkingRoutingTemporaryMove(
+                                            graph,
+                                            task as Tasks.ParkingTask,
+                                            track,
+                                            Side.B,
+                                            Side.A,
+                                            nextmovetask
+                                        )
+                                    );
                                 if (task.Track.Access.HasFlag(Side.B))
-                                    moves.Add(new ParkingRoutingTemporaryMove(graph, task as Tasks.ParkingTask, track, Side.B, Side.B, nextmovetask));
+                                    moves.Add(
+                                        new ParkingRoutingTemporaryMove(
+                                            graph,
+                                            task as Tasks.ParkingTask,
+                                            track,
+                                            Side.B,
+                                            Side.B,
+                                            nextmovetask
+                                        )
+                                    );
                             }
                         }
                     }

@@ -11,7 +11,8 @@ namespace ServiceSiteScheduling.LocalSearch
 
         protected Tasks.MoveTask originalposition;
 
-        public RoutingMergeMove(PlanGraph graph, Tasks.ParkingTask parking, bool moveFirst) : base(graph)
+        public RoutingMergeMove(PlanGraph graph, Tasks.ParkingTask parking, bool moveFirst)
+            : base(graph)
         {
             this.Parking = parking;
             this.To = parking.Previous as Tasks.RoutingTask;
@@ -52,10 +53,16 @@ namespace ServiceSiteScheduling.LocalSearch
                 if (shiftmove == null)
                     return false;
 
-                return this.From == shiftmove.Selected || this.To == shiftmove.Selected || this.From == shiftmove.Position || this.To == shiftmove.Position;
+                return this.From == shiftmove.Selected
+                    || this.To == shiftmove.Selected
+                    || this.From == shiftmove.Position
+                    || this.To == shiftmove.Position;
             }
 
-            return this.From == mergemove.From || this.To == mergemove.From || this.From == mergemove.To || this.To == mergemove.To;
+            return this.From == mergemove.From
+                || this.To == mergemove.From
+                || this.From == mergemove.To
+                || this.To == mergemove.To;
         }
 
         public override string ToString()
@@ -65,13 +72,31 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public static bool Allowed(Tasks.MoveTask first, Tasks.MoveTask second)
         {
-            if (first == null || second == null || first.SkipsParking || ((first as Tasks.RoutingTask)?.IsSplit ?? false) || second.TaskType == Tasks.MoveTaskType.Departure)
+            if (
+                first == null
+                || second == null
+                || first.SkipsParking
+                || ((first as Tasks.RoutingTask)?.IsSplit ?? false)
+                || second.TaskType == Tasks.MoveTaskType.Departure
+            )
                 return false;
 
-            if (second.AllNext.Any(task => task is Tasks.DepartureTask) && (second.AllPrevious.Any(task => task is Tasks.ArrivalTask) || first.AllPrevious.Any(task => task is Tasks.ArrivalTask)))
+            if (
+                second.AllNext.Any(task => task is Tasks.DepartureTask)
+                && (
+                    second.AllPrevious.Any(task => task is Tasks.ArrivalTask)
+                    || first.AllPrevious.Any(task => task is Tasks.ArrivalTask)
+                )
+            )
                 return false;
 
-            if (!first.Train.Equals(second.Train) && !(second is Tasks.DepartureRoutingTask && first.Train.UnitBits.IsSubsetOf(second.Train.UnitBits)))
+            if (
+                !first.Train.Equals(second.Train)
+                && !(
+                    second is Tasks.DepartureRoutingTask
+                    && first.Train.UnitBits.IsSubsetOf(second.Train.UnitBits)
+                )
+            )
                 return false;
 
             if (first.AllNext.First() is Tasks.ParkingTask)

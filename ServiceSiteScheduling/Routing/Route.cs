@@ -18,12 +18,28 @@ namespace ServiceSiteScheduling.Routing
         public BitSet CrossingTracks { get; private set; }
         public BitSet TrackState { get; set; }
 
-        public static Route Invalid = new Route(null, new Track[0], new Arc[0], Settings.CrossingsIfInvalidRoute, Side.None, Settings.SwitchesIfInvalidRoute, 0);
+        public static Route Invalid = new Route(
+            null,
+            new Track[0],
+            new Arc[0],
+            Settings.CrossingsIfInvalidRoute,
+            Side.None,
+            Settings.SwitchesIfInvalidRoute,
+            0
+        );
 
         public int TotalSwitches { get; }
         public int TotalReversals { get; }
 
-        public Route(RoutingGraph graph, Track[] tracks, Arc[] arcs, int crossings, Side side, int switches, int reversals)
+        public Route(
+            RoutingGraph graph,
+            Track[] tracks,
+            Arc[] arcs,
+            int crossings,
+            Side side,
+            int switches,
+            int reversals
+        )
         {
             this.Graph = graph;
             this.Tracks = tracks;
@@ -41,14 +57,33 @@ namespace ServiceSiteScheduling.Routing
             this.Duration = Time.Hour;
         }
 
-        public Route(ShuntTrain train, RoutingGraph graph, Track[] tracks, Arc[] arcs, int crossings, Side side, int switches, int reversals)
+        public Route(
+            ShuntTrain train,
+            RoutingGraph graph,
+            Track[] tracks,
+            Arc[] arcs,
+            int crossings,
+            Side side,
+            int switches,
+            int reversals
+        )
             : this(graph, tracks, arcs, crossings, side, switches, reversals)
         {
             this.Train = train;
             this.computeDuration();
         }
 
-        public Route(ShuntTrain train, RoutingGraph graph, Track[] tracks, Arc[] arcs, int crossings, BitSet crossingtracks, Side side, int switches, int reversals)
+        public Route(
+            ShuntTrain train,
+            RoutingGraph graph,
+            Track[] tracks,
+            Arc[] arcs,
+            int crossings,
+            BitSet crossingtracks,
+            Side side,
+            int switches,
+            int reversals
+        )
             : this(train, graph, tracks, arcs, crossings, side, switches, reversals)
         {
             this.CrossingTracks = crossingtracks;
@@ -72,12 +107,15 @@ namespace ServiceSiteScheduling.Routing
 
         public override string ToString()
         {
-            return $"({this.Duration}|{this.DepartureCrossings}+{this.Crossings}) {string.Join("->", this.Tracks?.Select(track =>track.PrettyName) ?? new string[1] { "?" })}";
+            return $"({this.Duration}|{this.DepartureCrossings}+{this.Crossings}) {string.Join("->", this.Tracks?.Select(track => track.PrettyName) ?? new string[1] { "?" })}";
         }
 
         public Time computeDuration()
         {
-            this.Duration = (this.Tracks.Length + this.TotalReversals) * Settings.TrackCrossingTime + this.TotalSwitches * Settings.SwitchCrossingTime + this.TotalReversals * this.Train.ReversalDuration;
+            this.Duration =
+                (this.Tracks.Length + this.TotalReversals) * Settings.TrackCrossingTime
+                + this.TotalSwitches * Settings.SwitchCrossingTime
+                + this.TotalReversals * this.Train.ReversalDuration;
             return this.Duration;
         }
 

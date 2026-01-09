@@ -12,11 +12,18 @@ namespace ServiceSiteScheduling.Trains
         public Side Side { get; private set; }
         public Time Time { get; private set; }
 
-        public bool InStanding {get; set;}
+        public bool InStanding { get; set; }
 
         public double StandingIndex { get; set; }
 
-        public ArrivalTrain(TrainUnit[] units, Track track, Side side, Time time, bool inStanding = false, double standingIndex = 0.0)
+        public ArrivalTrain(
+            TrainUnit[] units,
+            Track track,
+            Side side,
+            Time time,
+            bool inStanding = false,
+            double standingIndex = 0.0
+        )
         {
             this.Units = units;
             this.Length = units.Sum(unit => unit.Type.Length);
@@ -34,7 +41,14 @@ namespace ServiceSiteScheduling.Trains
             this.ParkingLocations = allowedparking.ToArray();
         }
 
-        public ArrivalTrain(TrainUnit unit, Track track, Side side, Time time, bool inStanding = false) : this(new TrainUnit[1] { unit }, track, side, time, inStanding) { }
+        public ArrivalTrain(
+            TrainUnit unit,
+            Track track,
+            Side side,
+            Time time,
+            bool inStanding = false
+        )
+            : this(new TrainUnit[1] { unit }, track, side, time, inStanding) { }
 
         public override string ToString()
         {
