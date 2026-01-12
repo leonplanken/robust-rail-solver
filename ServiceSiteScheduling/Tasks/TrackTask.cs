@@ -17,14 +17,14 @@
         public Utilities.Time Start { get; set; }
         public Utilities.Time End { get; set; }
         public Parking.State State { get; set; }
-        public Side ArrivalSide { get; set; }
+        public Side? ArrivalSide { get; set; }
         public TrackTaskType TaskType
         {
             get { return this.tasktype; }
         }
         protected readonly TrackTaskType tasktype;
 
-        private Parking.State originalState { get; set; }
+        private Parking.State? OriginalState { get; set; }
 
         public TrackTask(Trains.ShuntTrain train, TrackParts.Track track, TrackTaskType type)
         {
@@ -32,6 +32,8 @@
             this.Track = track;
             this.State = new Parking.State(this);
             this.tasktype = type;
+            this.Previous = null!;
+            this.Next = null!;
         }
 
         public override string ToString()
@@ -41,11 +43,11 @@
 
         public void Arrive(Parking.TrackOccupation track)
         {
-            if (this.originalState != null)
+            if (this.OriginalState != null)
             {
-                this.State = this.originalState;
+                this.State = this.OriginalState;
                 this.State.Reset();
-                this.originalState = null;
+                this.OriginalState = null;
             }
 
             track.Arrive(this);
@@ -58,8 +60,8 @@
 
         public void Replace(TrackTask other)
         {
-            if (this.originalState == null)
-                this.originalState = this.State;
+            if (this.OriginalState == null)
+                this.OriginalState = this.State;
             this.State = other.State;
         }
 
