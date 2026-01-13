@@ -101,12 +101,12 @@ namespace ServiceSiteScheduling.TrackParts
                 else if (infrastructure == this.ASide)
                     result =
                         this.BSide == null
-                            ? new TrackSwitchContainer[0]
+                            ? Array.Empty<TrackSwitchContainer>()
                             : this.BSide.GetTracksConnectedTo(this, switches, path);
                 else
                     result =
                         this.ASide == null
-                            ? new TrackSwitchContainer[0]
+                            ? Array.Empty<TrackSwitchContainer>()
                             : this.ASide.GetTracksConnectedTo(this, switches, path);
                 path.RemoveAt(path.Count - 1);
                 return result;

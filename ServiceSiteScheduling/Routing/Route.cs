@@ -20,8 +20,8 @@ namespace ServiceSiteScheduling.Routing
 
         public static Route Invalid = new Route(
             null,
-            new Track[0],
-            new Arc[0],
+            Array.Empty<Track>(),
+            Array.Empty<Arc>(),
             Settings.CrossingsIfInvalidRoute,
             Side.None,
             Settings.SwitchesIfInvalidRoute,
@@ -121,7 +121,16 @@ namespace ServiceSiteScheduling.Routing
 
         public static Route EmptyRoute(ShuntTrain train, RoutingGraph graph, Track track, Side side)
         {
-            var route = new Route(train, graph, new Track[1] { track }, new Arc[0], 0, side, 0, 0);
+            var route = new Route(
+                train,
+                graph,
+                new Track[1] { track },
+                Array.Empty<Arc>(),
+                0,
+                side,
+                0,
+                0
+            );
             route.Duration = 0;
             return route;
         }

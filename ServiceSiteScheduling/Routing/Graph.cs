@@ -50,7 +50,7 @@ namespace ServiceSiteScheduling.Routing
                         new TrainUnit(
                             -1,
                             ProblemInstance.Current.TrainTypes[0],
-                            new Servicing.Service[0],
+                            Array.Empty<Servicing.Service>(),
                             ProblemInstance.Current.ServiceTypes
                         )
                     ),

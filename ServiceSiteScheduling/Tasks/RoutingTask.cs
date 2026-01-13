@@ -222,7 +222,9 @@ namespace ServiceSiteScheduling.Tasks
 
         public override IEnumerable<TrackTask> GetPrevious(Func<TrackTask, bool> selector)
         {
-            return selector(this.Previous) ? new TrackTask[1] { this.Previous } : new TrackTask[0];
+            return selector(this.Previous)
+                ? new TrackTask[1] { this.Previous }
+                : Array.Empty<TrackTask>();
         }
 
         public override IEnumerable<TrackTask> GetNext(Func<TrackTask, bool> selector)

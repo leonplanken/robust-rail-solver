@@ -16,7 +16,7 @@
 
         public void Connect(Infrastructure infrastructure)
         {
-            this.Connections[infrastructure] = new Infrastructure[0];
+            this.Connections[infrastructure] = Array.Empty<Infrastructure>();
             this.EndPoint = infrastructure;
         }
 

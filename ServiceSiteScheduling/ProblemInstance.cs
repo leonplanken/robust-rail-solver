@@ -690,8 +690,8 @@ namespace ServiceSiteScheduling
 
                 arrivals.Add(at94139414);
 
-                freeservicelists.Add(new Service[0]);
-                freeservicelists.Add(new Service[0]);
+                freeservicelists.Add(Array.Empty<Service>());
+                freeservicelists.Add(Array.Empty<Service>());
             }
             TrainUnit tu2408 = null,
                 tu2409 = null;
@@ -722,8 +722,8 @@ namespace ServiceSiteScheduling
 
                 arrivals.Add(at24082409);
 
-                freeservicelists.Add(new Service[0]);
-                freeservicelists.Add(new Service[0]);
+                freeservicelists.Add(Array.Empty<Service>());
+                freeservicelists.Add(Array.Empty<Service>());
             }
             TrainUnit tu2610 = null;
             if (include2610)
@@ -745,7 +745,7 @@ namespace ServiceSiteScheduling
 
                 arrivals.Add(at2610);
 
-                freeservicelists.Add(new Service[0]);
+                freeservicelists.Add(Array.Empty<Service>());
             }
             TrainUnit tu2611 = null;
             if (include2611)
@@ -767,7 +767,7 @@ namespace ServiceSiteScheduling
 
                 arrivals.Add(at2611);
 
-                freeservicelists.Add(new Service[0]);
+                freeservicelists.Add(Array.Empty<Service>());
             }
 
             // No services
@@ -775,13 +775,13 @@ namespace ServiceSiteScheduling
             {
                 foreach (var unit in trainunits)
                 {
-                    unit.RequiredServices = new Service[0];
+                    unit.RequiredServices = Array.Empty<Service>();
                     for (int i = 0; i < unit.ServiceDurations.Length; i++)
                         unit.ServiceDurations[i] = 0;
                 }
 
                 for (int i = 0; i < freeservicelists.Count; i++)
-                    freeservicelists[i] = new Service[0];
+                    freeservicelists[i] = Array.Empty<Service>();
             }
 
             instance.TrainTypes = traintypes.ToArray();
