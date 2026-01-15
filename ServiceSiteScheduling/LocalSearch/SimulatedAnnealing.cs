@@ -29,7 +29,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public void showAllPrevious(MoveTask gMove)
         {
-            List<TrackTask> previousTasks = new List<TrackTask>();
+            List<TrackTask> previousTasks = [];
 
             if (gMove.AllPrevious.Count == 0)
             {
@@ -74,7 +74,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public void showAllNex(MoveTask gMove)
         {
-            List<TrackTask> nextTasks = new List<TrackTask>();
+            List<TrackTask> nextTasks = [];
 
             if (gMove.AllNext.Count == 0)
             {
@@ -199,8 +199,7 @@ namespace ServiceSiteScheduling.LocalSearch
             int Q = q,
                 iterationsUntilReset = reset;
 
-            List<LocalSearchMove> moves = new List<LocalSearchMove>();
-            moves.Add(new IdentityMove(this.Graph));
+            List<LocalSearchMove> moves = [new IdentityMove(this.Graph)];
             int noimprovement = 0,
                 iteration = 0,
                 neighbors = 0;
@@ -208,7 +207,7 @@ namespace ServiceSiteScheduling.LocalSearch
             SolutionCost bestcost = this.Graph.ComputeModel();
             SolutionCost current = bestcost;
 
-            Stopwatch stopwatch = new Stopwatch();
+            Stopwatch stopwatch = new();
             stopwatch.Start();
             int localsearchmovetypes = 9;
 
@@ -216,7 +215,7 @@ namespace ServiceSiteScheduling.LocalSearch
             {
                 bool fullcost = this.Graph.Cost.IsFeasible;
 
-                List<LocalSearchMove> selectedmoves = new List<LocalSearchMove>();
+                List<LocalSearchMove> selectedmoves = [];
                 double movetype = random.NextDouble();
                 double restricted = random.NextDouble();
                 double restrictedprobability = bias;
@@ -424,7 +423,7 @@ namespace ServiceSiteScheduling.LocalSearch
                 {
                     while (random.NextDouble() > 0.5)
                     {
-                        List<LocalSearchMove> currentmoves = new List<LocalSearchMove>();
+                        List<LocalSearchMove> currentmoves = [];
 
                         var parkingroutingtemporarymoves = ParkingRoutingTemporaryMove.GetMoves(
                             this.Graph

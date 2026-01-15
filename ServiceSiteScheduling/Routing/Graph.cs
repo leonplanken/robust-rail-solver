@@ -43,10 +43,10 @@ namespace ServiceSiteScheduling.Routing
 
             this.priorityqueue = new FastPriorityQueue<Vertex>(4 * supervertices.Length);
 
-            ShuntTrain train = new ShuntTrain(
+            ShuntTrain train = new(
                 new ShuntTrainUnit[]
                 {
-                    new ShuntTrainUnit(
+                    new(
                         new TrainUnit(
                             -1,
                             ProblemInstance.Current.TrainTypes[0],
@@ -117,11 +117,11 @@ namespace ServiceSiteScheduling.Routing
 
             foreach (Track track in ProblemInstance.Current.Tracks)
             {
-                Vertex aa = new Vertex(Side.A, Side.A);
-                Vertex ab = new Vertex(Side.A, Side.B);
-                Vertex ba = new Vertex(Side.B, Side.A);
-                Vertex bb = new Vertex(Side.B, Side.B);
-                SuperVertex v = new SuperVertex(track, aa, ab, ba, bb, track.Index);
+                Vertex aa = new(Side.A, Side.A);
+                Vertex ab = new(Side.A, Side.B);
+                Vertex ba = new(Side.B, Side.A);
+                Vertex bb = new(Side.B, Side.B);
+                SuperVertex v = new(track, aa, ab, ba, bb, track.Index);
                 supervertices[v.Index] = v;
                 aa.SuperVertex = ab.SuperVertex = ba.SuperVertex = bb.SuperVertex = v;
 
@@ -211,7 +211,7 @@ namespace ServiceSiteScheduling.Routing
                 }
             }
 
-            List<Arc> arcs = new List<Arc>();
+            List<Arc> arcs = [];
             foreach (Track track in ProblemInstance.Current.Tracks)
             {
                 if (!track.IsActive)
@@ -454,11 +454,11 @@ namespace ServiceSiteScheduling.Routing
             Vertex current = end;
             if (current.Previous?.Type == ArcType.Reverse)
                 current = current.Previous.Tail;
-            Stack<Track> route = new Stack<Track>();
-            Stack<Arc> arcs = new Stack<Arc>();
+            Stack<Track> route = new();
+            Stack<Arc> arcs = new();
             int switches = 0;
             int reversals = 0;
-            BitSet crossingtracks = new BitSet(ProblemInstance.Current.Tracks.Length);
+            BitSet crossingtracks = new(ProblemInstance.Current.Tracks.Length);
             while (true)
             {
                 if (route.Count == 0 || route.Peek() != current.SuperVertex.Track)

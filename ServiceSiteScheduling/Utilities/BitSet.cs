@@ -232,7 +232,7 @@ namespace ServiceSiteScheduling.Utilities
         #region Operator Overloads
         public static BitSet operator &(BitSet b1, BitSet b2)
         {
-            BitSet result = new BitSet(b1.length);
+            BitSet result = new(b1.length);
             for (int i = 0; i < b1.elements.Length; i++)
                 result.elements[i] = b1.elements[i] & b2.elements[i];
             result.changed = true;
@@ -241,7 +241,7 @@ namespace ServiceSiteScheduling.Utilities
 
         public static BitSet operator |(BitSet b1, BitSet b2)
         {
-            BitSet result = new BitSet(b1.length);
+            BitSet result = new(b1.length);
             for (int i = 0; i < b1.elements.Length; i++)
                 result.elements[i] = b1.elements[i] | b2.elements[i];
             result.changed = true;
@@ -250,7 +250,7 @@ namespace ServiceSiteScheduling.Utilities
 
         public static BitSet operator ^(BitSet b1, BitSet b2)
         {
-            BitSet result = new BitSet(b1.length);
+            BitSet result = new(b1.length);
             for (int i = 0; i < b1.elements.Length; i++)
                 result.elements[i] = b1.elements[i] ^ b2.elements[i];
             result.changed = true;
@@ -259,7 +259,7 @@ namespace ServiceSiteScheduling.Utilities
 
         public static BitSet operator -(BitSet b1, BitSet b2)
         {
-            BitSet result = new BitSet(b1.length);
+            BitSet result = new(b1.length);
             for (int i = 0; i < b2.elements.Length; i++)
                 result.elements[i] = b1.elements[i] & ~b2.elements[i];
             result.changed = true;
@@ -268,7 +268,7 @@ namespace ServiceSiteScheduling.Utilities
 
         public static BitSet operator ~(BitSet b)
         {
-            BitSet result = new BitSet(b.length);
+            BitSet result = new(b.length);
             for (int i = 0; i < b.elements.Length; i++)
                 result.elements[i] = ~b.elements[i];
             result.elements[result.elements.Length - 1] &= result.mask;

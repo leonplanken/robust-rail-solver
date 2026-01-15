@@ -72,10 +72,10 @@ namespace ServiceSiteScheduling.Tasks
         public DepartureRoutingTask(Trains.ShuntTrain train)
             : base(train, MoveTaskType.Departure)
         {
-            this.routes = new List<Routing.Route>();
-            this.routetoskippedparkings = new Dictionary<Trains.ShuntTrain, Stack<RoutingTask>>();
-            this.skippedparkings = new Dictionary<Trains.ShuntTrain, Stack<ParkingTask>>();
-            this.Previous = new List<TrackTask>();
+            this.routes = [];
+            this.routetoskippedparkings = [];
+            this.skippedparkings = [];
+            this.Previous = [];
             this.crossingtracks = new BitSet(ProblemInstance.Current.Tracks.Length);
             this.departurecrossingtracks = new BitSet(ProblemInstance.Current.Tracks.Length);
         }

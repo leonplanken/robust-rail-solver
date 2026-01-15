@@ -6,7 +6,7 @@
     class BinaryHeap<T>
     {
         #region Variables
-        private List<BinaryHeapNode<T>> nodes = new List<BinaryHeapNode<T>>();
+        private List<BinaryHeapNode<T>> nodes = [];
         private Comparison<T> compare;
         #endregion
 
@@ -39,7 +39,7 @@
         #region Public Methods
         public BinaryHeapNode<T> Insert(T item)
         {
-            BinaryHeapNode<T> node = new BinaryHeapNode<T>(item, this.compare, this.nodes.Count);
+            BinaryHeapNode<T> node = new(item, this.compare, this.nodes.Count);
             this.nodes.Add(node);
             this.bubbleup(node);
             return node;

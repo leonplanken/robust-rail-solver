@@ -32,7 +32,7 @@ namespace ServiceSiteScheduling.Matching
                         }
                     if (parts == null)
                     {
-                        parts = new List<Part>();
+                        parts = [];
                         bytype.Add(parts);
                     }
 

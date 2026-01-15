@@ -20,7 +20,7 @@ namespace ServiceSiteScheduling.LocalSearch
         {
             this.First = first;
             this.Second = second;
-            this.parking = new List<Tasks.ParkingTask>();
+            this.parking = [];
 
             this.firstprevious = this.First.Train.Routing.PreviousMove;
             this.secondprevious = this.Second.Train.Routing.PreviousMove;
@@ -199,7 +199,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public static IList<MatchingSwapMove> GetMoves(PlanGraph graph)
         {
-            List<MatchingSwapMove> moves = new List<MatchingSwapMove>();
+            List<MatchingSwapMove> moves = [];
 
             foreach (var departureparts in graph.Matching.DeparturePartsByType)
             {

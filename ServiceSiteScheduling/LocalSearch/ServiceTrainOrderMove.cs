@@ -258,7 +258,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public static IList<ServiceTrainOrderMove> GetMoves(PlanGraph graph)
         {
-            List<ServiceTrainOrderMove> moves = new List<ServiceTrainOrderMove>();
+            List<ServiceTrainOrderMove> moves = [];
 
             for (var movetask = graph.First; movetask != null; movetask = movetask.NextMove)
             {

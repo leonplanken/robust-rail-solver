@@ -214,7 +214,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public static IList<ServiceMachineSwitchMove> GetMoves(PlanGraph graph)
         {
-            List<ServiceMachineSwitchMove> moves = new List<ServiceMachineSwitchMove>();
+            List<ServiceMachineSwitchMove> moves = [];
 
             for (var movetask = graph.First; movetask != null; movetask = movetask.NextMove)
             {
@@ -251,14 +251,13 @@ namespace ServiceSiteScheduling.LocalSearch
                                     {
                                         if (track.Access == Side.Both)
                                         {
-                                            ServiceMachineSwitchMove move =
-                                                new ServiceMachineSwitchMove(
-                                                    graph,
-                                                    service,
-                                                    location,
-                                                    Side.A,
-                                                    null
-                                                );
+                                            ServiceMachineSwitchMove move = new(
+                                                graph,
+                                                service,
+                                                location,
+                                                Side.A,
+                                                null
+                                            );
                                             moves.Add(move);
                                             move = new ServiceMachineSwitchMove(
                                                 graph,
@@ -271,14 +270,13 @@ namespace ServiceSiteScheduling.LocalSearch
                                         }
                                         else
                                         {
-                                            ServiceMachineSwitchMove move =
-                                                new ServiceMachineSwitchMove(
-                                                    graph,
-                                                    service,
-                                                    location,
-                                                    track.Access,
-                                                    null
-                                                );
+                                            ServiceMachineSwitchMove move = new(
+                                                graph,
+                                                service,
+                                                location,
+                                                track.Access,
+                                                null
+                                            );
                                             moves.Add(move);
                                         }
                                     }
@@ -291,14 +289,13 @@ namespace ServiceSiteScheduling.LocalSearch
                                         {
                                             if (track.Access == Side.Both)
                                             {
-                                                ServiceMachineSwitchMove move =
-                                                    new ServiceMachineSwitchMove(
-                                                        graph,
-                                                        service,
-                                                        location,
-                                                        Side.A,
-                                                        position
-                                                    );
+                                                ServiceMachineSwitchMove move = new(
+                                                    graph,
+                                                    service,
+                                                    location,
+                                                    Side.A,
+                                                    position
+                                                );
                                                 moves.Add(move);
                                                 move = new ServiceMachineSwitchMove(
                                                     graph,
@@ -311,14 +308,13 @@ namespace ServiceSiteScheduling.LocalSearch
                                             }
                                             else
                                             {
-                                                ServiceMachineSwitchMove move =
-                                                    new ServiceMachineSwitchMove(
-                                                        graph,
-                                                        service,
-                                                        location,
-                                                        track.Access,
-                                                        position
-                                                    );
+                                                ServiceMachineSwitchMove move = new(
+                                                    graph,
+                                                    service,
+                                                    location,
+                                                    track.Access,
+                                                    position
+                                                );
                                                 moves.Add(move);
                                             }
                                         }
@@ -351,7 +347,7 @@ namespace ServiceSiteScheduling.LocalSearch
                                 var position = service.Resource.First;
                                 if (position == null || position.Start > lower.End)
                                 {
-                                    ServiceMachineSwitchMove move = new ServiceMachineSwitchMove(
+                                    ServiceMachineSwitchMove move = new(
                                         graph,
                                         service,
                                         service.Resource,
@@ -367,14 +363,13 @@ namespace ServiceSiteScheduling.LocalSearch
                                         || position.NextServiceTask.Start > lower.End
                                     )
                                     {
-                                        ServiceMachineSwitchMove move =
-                                            new ServiceMachineSwitchMove(
-                                                graph,
-                                                service,
-                                                service.Resource,
-                                                Side.None,
-                                                position
-                                            );
+                                        ServiceMachineSwitchMove move = new(
+                                            graph,
+                                            service,
+                                            service.Resource,
+                                            Side.None,
+                                            position
+                                        );
                                         moves.Add(move);
                                     }
 

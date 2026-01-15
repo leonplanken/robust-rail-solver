@@ -23,8 +23,8 @@ namespace ServiceSiteScheduling.Servicing
         {
             this.Index = index;
             this.Name = name;
-            this.Tracks = new HashSet<Track>();
-            this.Resources = new List<ServiceResource>();
+            this.Tracks = [];
+            this.Resources = [];
             this.LocationType = locationtype;
         }
 

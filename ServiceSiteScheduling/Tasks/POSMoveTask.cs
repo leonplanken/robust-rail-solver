@@ -32,14 +32,14 @@ namespace ServiceSiteScheduling.Tasks
             // this.POSPlanGraph = posGraph;
             this.CorrespondingMoveTask = correspondingMoveTask;
             this.ID = id;
-            this.LinkedMoves = new List<POSMoveTask>();
-            this.SuccessorMovesByTrainUnits = new List<POSMoveTask>();
-            this.PredecessorMovesByTrainUnits = new List<POSMoveTask>();
-            this.SuccessorMovesByInfrastructure = new List<POSMoveTask>();
-            this.PredecessorMovesByInfrastructure = new List<POSMoveTask>();
+            this.LinkedMoves = [];
+            this.SuccessorMovesByTrainUnits = [];
+            this.PredecessorMovesByTrainUnits = [];
+            this.SuccessorMovesByInfrastructure = [];
+            this.PredecessorMovesByInfrastructure = [];
 
-            this.SuccessorTrackTasks = new List<POSTrackTask>();
-            this.PredecessorTrackTasks = new List<POSTrackTask>();
+            this.SuccessorTrackTasks = [];
+            this.PredecessorTrackTasks = [];
         }
 
         public void InsertAfter(POSMoveTask posMoveTask) { }

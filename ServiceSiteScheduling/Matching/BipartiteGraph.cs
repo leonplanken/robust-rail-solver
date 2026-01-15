@@ -22,11 +22,11 @@
         {
             int size = ProblemInstance.Current.TrainUnits.Length;
             this.adjacencyMatrix = new bool[size, size];
-            this.fixedMatches = new List<Match>();
+            this.fixedMatches = [];
 
             // Construct the departure trains
             this.departuretrains = new Train[ProblemInstance.Current.DeparturesOrdered.Length];
-            this.departureunits = new List<Unit>();
+            this.departureunits = [];
             for (int i = 0; i < ProblemInstance.Current.DeparturesOrdered.Length; i++)
             {
                 Trains.DepartureTrain departure = ProblemInstance.Current.DeparturesOrdered[i];
@@ -44,14 +44,14 @@
             }
 
             int arrivalindex = 0;
-            List<ArrivalVertex> arrivals = new List<ArrivalVertex>();
+            List<ArrivalVertex> arrivals = [];
             foreach (var arrival in ProblemInstance.Current.ArrivalsOrdered)
             foreach (var unit in arrival.Units)
                 arrivals.Add(new ArrivalVertex(arrivalindex++, unit, arrival));
             this.Arrivals = arrivals.ToArray();
 
             int departureindex = 0;
-            List<DepartureVertex> departures = new List<DepartureVertex>();
+            List<DepartureVertex> departures = [];
             foreach (var departure in this.departuretrains)
             foreach (var unit in departure.Units)
                 departures.Add(new DepartureVertex(departureindex++, unit, departure));
@@ -175,7 +175,7 @@
             this.queue = new Queue<ArrivalVertex>();
             this.arrivalmatch = new DepartureVertex[size + 1];
             this.departurematch = new ArrivalVertex[size + 1];
-            List<ArrivalVertex> vertices = new List<ArrivalVertex>();
+            List<ArrivalVertex> vertices = [];
             for (int i = 0; i < size; i++)
             {
                 var arrival = this.Arrivals[i];
@@ -260,8 +260,7 @@
                 return this.Arrivals.Length - counter + 5 * errors;
             };
 
-            Dictionary<Trains.TrainType, List<ArrivalVertex>> arrivalsbytype =
-                new Dictionary<Trains.TrainType, List<ArrivalVertex>>();
+            Dictionary<Trains.TrainType, List<ArrivalVertex>> arrivalsbytype = [];
             foreach (var arrival in this.Arrivals)
             {
                 bool active = false;
@@ -271,7 +270,7 @@
                     continue;
 
                 if (!arrivalsbytype.ContainsKey(arrival.Unit.Type))
-                    arrivalsbytype[arrival.Unit.Type] = new List<ArrivalVertex>();
+                    arrivalsbytype[arrival.Unit.Type] = [];
                 arrivalsbytype[arrival.Unit.Type].Add(arrival);
             }
 
@@ -336,11 +335,13 @@
                 }
             }
 
-            List<List<Match>> partsmatching = new List<List<Match>>();
+            List<List<Match>> partsmatching = [];
             for (int index = 0; index < bestsolution.Length; index++)
             {
-                List<Match> part = new List<Match>();
-                part.Add(new Match(this.Arrivals[index], this.Departures[bestsolution[index]]));
+                List<Match> part =
+                [
+                    new Match(this.Arrivals[index], this.Departures[bestsolution[index]]),
+                ];
 
                 int next = index + 1;
                 while (
@@ -359,12 +360,12 @@
                 index += part.Count - 1;
             }
 
-            Dictionary<Train, List<Part>> trainparts = new Dictionary<Train, List<Part>>();
+            Dictionary<Train, List<Part>> trainparts = [];
             foreach (var matchpart in partsmatching)
             {
                 List<Part> parts = null;
                 if (!trainparts.TryGetValue(matchpart.First().Departure.Train, out parts))
-                    trainparts[matchpart.First().Departure.Train] = parts = new List<Part>();
+                    trainparts[matchpart.First().Departure.Train] = parts = [];
                 var part = new Part(matchpart.Select(m => m.Departure.Unit).ToArray());
                 parts.Add(part);
 
@@ -377,11 +378,7 @@
             foreach (var kvp in trainparts)
                 kvp.Key.Parts = kvp.Value.ToArray();
 
-            TrainMatching result = new TrainMatching(
-                this.departuretrains,
-                this.departureunits,
-                shunttrainunits
-            );
+            TrainMatching result = new(this.departuretrains, this.departureunits, shunttrainunits);
             return result;
         }
 
@@ -462,7 +459,7 @@
         {
             this.Unit = unit;
             this.Train = train;
-            this.Adjacent = new List<DepartureVertex>();
+            this.Adjacent = [];
         }
 
         public override string ToString()

@@ -9,7 +9,7 @@
         public Connection(ulong id, string name)
             : base(id, name)
         {
-            this.Connections = new Dictionary<Infrastructure, IList<Infrastructure>>();
+            this.Connections = [];
         }
 
         public override IList<TrackSwitchContainer> GetTracksConnectedTo(
@@ -20,7 +20,7 @@
         )
         {
             path.Add(this);
-            List<TrackSwitchContainer> result = new List<TrackSwitchContainer>();
+            List<TrackSwitchContainer> result = [];
 
             foreach (var infra in this.GetInfrastructureConnectedTo(infrastructure))
                 result.AddRange(

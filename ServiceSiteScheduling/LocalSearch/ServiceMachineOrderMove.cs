@@ -325,7 +325,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public static IList<ServiceMachineOrderMove> GetMoves(PlanGraph graph)
         {
-            List<ServiceMachineOrderMove> moves = new List<ServiceMachineOrderMove>();
+            List<ServiceMachineOrderMove> moves = [];
 
             for (var movetask = graph.First; movetask != null; movetask = movetask.NextMove)
             {

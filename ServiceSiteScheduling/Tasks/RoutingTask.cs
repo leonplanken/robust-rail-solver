@@ -88,7 +88,7 @@ namespace ServiceSiteScheduling.Tasks
         public RoutingTask(Trains.ShuntTrain train)
             : base(train, MoveTaskType.Standard)
         {
-            this.Next = new List<TrackTask>();
+            this.Next = [];
             this.RouteToSkippedParking = new Stack<RoutingTask>();
             this.SkippedParking = new Stack<ParkingTask>();
         }

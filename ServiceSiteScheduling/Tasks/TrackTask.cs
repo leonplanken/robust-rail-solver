@@ -67,7 +67,7 @@
 
         public List<TrackTask> GetRelatedTasks()
         {
-            return this.getRelatedTasks(new List<TrackTask>());
+            return this.getRelatedTasks([]);
         }
 
         private List<TrackTask> getRelatedTasks(List<TrackTask> list)

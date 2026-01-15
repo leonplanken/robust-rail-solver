@@ -18,8 +18,8 @@ namespace ServiceSiteScheduling.Parking
         {
             this.Track = track;
             this.StateDeque = new Deque<State>();
-            this.States = new List<State>();
-            this.ViolatingStates = new List<State>();
+            this.States = [];
+            this.ViolatingStates = [];
         }
 
         public virtual void Arrive(TrackTask task)
@@ -265,8 +265,8 @@ namespace ServiceSiteScheduling.Parking
     class SimpleTrackOccupation : TrackOccupation
     {
         int occupation = 0;
-        List<double> order = new List<double>();
-        List<int> space = new List<int>();
+        List<double> order = [];
+        List<int> space = [];
 
         public SimpleTrackOccupation(Track track)
             : base(track) { }

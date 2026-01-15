@@ -103,9 +103,9 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public static IList<ParkingSwapMove> GetMoves(PlanGraph graph)
         {
-            List<ParkingSwapMove> moves = new List<ParkingSwapMove>();
+            List<ParkingSwapMove> moves = [];
 
-            HashSet<Tasks.TrackTask> parkingtasks = new HashSet<Tasks.TrackTask>();
+            HashSet<Tasks.TrackTask> parkingtasks = [];
 
             for (var movetask = graph.First; movetask != null; movetask = movetask.NextMove)
             {

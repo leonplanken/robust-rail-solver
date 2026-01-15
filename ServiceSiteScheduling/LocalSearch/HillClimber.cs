@@ -30,11 +30,11 @@ namespace ServiceSiteScheduling.LocalSearch
                 neighborsvisited = 0;
             double bestcost = this.Graph.ComputeModel().BaseCost;
 
-            Stopwatch stopwatch = new Stopwatch();
+            Stopwatch stopwatch = new();
             stopwatch.Start();
             while (true)
             {
-                List<LocalSearchMove> currentmoves = new List<LocalSearchMove>();
+                List<LocalSearchMove> currentmoves = [];
 
                 var servicemachineordermoves = ServiceMachineOrderMove.GetMoves(this.Graph);
                 currentmoves.AddRange(servicemachineordermoves);

@@ -72,7 +72,7 @@
 
         public static IList<ParkingSwitchMove> GetMoves(Solutions.PlanGraph graph)
         {
-            List<ParkingSwitchMove> moves = new List<ParkingSwitchMove>();
+            List<ParkingSwitchMove> moves = [];
 
             for (var movetask = graph.First; movetask != null; movetask = movetask.NextMove)
             {
@@ -118,12 +118,7 @@
                             && !(track == currenttrack && currentside == Side.A)
                         )
                         {
-                            ParkingSwitchMove move = new ParkingSwitchMove(
-                                graph,
-                                tasks,
-                                track,
-                                Side.A
-                            );
+                            ParkingSwitchMove move = new(graph, tasks, track, Side.A);
                             moves.Add(move);
                         }
                         if (
@@ -131,12 +126,7 @@
                             && !(track == currenttrack && currentside == Side.B)
                         )
                         {
-                            ParkingSwitchMove move = new ParkingSwitchMove(
-                                graph,
-                                tasks,
-                                track,
-                                Side.B
-                            );
+                            ParkingSwitchMove move = new(graph, tasks, track, Side.B);
                             moves.Add(move);
                         }
                     }
@@ -147,7 +137,7 @@
                     var departure = movetask as Tasks.DepartureRoutingTask;
                     if (departure.Next.Track.Access == Side.Both)
                     {
-                        ParkingSwitchMove move = new ParkingSwitchMove(
+                        ParkingSwitchMove move = new(
                             graph,
                             new Tasks.TrackTask[1] { departure.Next },
                             departure.Next.Track,

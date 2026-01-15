@@ -159,7 +159,7 @@ namespace ServiceSiteScheduling
 
             foreach (var arrivalTrain in ProblemInstanceSolver.InterfaceScenario.In.Trains)
             {
-                AlgoIfaceEvaluator.Train train = new AlgoIfaceEvaluator.Train();
+                AlgoIfaceEvaluator.Train train = new();
 
                 train.Id = arrivalTrain.Id;
                 train.Time = arrivalTrain.Departure;
@@ -172,7 +172,7 @@ namespace ServiceSiteScheduling
                 {
                     foreach (var member in arrivalTrain.Members)
                     {
-                        AlgoIfaceEvaluator.TrainUnit trainUnit = new AlgoIfaceEvaluator.TrainUnit();
+                        AlgoIfaceEvaluator.TrainUnit trainUnit = new();
                         trainUnit.Id = member.TrainUnit.Id;
                         trainUnit.TypeDisplayName =
                             member.TrainUnit.Type.DisplayName
@@ -181,8 +181,7 @@ namespace ServiceSiteScheduling
 
                         if (member.Tasks.Count() > 0)
                         {
-                            AlgoIfaceEvaluator.TaskSpec tasksEvaluator =
-                                new AlgoIfaceEvaluator.TaskSpec();
+                            AlgoIfaceEvaluator.TaskSpec tasksEvaluator = new();
                             foreach (var taskSolver in member.Tasks)
                             {
                                 string requiredskill = "";
@@ -191,8 +190,7 @@ namespace ServiceSiteScheduling
                                     == AlgoIface.TaskType.TaskTypeOneofCase.Other
                                 )
                                 {
-                                    AlgoIfaceEvaluator.TaskType taskTypeEvaluator =
-                                        new AlgoIfaceEvaluator.TaskType();
+                                    AlgoIfaceEvaluator.TaskType taskTypeEvaluator = new();
                                     taskTypeEvaluator.Other = taskSolver.Type.Other;
                                     tasksEvaluator.Type = taskTypeEvaluator;
 
@@ -229,7 +227,7 @@ namespace ServiceSiteScheduling
                     var arrivalTrain in ProblemInstanceSolver.InterfaceScenario.InStanding.Trains
                 )
                 {
-                    AlgoIfaceEvaluator.Train train = new AlgoIfaceEvaluator.Train();
+                    AlgoIfaceEvaluator.Train train = new();
 
                     train.Id = arrivalTrain.Id;
                     // train.Time = arrivalTrain.Departure;
@@ -243,8 +241,7 @@ namespace ServiceSiteScheduling
                     {
                         foreach (var member in arrivalTrain.Members)
                         {
-                            AlgoIfaceEvaluator.TrainUnit trainUnit =
-                                new AlgoIfaceEvaluator.TrainUnit();
+                            AlgoIfaceEvaluator.TrainUnit trainUnit = new();
                             trainUnit.Id = member.TrainUnit.Id;
                             trainUnit.TypeDisplayName =
                                 member.TrainUnit.Type.DisplayName
@@ -253,8 +250,7 @@ namespace ServiceSiteScheduling
 
                             if (member.Tasks.Count() > 0)
                             {
-                                AlgoIfaceEvaluator.TaskSpec tasksEvaluator =
-                                    new AlgoIfaceEvaluator.TaskSpec();
+                                AlgoIfaceEvaluator.TaskSpec tasksEvaluator = new();
                                 foreach (var taskSolver in member.Tasks)
                                 {
                                     string requiredskill = "";
@@ -263,8 +259,7 @@ namespace ServiceSiteScheduling
                                         == AlgoIface.TaskType.TaskTypeOneofCase.Other
                                     )
                                     {
-                                        AlgoIfaceEvaluator.TaskType taskTypeEvaluator =
-                                            new AlgoIfaceEvaluator.TaskType();
+                                        AlgoIfaceEvaluator.TaskType taskTypeEvaluator = new();
                                         taskTypeEvaluator.Other = taskSolver.Type.Other;
                                         tasksEvaluator.Type = taskTypeEvaluator;
 
@@ -298,7 +293,7 @@ namespace ServiceSiteScheduling
                 var departureTrain in ProblemInstanceSolver.InterfaceScenario.Out.TrainRequests
             )
             {
-                AlgoIfaceEvaluator.Train train = new AlgoIfaceEvaluator.Train();
+                AlgoIfaceEvaluator.Train train = new();
 
                 train.Id = departureTrain.DisplayName;
                 train.Time = departureTrain.Arrival;
@@ -311,7 +306,7 @@ namespace ServiceSiteScheduling
                 {
                     foreach (var member in departureTrain.TrainUnits)
                     {
-                        AlgoIfaceEvaluator.TrainUnit trainUnit = new AlgoIfaceEvaluator.TrainUnit();
+                        AlgoIfaceEvaluator.TrainUnit trainUnit = new();
                         trainUnit.Id = "****";
                         trainUnit.TypeDisplayName =
                             member.Type.DisplayName + "-" + member.Type.Carriages;
@@ -334,7 +329,7 @@ namespace ServiceSiteScheduling
                         .TrainRequests
                 )
                 {
-                    AlgoIfaceEvaluator.Train train = new AlgoIfaceEvaluator.Train();
+                    AlgoIfaceEvaluator.Train train = new();
 
                     train.Id = outStandingTrain.DisplayName;
                     // train.Time = outStandingTrain.Arrival;
@@ -348,8 +343,7 @@ namespace ServiceSiteScheduling
                     {
                         foreach (var member in outStandingTrain.TrainUnits)
                         {
-                            AlgoIfaceEvaluator.TrainUnit trainUnit =
-                                new AlgoIfaceEvaluator.TrainUnit();
+                            AlgoIfaceEvaluator.TrainUnit trainUnit = new();
                             trainUnit.Id = "****";
                             trainUnit.TypeDisplayName =
                                 member.Type.DisplayName + "-" + member.Type.Carriages;
@@ -366,10 +360,9 @@ namespace ServiceSiteScheduling
 
         public AlgoIfaceEvaluator.TrainUnitTypes CreateTrainUnitTypes()
         {
-            AlgoIfaceEvaluator.TrainUnitTypes trainUnitTypes =
-                new AlgoIfaceEvaluator.TrainUnitTypes();
+            AlgoIfaceEvaluator.TrainUnitTypes trainUnitTypes = new();
 
-            AlgoIfaceEvaluator.TrainUnitType trainUnitType = new AlgoIfaceEvaluator.TrainUnitType();
+            AlgoIfaceEvaluator.TrainUnitType trainUnitType = new();
 
             // SLT-4
             trainUnitType.DisplayName = "SLT-4";

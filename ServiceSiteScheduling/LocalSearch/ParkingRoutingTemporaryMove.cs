@@ -80,7 +80,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public static IList<ParkingRoutingTemporaryMove> GetMoves(PlanGraph graph)
         {
-            List<ParkingRoutingTemporaryMove> moves = new List<ParkingRoutingTemporaryMove>();
+            List<ParkingRoutingTemporaryMove> moves = [];
 
             for (var movetask = graph.First; movetask != null; movetask = movetask.NextMove)
             {

@@ -398,7 +398,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public static IList<ServiceMachineSwapMove> GetMoves(PlanGraph graph)
         {
-            List<ServiceMachineSwapMove> moves = new List<ServiceMachineSwapMove>();
+            List<ServiceMachineSwapMove> moves = [];
 
             for (var movetask = graph.First; movetask != null; movetask = movetask.NextMove)
             {
@@ -439,11 +439,7 @@ namespace ServiceSiteScheduling.LocalSearch
                     )
                         continue;
 
-                    ServiceMachineSwapMove move = new ServiceMachineSwapMove(
-                        graph,
-                        service,
-                        nextservice
-                    );
+                    ServiceMachineSwapMove move = new(graph, service, nextservice);
                     moves.Add(move);
                 }
             }

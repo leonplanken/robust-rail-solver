@@ -62,21 +62,21 @@ namespace ServiceSiteScheduling.Tasks
                     break;
             }
 
-            this.previousMoves = new List<POSMoveTask>();
+            this.previousMoves = [];
 
-            this.nextMoves = new List<POSMoveTask>();
+            this.nextMoves = [];
 
             this.Train = correspondingTrackTask.Train;
 
             this.Track = correspondingTrackTask.Track;
 
-            this.SuccessorTrackTaskByTrainUnits = new List<POSTrackTask>();
+            this.SuccessorTrackTaskByTrainUnits = [];
 
-            this.PredecessorTrackTaskByTrainUnits = new List<POSTrackTask>();
+            this.PredecessorTrackTaskByTrainUnits = [];
 
-            this.SuccessorTrackTaskByInfrastructure = new List<POSTrackTask>();
+            this.SuccessorTrackTaskByInfrastructure = [];
 
-            this.PredecessorTrackTaskByInfrastructure = new List<POSTrackTask>();
+            this.PredecessorTrackTaskByInfrastructure = [];
         }
 
         public void displayLinksByInfrastructure()

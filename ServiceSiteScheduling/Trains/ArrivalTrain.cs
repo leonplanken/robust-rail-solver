@@ -33,7 +33,7 @@ namespace ServiceSiteScheduling.Trains
             this.InStanding = inStanding;
             this.StandingIndex = standingIndex;
 
-            List<Track> allowedparking = new List<Track>();
+            List<Track> allowedparking = [];
             IEnumerable<TrainType> types = units.Select(unit => unit.Type).Distinct();
             foreach (Track t in units[0].Type.ParkingLocations)
                 if (types.All(type => type.ParkingLocations.Contains(t)))

@@ -9,7 +9,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public static IList<RoutingMove> GetMoves(PlanGraph graph)
         {
-            List<RoutingMove> moves = new List<RoutingMove>();
+            List<RoutingMove> moves = [];
 
             Tasks.MoveTask selected = graph.First;
 
@@ -19,7 +19,7 @@ namespace ServiceSiteScheduling.LocalSearch
                 var position = selected.PreviousMove;
                 while (RoutingShiftMove.Allowed(position, selected))
                 {
-                    RoutingShiftMove move = new RoutingShiftMove(graph, selected, position, true);
+                    RoutingShiftMove move = new(graph, selected, position, true);
                     moves.Add(move);
 
                     if (selected.Train.Equals(position.Train))
@@ -30,7 +30,7 @@ namespace ServiceSiteScheduling.LocalSearch
                 // Check merge
                 if (RoutingMergeMove.Allowed(position, selected))
                 {
-                    RoutingMergeMove move = new RoutingMergeMove(
+                    RoutingMergeMove move = new(
                         graph,
                         position.AllNext.First() as Tasks.ParkingTask,
                         false
@@ -42,7 +42,7 @@ namespace ServiceSiteScheduling.LocalSearch
                 position = selected.NextMove;
                 while (RoutingShiftMove.Allowed(selected, position))
                 {
-                    RoutingShiftMove move = new RoutingShiftMove(graph, selected, position, false);
+                    RoutingShiftMove move = new(graph, selected, position, false);
                     moves.Add(move);
 
                     if (selected.Train.Equals(position.Train))
@@ -53,7 +53,7 @@ namespace ServiceSiteScheduling.LocalSearch
                 // Check merge
                 if (RoutingMergeMove.Allowed(selected, position))
                 {
-                    RoutingMergeMove move = new RoutingMergeMove(
+                    RoutingMergeMove move = new(
                         graph,
                         selected.AllNext.First() as Tasks.ParkingTask,
                         true

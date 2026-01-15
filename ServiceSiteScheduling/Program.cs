@@ -437,9 +437,9 @@ namespace ServiceSiteScheduling
             );
 
             // Contains all the tested scenario cases and the plan evaluation results [valid, not valid]
-            Dictionary<string, string> ResultSummary = new();
+            Dictionary<string, string> ResultSummary = [];
 
-            Dictionary<string, string[]> ResultSummaryWithSeed = new();
+            Dictionary<string, string[]> ResultSummaryWithSeed = [];
             string scenarioTestCase = "";
 
             int testCases = config.DeepLook.TestCases;

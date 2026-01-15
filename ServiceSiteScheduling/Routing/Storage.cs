@@ -38,13 +38,13 @@ namespace ServiceSiteScheduling.Routing
             }
 
             this.bitsize = index;
-            this.AA = new Dictionary<BitSet, Entry>();
+            this.AA = [];
             this.AAhistory = new LinkedList<BitSet>();
-            this.AB = new Dictionary<BitSet, Entry>();
+            this.AB = [];
             this.ABhistory = new LinkedList<BitSet>();
-            this.BA = new Dictionary<BitSet, Entry>();
+            this.BA = [];
             this.BAhistory = new LinkedList<BitSet>();
-            this.BB = new Dictionary<BitSet, Entry>();
+            this.BB = [];
             this.BBhistory = new LinkedList<BitSet>();
 
             this.EmptyState = new BitSet(this.bitsize);
@@ -52,7 +52,7 @@ namespace ServiceSiteScheduling.Routing
 
         public BitSet ConstructState(Parking.TrackOccupation[] trackstates, Trains.ShuntTrain train)
         {
-            BitSet result = new BitSet(bitsize);
+            BitSet result = new(bitsize);
 
             foreach (var state in trackstates)
             {

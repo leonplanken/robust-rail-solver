@@ -74,7 +74,7 @@ namespace ServiceSiteScheduling.Trains
             this.Units = units.ToList();
             this.Length = units.Sum(unit => unit.Type.Length);
 
-            List<Track> allowedparking = new List<Track>();
+            List<Track> allowedparking = [];
             IEnumerable<TrainType> types = units.Select(unit => unit.Type).Distinct();
             foreach (Track track in this.Units[0].Type.ParkingLocations)
                 if (types.All(type => type.ParkingLocations.Contains(track)))
@@ -117,7 +117,7 @@ namespace ServiceSiteScheduling.Trains
 
         public IEnumerable<IEnumerable<ShuntTrainUnit>> OrderedOverlap(ShuntTrain other)
         {
-            List<List<ShuntTrainUnit>> result = new List<List<ShuntTrainUnit>>();
+            List<List<ShuntTrainUnit>> result = [];
 
             for (int i = 0; i < this.Units.Count; i++)
             {

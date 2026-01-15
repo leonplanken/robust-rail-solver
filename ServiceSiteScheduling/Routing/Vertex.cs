@@ -19,7 +19,7 @@ namespace ServiceSiteScheduling.Routing
         {
             this.TrackSide = trackside;
             this.ArrivalSide = arrivalside;
-            this.Arcs = new List<Arc>();
+            this.Arcs = [];
         }
 
         public override string ToString()

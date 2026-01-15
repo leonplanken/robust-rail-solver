@@ -27,7 +27,7 @@
             bool ignoreInactive = true
         )
         {
-            return new List<TrackSwitchContainer>();
+            return [];
         }
     }
 }

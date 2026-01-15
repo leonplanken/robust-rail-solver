@@ -59,8 +59,7 @@ namespace ServiceSiteScheduling.TrackParts
 
         public IList<TrackSwitchContainer> GetConnectionsAtSide(Side side)
         {
-            var path = new List<Infrastructure>();
-            path.Add(this);
+            var path = new List<Infrastructure> { this };
             if (side == Side.A)
                 return this.ASide.GetTracksConnectedTo(this, 0, path);
             if (side == Side.B)
@@ -91,12 +90,7 @@ namespace ServiceSiteScheduling.TrackParts
                 if (this.IsActive || !ignoreInactive)
                     result = new TrackSwitchContainer[1]
                     {
-                        new TrackSwitchContainer(
-                            this,
-                            switches,
-                            this.GetSide(infrastructure),
-                            path.ToArray()
-                        ),
+                        new(this, switches, this.GetSide(infrastructure), path.ToArray()),
                     };
                 else if (infrastructure == this.ASide)
                     result =

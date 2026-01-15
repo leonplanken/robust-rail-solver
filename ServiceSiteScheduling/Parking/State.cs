@@ -36,10 +36,10 @@ namespace ServiceSiteScheduling.Parking
         public State(TrackTask task)
         {
             this.Task = task;
-            this.StatesA = new List<State>();
-            this.StatesB = new List<State>();
-            this.CrossingStatesA = new List<State>();
-            this.CrossingStatesB = new List<State>();
+            this.StatesA = [];
+            this.StatesB = [];
+            this.CrossingStatesA = [];
+            this.CrossingStatesB = [];
             this.HasArrived = this.HasDeparted = this.ExceedsTrackLength = false;
         }
 

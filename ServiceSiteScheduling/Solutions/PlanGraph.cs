@@ -553,14 +553,14 @@ namespace ServiceSiteScheduling.Solutions
 
         public SolutionCost ComputeCost()
         {
-            SolutionCost cost = new SolutionCost();
+            SolutionCost cost = new();
 
             foreach (bool[] finished in this.FreeServiceTaskFinished)
                 for (int i = 0; i < finished.Length; i++)
                     finished[i] = true;
 
             bool checkmaintenance = true;
-            BitSet done = new BitSet(ProblemInstance.Current.TrainUnits.Length);
+            BitSet done = new(ProblemInstance.Current.TrainUnits.Length);
 
             foreach (ArrivalTask arrival in this.ArrivalTasks)
                 if (
@@ -787,7 +787,7 @@ namespace ServiceSiteScheduling.Solutions
         {
             // Routing order
             MoveTask move = this.First;
-            List<TrackTask> tasks = new List<TrackTask>();
+            List<TrackTask> tasks = [];
             while (move != null)
             {
                 if (
@@ -900,7 +900,7 @@ namespace ServiceSiteScheduling.Solutions
 
         public void OutputForDemian()
         {
-            using (System.IO.StreamWriter sw = new System.IO.StreamWriter("demian.txt"))
+            using (System.IO.StreamWriter sw = new("demian.txt"))
             {
                 MoveTask move = this.First;
                 while (move != null)
@@ -992,10 +992,9 @@ namespace ServiceSiteScheduling.Solutions
             )
                 return null;
 
-            AlgoIface.Plan plan = new AlgoIface.Plan();
+            AlgoIface.Plan plan = new();
 
-            Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion =
-                new Dictionary<ShuntTrain, AlgoIface.ShuntingUnit>();
+            Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion = [];
 
             MoveTask move = this.First;
             while (move != null)

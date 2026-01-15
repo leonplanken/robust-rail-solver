@@ -18,7 +18,7 @@ namespace ServiceSiteScheduling.Routing
         public BitSet CrossingTracks { get; private set; }
         public BitSet TrackState { get; set; }
 
-        public static Route Invalid = new Route(
+        public static Route Invalid = new(
             null,
             Array.Empty<Track>(),
             Array.Empty<Arc>(),

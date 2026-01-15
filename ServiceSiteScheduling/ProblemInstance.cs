@@ -37,7 +37,7 @@ namespace ServiceSiteScheduling
 
         public void FillTrains()
         {
-            this.TrainUnitsByType = new Dictionary<TrainType, TrainUnit[]>();
+            this.TrainUnitsByType = [];
             foreach (TrainType type in this.TrainTypes)
                 this.TrainUnitsByType[type] = this
                     .TrainUnits.Where(unit => unit.Type == type)
@@ -46,15 +46,15 @@ namespace ServiceSiteScheduling
 
         public void FillArrivals()
         {
-            this.ArrivalsByTime = new Dictionary<Time, ArrivalTrain>();
+            this.ArrivalsByTime = [];
             foreach (ArrivalTrain arrival in this.ArrivalsOrdered)
                 this.ArrivalsByTime[arrival.Time] = arrival;
         }
 
         public void FillDepartures()
         {
-            this.DeparturesByTime = new Dictionary<Time, DepartureTrain>();
-            this.DeparturesByType = new Dictionary<TrainType, List<DepartureTrain>>();
+            this.DeparturesByTime = [];
+            this.DeparturesByType = [];
             foreach (DepartureTrain departure in this.DeparturesOrdered)
             {
                 this.DeparturesByTime[departure.Time] = departure;
@@ -65,7 +65,7 @@ namespace ServiceSiteScheduling
                 )
                 {
                     if (!this.DeparturesByType.ContainsKey(type))
-                        this.DeparturesByType[type] = new List<DepartureTrain>();
+                        this.DeparturesByType[type] = [];
                     this.DeparturesByType[type].Add(departure);
                 }
             }
@@ -76,7 +76,7 @@ namespace ServiceSiteScheduling
             string jsonContent;
             using (var input = File.OpenRead(path))
 
-            using (StreamReader reader = new StreamReader(input))
+            using (StreamReader reader = new(input))
             {
                 jsonContent = reader.ReadToEnd();
             }
@@ -87,7 +87,7 @@ namespace ServiceSiteScheduling
         {
             AlgoIface.Location location;
             using (var input = File.OpenRead(locationpath))
-            using (StreamReader reader = new StreamReader(input))
+            using (StreamReader reader = new(input))
             {
                 string jsonContent = reader.ReadToEnd();
                 location = AlgoIface.Location.Parser.ParseJson(jsonContent);
@@ -95,7 +95,7 @@ namespace ServiceSiteScheduling
 
             AlgoIface.Scenario scenario;
             using (var input = File.OpenRead(scenariopath))
-            using (StreamReader reader = new StreamReader(input))
+            using (StreamReader reader = new(input))
             {
                 string jsonContent = reader.ReadToEnd();
                 scenario = AlgoIface.Scenario.Parser.ParseJson(jsonContent);
@@ -123,7 +123,7 @@ namespace ServiceSiteScheduling
             int debugLevel = 0
         )
         {
-            ProblemInstance instance = new ProblemInstance();
+            ProblemInstance instance = new();
 
             // only for database/*.dat
             bool include94139414 = false;
@@ -143,10 +143,9 @@ namespace ServiceSiteScheduling
             instance.InterfaceLocation = location;
             instance.InterfaceScenario = scenario;
 
-            List<Track> tracks = new List<Track>();
-            List<GateWay> gateways = new List<GateWay>();
-            Dictionary<ulong, Infrastructure> infrastructuremap =
-                new Dictionary<ulong, Infrastructure>();
+            List<Track> tracks = [];
+            List<GateWay> gateways = [];
+            Dictionary<ulong, Infrastructure> infrastructuremap = [];
             int index = 0;
 
             // Construct the track parts
@@ -155,7 +154,7 @@ namespace ServiceSiteScheduling
                 switch (part.Type)
                 {
                     case AlgoIface.TrackPartType.RailRoad:
-                        Track track = new Track(
+                        Track track = new(
                             part.Id,
                             part.Name,
                             ServiceType.None,
@@ -297,12 +296,10 @@ namespace ServiceSiteScheduling
                         break;
                 }
             }
-            Dictionary<GateWay, TrackSwitchContainer> gatewayconnections =
-                new Dictionary<GateWay, TrackSwitchContainer>();
+            Dictionary<GateWay, TrackSwitchContainer> gatewayconnections = [];
             foreach (var gateway in gateways)
             {
-                List<Infrastructure> path = new List<Infrastructure>();
-                path.Add(gateway);
+                List<Infrastructure> path = [gateway];
 
                 gatewayconnections[gateway] = gateway
                     .EndPoint.GetTracksConnectedTo(gateway, 0, path, false)
@@ -315,8 +312,7 @@ namespace ServiceSiteScheduling
                 }
             }
 
-            Dictionary<AlgoIface.TaskType, ServiceType> taskmap =
-                new Dictionary<AlgoIface.TaskType, ServiceType>();
+            Dictionary<AlgoIface.TaskType, ServiceType> taskmap = [];
             var tasktypes = scenario
                 .In.Trains.Aggregate(
                     new List<AlgoIface.TaskType>(),
@@ -342,7 +338,7 @@ namespace ServiceSiteScheduling
             for (int i = 0; i < tasktypes.Count; i++)
             {
                 var type = tasktypes[i];
-                ServiceType service = new ServiceType(i, type.Other, ServiceLocationType.Fixed);
+                ServiceType service = new(i, type.Other, ServiceLocationType.Fixed);
                 instance.ServiceTypes[i] = service;
                 taskmap[type] = service;
                 if (debugLevel > 1)
@@ -353,7 +349,7 @@ namespace ServiceSiteScheduling
 
             // Facilities
             // Connect the tracks to the services
-            instance.FacilityConversion = new Dictionary<ServiceType, AlgoIface.Facility>();
+            instance.FacilityConversion = [];
             var servicetracks = new HashSet<Track>();
             var freetracks = new HashSet<Track>();
             var crews = new List<ServiceCrew>();
@@ -433,14 +429,13 @@ namespace ServiceSiteScheduling
             }
 
             // Determine train types
-            List<TrainType> traintypes = new List<TrainType>();
-            List<TrainUnit> trainunits = new List<TrainUnit>();
-            List<ArrivalTrain> arrivals = new List<ArrivalTrain>();
-            Dictionary<AlgoIface.TrainUnitType, TrainType> traintypemap =
-                new Dictionary<AlgoIface.TrainUnitType, TrainType>();
-            Dictionary<string, TrainUnit> trainunitmap = new Dictionary<string, TrainUnit>();
-            instance.TrainUnitConversion = new Dictionary<TrainUnit, AlgoIface.TrainUnit>();
-            instance.GatewayConversion = new Dictionary<ulong, TrackSwitchContainer>();
+            List<TrainType> traintypes = [];
+            List<TrainUnit> trainunits = [];
+            List<ArrivalTrain> arrivals = [];
+            Dictionary<AlgoIface.TrainUnitType, TrainType> traintypemap = [];
+            Dictionary<string, TrainUnit> trainunitmap = [];
+            instance.TrainUnitConversion = [];
+            instance.GatewayConversion = [];
             var freeservicelists = new List<Service[]>();
             foreach (var arrivaltrain in scenario.In.Trains)
             {
@@ -451,7 +446,7 @@ namespace ServiceSiteScheduling
                     {
                         var name =
                             $"{unit.TrainUnit.Type.DisplayName}-{unit.TrainUnit.Type.Carriages}";
-                        TrainType type = new TrainType(
+                        TrainType type = new(
                             traintypes.Count,
                             name,
                             (int)unit.TrainUnit.Type.Length,
@@ -465,7 +460,7 @@ namespace ServiceSiteScheduling
                         traintypes.Add(type);
                         traintypemap[unit.TrainUnit.Type] = type;
                     }
-                    TrainUnit trainunit = new TrainUnit(
+                    TrainUnit trainunit = new(
                         unit.TrainUnit.Id,
                         trainunits.Count,
                         traintypemap[unit.TrainUnit.Type],
@@ -547,7 +542,7 @@ namespace ServiceSiteScheduling
                         {
                             var name =
                                 $"{unit.TrainUnit.Type.DisplayName}-{unit.TrainUnit.Type.Carriages}";
-                            TrainType type = new TrainType(
+                            TrainType type = new(
                                 traintypes.Count,
                                 name,
                                 (int)unit.TrainUnit.Type.Length,
@@ -561,7 +556,7 @@ namespace ServiceSiteScheduling
                             traintypes.Add(type);
                             traintypemap[unit.TrainUnit.Type] = type;
                         }
-                        TrainUnit trainunit = new TrainUnit(
+                        TrainUnit trainunit = new(
                             unit.TrainUnit.Id,
                             trainunits.Count,
                             traintypemap[unit.TrainUnit.Type],
@@ -669,14 +664,14 @@ namespace ServiceSiteScheduling
                     "9413",
                     trainunits.Count,
                     traintypes[2],
-                    new Service[1] { new Service(instance.ServiceTypes[2], 37 * Time.Minute) },
+                    new Service[1] { new(instance.ServiceTypes[2], 37 * Time.Minute) },
                     instance.ServiceTypes
                 );
                 tu9414 = new TrainUnit(
                     "9414",
                     trainunits.Count + 1,
                     traintypes[2],
-                    new Service[1] { new Service(instance.ServiceTypes[2], 37 * Time.Minute) },
+                    new Service[1] { new(instance.ServiceTypes[2], 37 * Time.Minute) },
                     instance.ServiceTypes
                 );
                 var at94139414 = new ArrivalTrain(
@@ -701,14 +696,14 @@ namespace ServiceSiteScheduling
                     "2408",
                     trainunits.Count,
                     traintypes[0],
-                    new Service[1] { new Service(instance.ServiceTypes[2], 15 * Time.Minute) },
+                    new Service[1] { new(instance.ServiceTypes[2], 15 * Time.Minute) },
                     instance.ServiceTypes
                 );
                 tu2409 = new TrainUnit(
                     "2409",
                     trainunits.Count + 1,
                     traintypes[0],
-                    new Service[1] { new Service(instance.ServiceTypes[2], 15 * Time.Minute) },
+                    new Service[1] { new(instance.ServiceTypes[2], 15 * Time.Minute) },
                     instance.ServiceTypes
                 );
                 var at24082409 = new ArrivalTrain(
@@ -732,7 +727,7 @@ namespace ServiceSiteScheduling
                     "2610",
                     trainunits.Count,
                     traintypes[0],
-                    new Service[1] { new Service(instance.ServiceTypes[2], 20 * Time.Minute) },
+                    new Service[1] { new(instance.ServiceTypes[2], 20 * Time.Minute) },
                     instance.ServiceTypes
                 );
                 var at2610 = new ArrivalTrain(
@@ -754,7 +749,7 @@ namespace ServiceSiteScheduling
                     "2611",
                     trainunits.Count,
                     traintypes[0],
-                    new Service[1] { new Service(instance.ServiceTypes[2], 20 * Time.Minute) },
+                    new Service[1] { new(instance.ServiceTypes[2], 20 * Time.Minute) },
                     instance.ServiceTypes
                 );
                 var at2611 = new ArrivalTrain(
@@ -957,11 +952,7 @@ namespace ServiceSiteScheduling
             {
                 var dt94139414 = new DepartureTrain(
                     31 * Time.Hour + 17 * Time.Minute,
-                    new DepartureTrainUnit[2]
-                    {
-                        new DepartureTrainUnit(tu9413),
-                        new DepartureTrainUnit(tu9414),
-                    },
+                    new DepartureTrainUnit[2] { new(tu9413), new(tu9414) },
                     instance.Tracks[15],
                     Side.A
                 );
@@ -971,11 +962,7 @@ namespace ServiceSiteScheduling
             {
                 var dt24082409 = new DepartureTrain(
                     30 * Time.Hour + 30 * Time.Minute,
-                    new DepartureTrainUnit[2]
-                    {
-                        new DepartureTrainUnit(tu2408),
-                        new DepartureTrainUnit(tu2409),
-                    },
+                    new DepartureTrainUnit[2] { new(tu2408), new(tu2409) },
                     instance.Tracks[15],
                     Side.A
                 );
@@ -985,7 +972,7 @@ namespace ServiceSiteScheduling
             {
                 var dt2610 = new DepartureTrain(
                     32 * Time.Hour + 10 * Time.Minute,
-                    new DepartureTrainUnit[1] { new DepartureTrainUnit(tu2610) },
+                    new DepartureTrainUnit[1] { new(tu2610) },
                     instance.Tracks[15],
                     Side.A
                 );
@@ -995,7 +982,7 @@ namespace ServiceSiteScheduling
             {
                 var dt2611 = new DepartureTrain(
                     32 * Time.Hour + 30 * Time.Minute,
-                    new DepartureTrainUnit[1] { new DepartureTrainUnit(tu2611) },
+                    new DepartureTrainUnit[1] { new(tu2611) },
                     instance.Tracks[15],
                     Side.A
                 );

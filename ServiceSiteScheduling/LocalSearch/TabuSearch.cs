@@ -53,20 +53,19 @@ namespace ServiceSiteScheduling.LocalSearch
             string current_plan = tmp_plan_path + "tabu_plan_initial.json";
             File.WriteAllText(current_plan, jsonPlan);
 
-            List<LocalSearchMove> moves = new List<LocalSearchMove>();
-            moves.Add(new IdentityMove(this.Graph));
+            List<LocalSearchMove> moves = [new IdentityMove(this.Graph)];
             int noimprovement = 0,
                 iteration = 0,
                 neighborsvisited = 0;
             SolutionCost bestcost = this.Graph.ComputeModel(),
                 current = bestcost;
-            LinkedList<LocalSearchMove> tabu = new LinkedList<LocalSearchMove>();
+            LinkedList<LocalSearchMove> tabu = new();
 
-            Stopwatch stopwatch = new Stopwatch();
+            Stopwatch stopwatch = new();
             stopwatch.Start();
             while (true)
             {
-                List<LocalSearchMove> currentmoves = new List<LocalSearchMove>();
+                List<LocalSearchMove> currentmoves = [];
                 if (iteration >= iterations)
                     break;
 
@@ -166,7 +165,7 @@ namespace ServiceSiteScheduling.LocalSearch
                     // If we did not improve the current solution
                     if (next.Cost.Cost(fullcost) >= current.Cost(fullcost))
                     {
-                        List<LocalSearchMove> possiblemoves = new List<LocalSearchMove>();
+                        List<LocalSearchMove> possiblemoves = [];
                         bool selected = false;
                         if (this.random.NextDouble() < bias)
                         {
