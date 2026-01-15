@@ -153,8 +153,9 @@ namespace ServiceSiteScheduling
             }
             else
             {
-                random = new Random();
-                Console.WriteLine("Using default random seed");
+                int seed = Guid.NewGuid().GetHashCode();
+                random = new Random(seed);
+                Console.WriteLine($"Using randomly generated seed <{seed}>.");
             }
 
             Solutions.SolutionCost best = null;
