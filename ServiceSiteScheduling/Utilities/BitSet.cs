@@ -116,8 +116,7 @@ namespace ServiceSiteScheduling.Utilities
         #region Public Methods
         public override bool Equals(object obj)
         {
-            BitSet other = obj as BitSet;
-            if (other == null)
+            if (obj is not BitSet other)
                 return false;
 
             return this.Equals(other);

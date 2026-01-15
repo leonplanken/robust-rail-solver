@@ -313,8 +313,7 @@ namespace ServiceSiteScheduling.Solutions
             MoveTask move = this.First;
             while (move != null)
             {
-                var routing = move as RoutingTask;
-                if (routing != null)
+                if (move is RoutingTask routing)
                 {
                     Console.WriteLine("--> Routing Task");
                     Console.WriteLine($" ===> {routing}");
@@ -350,8 +349,7 @@ namespace ServiceSiteScheduling.Solutions
                 else
                 {
                     Console.WriteLine("--> Departure Task");
-                    var departure = move as DepartureRoutingTask;
-                    if (departure != null)
+                    if (move is DepartureRoutingTask departure)
                     {
                         string departuremessage = string.Empty;
                         if (
@@ -811,8 +809,7 @@ namespace ServiceSiteScheduling.Solutions
                             throw new InvalidOperationException("track-route circular reference");
                     }
 
-                    var service = task as ServiceTask;
-                    if (service != null)
+                    if (task is ServiceTask service)
                     {
                         for (
                             ServiceTask s = service.NextServiceTask;
@@ -905,8 +902,7 @@ namespace ServiceSiteScheduling.Solutions
                 MoveTask move = this.First;
                 while (move != null)
                 {
-                    var routing = move as RoutingTask;
-                    if (routing != null)
+                    if (move is RoutingTask routing)
                     {
                         string arrivalmessage = string.Empty;
                         if (routing.Previous.TaskType == TrackTaskType.Arrival)
@@ -939,8 +935,7 @@ namespace ServiceSiteScheduling.Solutions
                     }
                     else
                     {
-                        var departure = move as DepartureRoutingTask;
-                        if (departure != null)
+                        if (move is DepartureRoutingTask departure)
                         {
                             string departuremessage = string.Empty;
                             if (
@@ -1183,8 +1178,7 @@ namespace ServiceSiteScheduling.Solutions
                 Console.WriteLine($"Start time: {(int)move.Start} - End time: {(int)move.End}");
                 Console.WriteLine($"From : {move.FromTrack} -> To : {move.ToTrack} ({move.Train})");
 
-                var routing = move as RoutingTask;
-                if (routing != null)
+                if (move is RoutingTask routing)
                 {
                     Console.WriteLine("Infrastructure used (tracks):");
                     var tracks = routing.Route.Tracks;
@@ -1236,8 +1230,7 @@ namespace ServiceSiteScheduling.Solutions
                             $"---{task.GetType().Name} {task} - Start Time: {(int)task.Start} - End Time: {(int)task.End}{(task.Train.InStanding ? " (Outstanding Train)" : "")}----"
                         );
                     }
-                    var routingDeparture = move as DepartureRoutingTask;
-                    if (routingDeparture != null)
+                    if (move is DepartureRoutingTask routingDeparture)
                     {
                         var listOfRoutes = routingDeparture.GetRoutes();
                         Console.WriteLine(

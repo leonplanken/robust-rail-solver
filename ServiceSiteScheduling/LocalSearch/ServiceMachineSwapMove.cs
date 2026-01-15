@@ -94,8 +94,7 @@ namespace ServiceSiteScheduling.LocalSearch
             if (toSecond.IsParkingSkipped(this.Second.Train))
             {
                 // Arrival
-                var arrival = toSecond.Previous as Tasks.ArrivalTask;
-                if (arrival != null)
+                if (toSecond.Previous is Tasks.ArrivalTask arrival)
                 {
                     if (arrival.ScheduledTime > timeOfPreviousOnFirstMachine)
                         this.insert(
@@ -177,8 +176,7 @@ namespace ServiceSiteScheduling.LocalSearch
             this.Second.ArrivalSide = this.First.ArrivalSide;
             this.Second.Previous.ToTrack = firstlocation.Track;
             this.Second.Previous.ToSide = this.First.ArrivalSide;
-            Tasks.RoutingTask routing = this.Second.Next as Tasks.RoutingTask;
-            if (routing != null)
+            if (this.Second.Next is Tasks.RoutingTask routing)
                 routing.FromTrack = firstlocation.Track;
 
             this.First.Track = secondlocation.Track;
@@ -195,9 +193,8 @@ namespace ServiceSiteScheduling.LocalSearch
             this.Second.SwapAfter(predecessor, firstlocation);
 
             // Merge stuff
-            Tasks.ParkingTask parking = toSecond.Previous as Tasks.ParkingTask;
             if (
-                parking != null
+                toSecond.Previous is Tasks.ParkingTask parking
                 && !toSecond.IsParkingSkipped(this.Second.Train)
                 && this.Second.Train.Equals(toSecond.PreviousMove?.Train)
             )
@@ -266,8 +263,7 @@ namespace ServiceSiteScheduling.LocalSearch
             this.Second.ArrivalSide = this.First.ArrivalSide;
             this.Second.Previous.ToTrack = firstlocation.Track;
             this.Second.Previous.ToSide = this.First.ArrivalSide;
-            Tasks.RoutingTask routing = this.Second.Next as Tasks.RoutingTask;
-            if (routing != null)
+            if (this.Second.Next is Tasks.RoutingTask routing)
                 routing.FromTrack = firstlocation.Track;
 
             this.First.Track = secondlocation.Track;
@@ -340,8 +336,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public override bool IsSimilarMove(LocalSearchMove move)
         {
-            var machinemove = move as ServiceMachineSwapMove;
-            if (machinemove == null)
+            if (move is not ServiceMachineSwapMove machinemove)
                 return false;
 
             return this.First == machinemove.First
@@ -405,8 +400,7 @@ namespace ServiceSiteScheduling.LocalSearch
                 if (movetask.TaskType == Tasks.MoveTaskType.Departure || movetask.AllNext.Count > 1)
                     continue;
 
-                Tasks.ServiceTask service = movetask.AllNext.First() as Tasks.ServiceTask;
-                if (service == null)
+                if (movetask.AllNext.First() is not Tasks.ServiceTask service)
                     continue;
 
                 if (
@@ -427,9 +421,7 @@ namespace ServiceSiteScheduling.LocalSearch
                     )
                         continue;
 
-                    Tasks.ServiceTask nextservice =
-                        nextmovetask.AllNext.First() as Tasks.ServiceTask;
-                    if (nextservice == null)
+                    if (nextmovetask.AllNext.First() is not Tasks.ServiceTask nextservice)
                         continue;
 
                     if (

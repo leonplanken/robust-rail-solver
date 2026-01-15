@@ -255,8 +255,7 @@ namespace ServiceSiteScheduling.LocalSearch
                             possiblemoves.AddRange(
                                 routingshiftmoves.Where(move =>
                                 {
-                                    var shift = move as RoutingShiftMove;
-                                    if (shift != null)
+                                    if (move is RoutingShiftMove shift)
                                     {
                                         return this.Graph.Cost.ProblemTracks[
                                                 shift.Selected.ToTrack.Index

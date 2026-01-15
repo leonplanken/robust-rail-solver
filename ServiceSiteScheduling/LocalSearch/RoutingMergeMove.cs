@@ -46,11 +46,9 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public override bool IsSimilarMove(LocalSearchMove move)
         {
-            var mergemove = move as RoutingMergeMove;
-            if (mergemove == null)
+            if (move is not RoutingMergeMove mergemove)
             {
-                var shiftmove = move as RoutingShiftMove;
-                if (shiftmove == null)
+                if (move is not RoutingShiftMove shiftmove)
                     return false;
 
                 return this.From == shiftmove.Selected

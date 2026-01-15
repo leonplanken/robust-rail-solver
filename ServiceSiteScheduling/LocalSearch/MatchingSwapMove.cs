@@ -79,9 +79,8 @@ namespace ServiceSiteScheduling.LocalSearch
             {
                 foreach (var task in this.First.Train.Routing.Previous)
                 {
-                    var otherservice = task as Tasks.ServiceTask;
                     if (
-                        otherservice != null
+                        task is Tasks.ServiceTask otherservice
                         && task != secondtask
                         && (
                             otherservice.NextServiceTask?.Previous.MoveOrder
@@ -115,16 +114,14 @@ namespace ServiceSiteScheduling.LocalSearch
                 .First.Train.Routing.GetPrevious(t => t.Train.UnitBits[this.First.Units[0].Index])
                 .First();
 
-            var firstservice = firsttask as Tasks.ServiceTask;
-            if (firstservice != null)
+            if (firsttask is Tasks.ServiceTask firstservice)
             {
                 var park = firstservice.Next.GetSkippedParking(firstservice.Train);
                 firstservice.Next.UnskipParking(firstservice.Train);
                 firsttask = park;
             }
 
-            var secondservice = secondtask as Tasks.ServiceTask;
-            if (secondservice != null)
+            if (secondtask is Tasks.ServiceTask secondservice)
             {
                 var park = secondservice.Next.GetSkippedParking(secondservice.Train);
                 secondservice.Next.UnskipParking(secondservice.Train);
@@ -149,8 +146,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public override bool IsSimilarMove(LocalSearchMove move)
         {
-            var matchingmove = move as MatchingSwapMove;
-            if (matchingmove == null)
+            if (move is not MatchingSwapMove matchingmove)
                 return false;
 
             return this.First == matchingmove.First

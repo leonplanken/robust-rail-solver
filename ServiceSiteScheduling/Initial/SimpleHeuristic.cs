@@ -338,8 +338,7 @@ namespace ServiceSiteScheduling.Initial
                     resource.First = selected;
                 resource.Last = selected;
 
-                var location = resource as ServiceLocation;
-                if (location != null)
+                if (resource is ServiceLocation location)
                 {
                     selected.Track = location.Track;
                     selected.ArrivalSide =
@@ -562,8 +561,7 @@ namespace ServiceSiteScheduling.Initial
                 foreach (TrackTask task in routing.Next)
                 {
                     task.Track = parkingtrack;
-                    var next = task.Next as RoutingTask;
-                    if (next != null)
+                    if (task.Next is RoutingTask next)
                         next.FromTrack = parkingtrack;
                     task.ArrivalSide = side;
                 }
@@ -571,8 +569,7 @@ namespace ServiceSiteScheduling.Initial
 
                 foreach (TrackTask task in routing.Next)
                 {
-                    var departure = task.Next as DepartureRoutingTask;
-                    if (departure != null)
+                    if (task.Next is DepartureRoutingTask departure)
                     {
                         side = Side.None;
                         if (departure.Next.Track.Access == Side.Both)

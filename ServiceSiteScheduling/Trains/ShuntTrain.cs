@@ -158,8 +158,7 @@ namespace ServiceSiteScheduling.Trains
 
         public override bool Equals(object obj)
         {
-            ShuntTrain other = obj as ShuntTrain;
-            if (other == null)
+            if (obj is not ShuntTrain other)
                 return false;
 
             return this.Equals(other);

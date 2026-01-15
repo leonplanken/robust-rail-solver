@@ -91,8 +91,7 @@ namespace ServiceSiteScheduling.LocalSearch
             if (toSecond.IsParkingSkipped(this.Second.Train))
             {
                 // Arrival
-                var arrival = toSecond.Previous as Tasks.ArrivalTask;
-                if (arrival != null)
+                if (toSecond.Previous is Tasks.ArrivalTask arrival)
                 {
                     if (arrival.ScheduledTime > timeOfPreviousOnMachine)
                         this.insert(
@@ -169,9 +168,8 @@ namespace ServiceSiteScheduling.LocalSearch
             this.First.SwapAfter(this.Second, this.First.Resource);
 
             // Merge stuff
-            Tasks.ParkingTask parking = toSecond.Previous as Tasks.ParkingTask;
             if (
-                parking != null
+                toSecond.Previous is Tasks.ParkingTask parking
                 && !toSecond.IsParkingSkipped(this.Second.Train)
                 && this.Second.Train.Equals(toSecond.PreviousMove?.Train)
             )
@@ -267,8 +265,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public override bool IsSimilarMove(LocalSearchMove move)
         {
-            var serviceordermove = move as ServiceMachineOrderMove;
-            if (serviceordermove == null)
+            if (move is not ServiceMachineOrderMove serviceordermove)
                 return false;
 
             return this.First == serviceordermove.First
@@ -329,14 +326,12 @@ namespace ServiceSiteScheduling.LocalSearch
 
             for (var movetask = graph.First; movetask != null; movetask = movetask.NextMove)
             {
-                var routing = movetask as Tasks.RoutingTask;
-                if (routing != null)
+                if (movetask is Tasks.RoutingTask routing)
                 {
                     if (routing.IsSplit) { }
                     else
                     {
-                        Tasks.ServiceTask service = routing.Next.First() as Tasks.ServiceTask;
-                        if (service == null)
+                        if (routing.Next.First() is not Tasks.ServiceTask service)
                             continue;
                         Time servicetime = service.Start + service.MinimumDuration;
 

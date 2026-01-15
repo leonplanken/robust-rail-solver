@@ -86,8 +86,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public override bool IsSimilarMove(LocalSearchMove move)
         {
-            var swapmove = move as ParkingSwapMove;
-            if (swapmove == null)
+            if (move is not ParkingSwapMove swapmove)
                 return false;
 
             return this.ParkingFirst.Intersect(swapmove.ParkingFirst).Count() > 0
@@ -109,8 +108,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
             for (var movetask = graph.First; movetask != null; movetask = movetask.NextMove)
             {
-                var routing = movetask as Tasks.RoutingTask;
-                if (routing != null)
+                if (movetask is Tasks.RoutingTask routing)
                 {
                     // Check if all tasks are parking tasks
                     if (

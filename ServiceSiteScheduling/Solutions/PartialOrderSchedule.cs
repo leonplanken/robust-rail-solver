@@ -192,9 +192,7 @@ namespace ServiceSiteScheduling.Solutions
         {
             List<ulong> IDListOfInfraUsed = [];
 
-            var routing = move as RoutingTask;
-
-            if (routing != null)
+            if (move is RoutingTask routing)
             {
                 // Standard MoveTask
                 var tracks = routing.Route.Tracks;
@@ -213,8 +211,7 @@ namespace ServiceSiteScheduling.Solutions
                 if (move.TaskType == MoveTaskType.Departure)
                 {
                     // Cast as DepartureRoutingTask
-                    var routingDeparture = move as DepartureRoutingTask;
-                    if (routingDeparture != null)
+                    if (move is DepartureRoutingTask routingDeparture)
                     {
                         var listOfRoutes = routingDeparture.GetRoutes();
 
@@ -1964,9 +1961,7 @@ namespace ServiceSiteScheduling.Solutions
                 Console.WriteLine($"Move: {i} --- {move.TaskType}");
                 Console.WriteLine($"From : {move.FromTrack} -> To : {move.ToTrack} ({move.Train})");
 
-                var routing = move as RoutingTask;
-
-                if (routing != null)
+                if (move is RoutingTask routing)
                 {
                     Console.WriteLine("Infrastructure used (tracks):");
                     var tracks = routing.Route.Tracks;
@@ -2018,8 +2013,7 @@ namespace ServiceSiteScheduling.Solutions
                             Console.WriteLine($"---{task}----");
                         }
 
-                        var routingDeparture = move as DepartureRoutingTask;
-                        if (routingDeparture != null)
+                        if (move is DepartureRoutingTask routingDeparture)
                         {
                             var listOfRoutes = routingDeparture.GetRoutes();
 

@@ -119,9 +119,8 @@ namespace ServiceSiteScheduling.LocalSearch
             this.First.SwapAfter(this.Second, this.First.Resource);
 
             // Merge stuff
-            Tasks.ParkingTask parking = toSecond.Previous as Tasks.ParkingTask;
             if (
-                parking != null
+                toSecond.Previous is Tasks.ParkingTask parking
                 && !toSecond.IsParkingSkipped(this.Train)
                 && this.Train.Equals(toSecond.PreviousMove?.Train)
             )
@@ -200,8 +199,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public override bool IsSimilarMove(LocalSearchMove move)
         {
-            var serviceordermove = move as ServiceTrainOrderMove;
-            if (serviceordermove == null)
+            if (move is not ServiceTrainOrderMove serviceordermove)
                 return false;
 
             return this.First == serviceordermove.First
@@ -262,19 +260,18 @@ namespace ServiceSiteScheduling.LocalSearch
 
             for (var movetask = graph.First; movetask != null; movetask = movetask.NextMove)
             {
-                var routing = movetask as Tasks.RoutingTask;
-                if (routing != null)
+                if (movetask is Tasks.RoutingTask routing)
                 {
                     if (routing.IsSplit) { }
                     else
                     {
-                        Tasks.ServiceTask service = routing.Next.First() as Tasks.ServiceTask;
-                        if (service == null)
+                        if (routing.Next.First() is not Tasks.ServiceTask service)
                             continue;
 
-                        Tasks.ServiceTask nextservice =
-                            service.Next.AllNext.First() as Tasks.ServiceTask;
-                        if (nextservice == null || service.Resource == nextservice.Resource)
+                        if (
+                            service.Next.AllNext.First() is not Tasks.ServiceTask nextservice
+                            || service.Resource == nextservice.Resource
+                        )
                             continue;
 
                         Time previoustime = nextservice.PreviousServiceTask?.End ?? int.MinValue;

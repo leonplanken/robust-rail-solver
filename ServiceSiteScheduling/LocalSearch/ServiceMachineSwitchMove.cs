@@ -87,8 +87,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
             if (this.Selected.Type.LocationType == Servicing.ServiceLocationType.Fixed)
             {
-                var location = this.Resource as Servicing.ServiceLocation;
-                if (location != null)
+                if (this.Resource is Servicing.ServiceLocation location)
                 {
                     this.Selected.Track = location.Track;
                     this.Selected.ArrivalSide = this.Side;
@@ -96,8 +95,7 @@ namespace ServiceSiteScheduling.LocalSearch
                     this.Selected.Previous.ToTrack = location.Track;
                     this.Selected.Previous.ToSide = this.Side;
 
-                    var routing = this.Selected.Next as Tasks.RoutingTask;
-                    if (routing != null)
+                    if (this.Selected.Next is Tasks.RoutingTask routing)
                         routing.FromTrack = location.Track;
                 }
             }
@@ -126,9 +124,8 @@ namespace ServiceSiteScheduling.LocalSearch
             // Merge
             if (previous.AllPrevious.Count == 1)
             {
-                var parking = previous.AllPrevious.First() as Tasks.ParkingTask;
                 if (
-                    parking != null
+                    previous.AllPrevious.First() is Tasks.ParkingTask parking
                     && !previous.IsParkingSkipped(previous.Train)
                     && previous.Train.Equals(previous.PreviousMove?.Train)
                 )
@@ -139,9 +136,8 @@ namespace ServiceSiteScheduling.LocalSearch
             }
             if (next.AllNext.Count == 1)
             {
-                var parking = next.AllNext.First() as Tasks.ParkingTask;
                 if (
-                    parking != null
+                    next.AllNext.First() is Tasks.ParkingTask parking
                     && !next.IsParkingSkipped(previous.Train)
                     && next.Train.Equals(next.NextMove?.Train)
                 )
@@ -170,8 +166,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
             this.Selected.Previous.ToTrack = this.originaltrack;
             this.Selected.Previous.ToSide = this.originalside;
-            var routing = this.Selected.Next as Tasks.RoutingTask;
-            if (routing != null)
+            if (this.Selected.Next is Tasks.RoutingTask routing)
                 routing.FromTrack = this.originaltrack;
 
             if (this.previousparking != null)
@@ -197,8 +192,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public override bool IsSimilarMove(LocalSearchMove move)
         {
-            var machinemove = move as ServiceMachineSwitchMove;
-            if (machinemove == null)
+            if (move is not ServiceMachineSwitchMove machinemove)
                 return false;
 
             return this.Selected == machinemove.Selected
@@ -218,14 +212,12 @@ namespace ServiceSiteScheduling.LocalSearch
 
             for (var movetask = graph.First; movetask != null; movetask = movetask.NextMove)
             {
-                var routing = movetask as Tasks.RoutingTask;
-                if (routing != null)
+                if (movetask is Tasks.RoutingTask routing)
                 {
                     if (routing.IsSplit) { }
                     else
                     {
-                        Tasks.ServiceTask service = routing.Next.First() as Tasks.ServiceTask;
-                        if (service == null)
+                        if (routing.Next.First() is not Tasks.ServiceTask service)
                             continue;
 
                         if (service.Type.Resources.Count == 1)

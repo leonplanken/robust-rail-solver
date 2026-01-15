@@ -491,9 +491,7 @@ namespace ServiceSiteScheduling
                     );
                 }
 
-                GateWay gateway = infrastructuremap[arrivaltrain.EntryTrackPart] as GateWay;
-
-                if (gateway != null)
+                if (infrastructuremap[arrivaltrain.EntryTrackPart] is GateWay gateway)
                 {
                     var connection = gatewayconnections[gateway];
                     instance.GatewayConversion[connection.Track.ID] = connection;
@@ -587,9 +585,7 @@ namespace ServiceSiteScheduling
                         );
                     }
 
-                    GateWay gateway = infrastructuremap[arrivaltrain.EntryTrackPart] as GateWay;
-
-                    if (gateway != null)
+                    if (infrastructuremap[arrivaltrain.EntryTrackPart] is GateWay gateway)
                     {
                         if (debugLevel > 1)
                         {
@@ -859,9 +855,7 @@ namespace ServiceSiteScheduling
                         : new DepartureTrainUnit(trainunitmap[unit.Id])
                 );
 
-                GateWay gateway = infrastructuremap[departuretrain.LeaveTrackPart] as GateWay;
-
-                if (gateway != null)
+                if (infrastructuremap[departuretrain.LeaveTrackPart] is GateWay gateway)
                 {
                     var connection = gatewayconnections[gateway];
                     instance.GatewayConversion[connection.Track.ID] = connection;
@@ -898,9 +892,7 @@ namespace ServiceSiteScheduling
                             : new DepartureTrainUnit(trainunitmap[unit.Id])
                     );
 
-                    GateWay gateway = infrastructuremap[departuretrain.LeaveTrackPart] as GateWay;
-
-                    if (gateway != null)
+                    if (infrastructuremap[departuretrain.LeaveTrackPart] is GateWay gateway)
                     {
                         var connection = gatewayconnections[gateway];
                         instance.GatewayConversion[connection.Track.ID] = connection;

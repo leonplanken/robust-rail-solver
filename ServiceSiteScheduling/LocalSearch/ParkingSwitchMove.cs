@@ -153,8 +153,7 @@
 
         public override bool IsSimilarMove(LocalSearchMove move)
         {
-            var shiftmove = move as ParkingSwitchMove;
-            if (shiftmove == null)
+            if (move is not ParkingSwitchMove shiftmove)
                 return false;
 
             return this.RelatedTasks.Intersect(shiftmove.RelatedTasks).Count() > 0;
