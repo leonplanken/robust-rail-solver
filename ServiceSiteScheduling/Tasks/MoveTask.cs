@@ -258,7 +258,7 @@
             {
                 if (predicate(task))
                     output.Add(task);
-                if (!(task is DepartureTask))
+                if (task is not DepartureTask)
                     task.Next.FindAllNext(predicate, output);
             }
         }
@@ -269,7 +269,7 @@
             {
                 if (predicate(task))
                     output.Add(task);
-                if (!(task is ArrivalTask))
+                if (task is not ArrivalTask)
                     task.Previous.FindAllPrevious(predicate, output);
             }
         }

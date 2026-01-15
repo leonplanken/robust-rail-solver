@@ -74,14 +74,14 @@ namespace ServiceSiteScheduling.LocalSearch
 
             // Allowed if not both tasks have a fixed time schedule
             if (
-                first.AllPreviousSatisfy(task => !(task is Tasks.IFixedSchedule))
-                && first.AllNextSatisfy(task => !(task is Tasks.IFixedSchedule))
+                first.AllPreviousSatisfy(task => task is not Tasks.IFixedSchedule)
+                && first.AllNextSatisfy(task => task is not Tasks.IFixedSchedule)
             )
                 return true;
 
             if (
-                second.AllPreviousSatisfy(task => !(task is Tasks.IFixedSchedule))
-                && second.AllNextSatisfy(task => !(task is Tasks.IFixedSchedule))
+                second.AllPreviousSatisfy(task => task is not Tasks.IFixedSchedule)
+                && second.AllNextSatisfy(task => task is not Tasks.IFixedSchedule)
             )
                 return true;
 

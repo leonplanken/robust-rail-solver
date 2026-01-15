@@ -121,7 +121,7 @@ namespace ServiceSiteScheduling.Tasks
             TrackTask previous = null;
 
             foreach (TrackTask task in this.Next)
-                if (!(task is DepartureTask))
+                if (task is not DepartureTask)
                     task.Train.Units.Clear();
 
             foreach (Trains.ShuntTrainUnit unit in this.Train)
@@ -131,7 +131,7 @@ namespace ServiceSiteScheduling.Tasks
                     var task = this.Next[i];
                     if (task.Train.UnitBits[unit.Index])
                     {
-                        if (!(task is DepartureTask))
+                        if (task is not DepartureTask)
                             task.Train.Units.Add(unit);
                         if (previous != task)
                         {

@@ -419,7 +419,7 @@ namespace ServiceSiteScheduling.Initial
             foreach (RoutingTask routing in routings)
             {
                 // Depart
-                if (!(routing.Previous is ArrivalTask))
+                if (routing.Previous is not ArrivalTask)
                     space[routing.Previous.Track] += routing.Previous.Train.Length;
 
                 if (

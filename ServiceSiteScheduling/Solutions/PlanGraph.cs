@@ -804,7 +804,7 @@ namespace ServiceSiteScheduling.Solutions
                     task.Next.FindAllNext(t => t == task, tasks);
                     if (tasks.Count > 0)
                         throw new InvalidOperationException("track-route circular reference");
-                    if (!(task is ArrivalTask))
+                    if (task is not ArrivalTask)
                     {
                         task.Previous.FindAllPrevious(t => t == task, tasks);
                         if (tasks.Count > 0)
@@ -853,7 +853,7 @@ namespace ServiceSiteScheduling.Solutions
                 {
                     if (task.Previous != move)
                         throw new InvalidOperationException("track-route linkage failure");
-                    if (!(task is DepartureTask))
+                    if (task is not DepartureTask)
                     {
                         task.Next.FindAllNext(t => t == task, tasks);
                         if (tasks.Count > 0)

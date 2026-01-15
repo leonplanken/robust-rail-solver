@@ -120,11 +120,11 @@ namespace ServiceSiteScheduling.TrackParts
         {
             this.ASide = A;
             this.BSide = B;
-            if (A != null && !(A is GateWay) && B != null && !(B is GateWay))
+            if (A != null && A is not GateWay && B != null && B is not GateWay)
                 this.Access = Side.Both;
-            else if (A != null && !(A is GateWay))
+            else if (A != null && A is not GateWay)
                 this.Access = Side.A;
-            else if (B != null && !(B is GateWay))
+            else if (B != null && B is not GateWay)
                 this.Access = Side.B;
             else
                 this.Access = Side.None;
