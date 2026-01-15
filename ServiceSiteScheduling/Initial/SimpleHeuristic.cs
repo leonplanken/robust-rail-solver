@@ -373,7 +373,7 @@ namespace ServiceSiteScheduling.Initial
             // Add routing task before departure (from null track)
             foreach (DepartureTask departure in departures)
             {
-                var routing = departure.Previous as DepartureRoutingTask;
+                DepartureRoutingTask routing = departure.GetDepartureRoutingTask();
                 foreach (TrackTask previous in routing.Previous)
                     routing.Start = routing.End = Math.Max(routing.End, previous.Previous.End);
                 moveheap.Insert(routing);

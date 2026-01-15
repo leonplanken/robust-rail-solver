@@ -1,4 +1,6 @@
-﻿namespace ServiceSiteScheduling.Tasks
+﻿using System.Diagnostics;
+
+namespace ServiceSiteScheduling.Tasks
 {
     class DepartureTask : TrackTask, IFixedSchedule
     {
@@ -16,6 +18,12 @@
             this.ScheduledTime = time;
             this.Start = this.End = time;
             this.DepartureSide = side;
+        }
+
+        public DepartureRoutingTask GetDepartureRoutingTask()
+        {
+            Debug.Assert(Previous.TaskType == MoveTaskType.Departure);
+            return (DepartureRoutingTask)this.Previous;
         }
     }
 }

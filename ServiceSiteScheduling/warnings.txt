@@ -2,7 +2,7 @@
 
 
     0 Error(s)
-    513 Warning(s)
+    512 Warning(s)
   All projects are up-to-date for restore.
 Build succeeded.
   Determining projects to restore...
@@ -27,8 +27,6 @@ Build succeeded.
 /home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/Initial/SimpleHeuristic.cs(361,17): warning CS8602: Dereference of a possibly null reference. [/home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/HIP.csproj]
 /home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/Initial/SimpleHeuristic.cs(368,49): warning CS8602: Dereference of a possibly null reference. [/home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/HIP.csproj]
 /home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/Initial/SimpleHeuristic.cs(368,49): warning CS8602: Dereference of a possibly null reference. [/home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/HIP.csproj]
-/home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/Initial/SimpleHeuristic.cs(377,48): warning CS8602: Dereference of a possibly null reference. [/home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/HIP.csproj]
-/home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/Initial/SimpleHeuristic.cs(377,48): warning CS8602: Dereference of a possibly null reference. [/home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/HIP.csproj]
 /home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/Initial/SimpleHeuristic.cs(391,29): warning CS8600: Converting null literal or possible null value to non-nullable type. [/home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/HIP.csproj]
 /home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/Initial/SimpleHeuristic.cs(391,29): warning CS8600: Converting null literal or possible null value to non-nullable type. [/home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/HIP.csproj]
 /home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/Initial/SimpleHeuristic.cs(402,40): warning CS8601: Possible null reference assignment. [/home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/HIP.csproj]
@@ -1018,7 +1016,7 @@ Build succeeded.
 /home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/Utilities/Time.cs(47,20): warning CS8767: Nullability of reference types in type of parameter 'obj' of 'int Time.CompareTo(object obj)' doesn't match implicitly implemented member 'int IComparable.CompareTo(object? obj)' (possibly because of nullability attributes). [/home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/HIP.csproj]
 /home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/Utilities/Time.cs(47,20): warning CS8767: Nullability of reference types in type of parameter 'obj' of 'int Time.CompareTo(object obj)' doesn't match implicitly implemented member 'int IComparable.CompareTo(object? obj)' (possibly because of nullability attributes). [/home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/HIP.csproj]
 MSBuild version 17.8.43+f0cbb1397 for .NET
-Time Elapsed 00:00:01.20
+Time Elapsed 00:00:01.17
 /usr/lib/dotnet/sdk/8.0.122/Microsoft.Common.CurrentVersion.targets(2382,5): warning MSB3243: No way to resolve conflict between "Microsoft.CSharp, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" and "Microsoft.CSharp". Choosing "Microsoft.CSharp, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" arbitrarily. [/home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/HIP.csproj]
 /usr/lib/dotnet/sdk/8.0.122/Microsoft.Common.CurrentVersion.targets(2382,5): warning MSB3243: No way to resolve conflict between "Microsoft.CSharp, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" and "Microsoft.CSharp". Choosing "Microsoft.CSharp, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" arbitrarily. [/home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/HIP.csproj]
 /usr/lib/dotnet/sdk/8.0.122/Microsoft.Common.CurrentVersion.targets(2382,5): warning MSB3243: No way to resolve conflict between "System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" and "System.Core". Choosing "System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" arbitrarily. [/home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling/HIP.csproj]
