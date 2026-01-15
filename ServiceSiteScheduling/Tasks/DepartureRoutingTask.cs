@@ -22,7 +22,7 @@ namespace ServiceSiteScheduling.Tasks
         }
         public override IList<TrackTask> AllNext
         {
-            get { return new TrackTask[1] { this.Next }; }
+            get { return [this.Next]; }
         }
 
         public override Side FromSide

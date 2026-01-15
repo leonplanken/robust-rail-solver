@@ -135,7 +135,7 @@ namespace ServiceSiteScheduling
             {
                 File.Delete(file);
             }
-            // If a seed was specified in the config file and it's value is not 0, then we can use the seed for deterministic plan creation
+            // If a seed was specified in the config file and its value is not 0, then we can use the seed for deterministic plan creation
             Random random;
             if (
                 config != null
@@ -169,7 +169,7 @@ namespace ServiceSiteScheduling
                 {
                     Console.WriteLine($"Create Plan Iteration: {i}");
                 }
-                LocalSearch.TabuSearch ts = new LocalSearch.TabuSearch(random, debugLevel);
+                LocalSearch.TabuSearch ts = new(random, debugLevel);
                 if (config != null)
                 {
                     ts.Run(
@@ -185,10 +185,7 @@ namespace ServiceSiteScheduling
                 {
                     ts.Run(40, 100, 16, 0.5);
                 }
-                LocalSearch.SimulatedAnnealing sa = new LocalSearch.SimulatedAnnealing(
-                    random,
-                    ts.Graph
-                );
+                LocalSearch.SimulatedAnnealing sa = new(random, ts.Graph);
                 if (config != null)
                 {
                     sa.Run(
@@ -325,7 +322,7 @@ namespace ServiceSiteScheduling
             for (int i = 0; i < 1; i++)
             {
                 Console.WriteLine($"Create Plan Iteration: {i}");
-                LocalSearch.TabuSearch ts = new LocalSearch.TabuSearch(random);
+                LocalSearch.TabuSearch ts = new(random);
                 if (config != null)
                 {
                     ts.Run(
@@ -340,10 +337,7 @@ namespace ServiceSiteScheduling
                 {
                     ts.Run(40, 100, 16, 0.5);
                 }
-                LocalSearch.SimulatedAnnealing sa = new LocalSearch.SimulatedAnnealing(
-                    random,
-                    ts.Graph
-                );
+                LocalSearch.SimulatedAnnealing sa = new(random, ts.Graph);
                 if (config != null)
                 {
                     sa.Run(
@@ -442,9 +436,9 @@ namespace ServiceSiteScheduling
             );
 
             // Contains all the tested scenario cases and the plan evaluation results [valid, not valid]
-            Dictionary<string, string> ResultSummary = new Dictionary<string, string>();
+            Dictionary<string, string> ResultSummary = new();
 
-            Dictionary<string, string[]> ResultSummaryWithSeed = new Dictionary<string, string[]>();
+            Dictionary<string, string[]> ResultSummaryWithSeed = new();
             string scenarioTestCase = "";
 
             int testCases = config.DeepLook.TestCases;
@@ -591,7 +585,7 @@ namespace ServiceSiteScheduling
 
                         // Convert the scenario into an evaluator type scenario
                         // and also store it with the prefix scenario_evaluator.json
-                        Converter converter = new Converter(
+                        Converter converter = new(
                             ProblemInstance.Current,
                             config.DeepLook.ConversionAndStorage.PathScenarioEval
                         );
@@ -749,7 +743,7 @@ namespace ServiceSiteScheduling
                 );
 
                 var testCase = 0;
-                Converter converter = new Converter(
+                Converter converter = new(
                     ProblemInstance.Current,
                     config.DeepLook.ConversionAndStorage.PathScenarioEval
                 );
@@ -953,7 +947,7 @@ namespace ServiceSiteScheduling
 
         static bool Call_Evaluator(Config config)
         {
-            Process process = new Process();
+            Process process = new();
             process.StartInfo.FileName = config.DeepLook.EvaluatorInput.Path;
 
             if (config.DeepLook.EvaluatorInput.Mode == "EVAL")
@@ -1109,9 +1103,7 @@ namespace ServiceSiteScheduling
                     Console.WriteLine("***The Scenario file parsing was not successful***");
                 }
 
-                List<AlgoIface.IncomingTrain> incomingTrains = new List<AlgoIface.IncomingTrain>(
-                    scenario_in.Trains
-                );
+                List<AlgoIface.IncomingTrain> incomingTrains = new(scenario_in.Trains);
                 if (debugLevel > 1)
                 {
                     Console.WriteLine("Scenario details: ");
@@ -1129,9 +1121,7 @@ namespace ServiceSiteScheduling
                     }
                 }
 
-                List<AlgoIface.TrainRequest> outgoingTrains = new List<AlgoIface.TrainRequest>(
-                    scenario_out.TrainRequests
-                );
+                List<AlgoIface.TrainRequest> outgoingTrains = new(scenario_out.TrainRequests);
                 if (debugLevel > 1)
                 {
                     Console.WriteLine("---- Outgoing Trains ----");

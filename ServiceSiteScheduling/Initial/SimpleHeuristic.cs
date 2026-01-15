@@ -203,8 +203,10 @@ namespace ServiceSiteScheduling.Initial
                 Shuffle(trainservicetypes, random);
                 foreach (ServiceType type in trainservicetypes)
                 {
-                    ServiceTask service = new(new ShuntTrain(partial_shunttrain), null, type, null);
-                    service.Start = releasedate;
+                    ServiceTask service = new(new ShuntTrain(partial_shunttrain), null, type, null)
+                    {
+                        Start = releasedate,
+                    };
                     releasedate += service.MinimumDuration;
                     duedate += service.MinimumDuration;
                     service.End = duedate;
