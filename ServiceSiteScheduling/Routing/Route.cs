@@ -107,7 +107,8 @@ namespace ServiceSiteScheduling.Routing
 
         public override string ToString()
         {
-            return $"({this.Duration}|{this.DepartureCrossings}+{this.Crossings}) {string.Join("->", this.Tracks?.Select(track => track.PrettyName) ?? new string[1] { "?" })}";
+            return $"({this.Duration}|{this.DepartureCrossings}+{this.Crossings}) "
+                + $"{string.Join("->", this.Tracks?.Select(track => track.PrettyName) ?? ["?"])}";
         }
 
         public Time computeDuration()
