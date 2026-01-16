@@ -30,9 +30,19 @@ namespace ServiceSiteScheduling.Trains
         public TrainUnit(int index, TrainType type, Service[] required, ServiceType[] types)
             : this(index.ToString(), index, type, required, types) { }
 
-        public bool Equals(TrainUnit other)
+        public bool Equals(TrainUnit? other)
         {
-            return this.Index == other.Index;
+            return this.Index == other?.Index;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return Equals(obj as TrainUnit);
+        }
+
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
         }
 
         public override string ToString()

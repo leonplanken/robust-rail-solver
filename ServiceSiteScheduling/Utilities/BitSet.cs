@@ -293,7 +293,7 @@ namespace ServiceSiteScheduling.Utilities
         #endregion
 
         #region IEquatable<BitSet> Members
-        public bool Equals(BitSet other)
+        public bool Equals(BitSet? other)
         {
             if (other == null || this.length != other.length)
                 return false;

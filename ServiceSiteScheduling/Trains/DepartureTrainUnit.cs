@@ -29,5 +29,15 @@
         {
             return $"Departure Unit id {this.ID} {(this.IsFixed ? $"type {this.Unit.Index}({this.Unit.Type.Name})" : $"name {this.Type.Name}")}";
         }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as DepartureTrainUnit);
+        }
+
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

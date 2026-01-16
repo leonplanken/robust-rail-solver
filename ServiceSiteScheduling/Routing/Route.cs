@@ -136,9 +136,19 @@ namespace ServiceSiteScheduling.Routing
             return route;
         }
 
-        public bool Equals(Route other)
+        public bool Equals(Route? other)
         {
-            return this.TrackBits.Equals(other.TrackBits);
+            return this.TrackBits.Equals(other?.TrackBits);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return Equals(obj as Route);
+        }
+
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
         }
     }
 }
