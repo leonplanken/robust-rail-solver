@@ -5,20 +5,20 @@ namespace ServiceSiteScheduling.Routing
     class Storage
     {
         private int bitsize;
-        private Dictionary<BitSet, Entry> AA;
-        private Dictionary<BitSet, Entry> AB;
-        private Dictionary<BitSet, Entry> BA;
-        private Dictionary<BitSet, Entry> BB;
+        private Dictionary<FrozenBitSet, Entry> AA;
+        private Dictionary<FrozenBitSet, Entry> AB;
+        private Dictionary<FrozenBitSet, Entry> BA;
+        private Dictionary<FrozenBitSet, Entry> BB;
         private int[] indices;
         private const int maxsize = 10000;
-        private LinkedList<BitSet> AAhistory,
+        private LinkedList<FrozenBitSet> AAhistory,
             ABhistory,
             BAhistory,
             BBhistory;
 
         public TrackParts.Track From { get; private set; }
         public TrackParts.Track To { get; private set; }
-        public BitSet EmptyState { get; private set; }
+        public FrozenBitSet EmptyState { get; private set; }
 
         public Storage(TrackParts.Track from, TrackParts.Track to)
         {
@@ -39,18 +39,21 @@ namespace ServiceSiteScheduling.Routing
 
             this.bitsize = index;
             this.AA = [];
-            this.AAhistory = new LinkedList<BitSet>();
+            this.AAhistory = new LinkedList<FrozenBitSet>();
             this.AB = [];
-            this.ABhistory = new LinkedList<BitSet>();
+            this.ABhistory = new LinkedList<FrozenBitSet>();
             this.BA = [];
-            this.BAhistory = new LinkedList<BitSet>();
+            this.BAhistory = new LinkedList<FrozenBitSet>();
             this.BB = [];
-            this.BBhistory = new LinkedList<BitSet>();
+            this.BBhistory = new LinkedList<FrozenBitSet>();
 
-            this.EmptyState = new BitSet(this.bitsize);
+            this.EmptyState = new FrozenBitSet(this.bitsize);
         }
 
-        public BitSet ConstructState(Parking.TrackOccupation[] trackstates, Trains.ShuntTrain train)
+        public FrozenBitSet ConstructState(
+            Parking.TrackOccupation[] trackstates,
+            Trains.ShuntTrain train
+        )
         {
             BitSet result = new(bitsize);
 
@@ -67,10 +70,10 @@ namespace ServiceSiteScheduling.Routing
                     result[index + 1] = true;
             }
 
-            return result;
+            return new FrozenBitSet(result);
         }
 
-        public bool TryGet(Side from, Side to, BitSet state, out Route route)
+        public bool TryGet(Side from, Side to, FrozenBitSet state, out Route route)
         {
             if (from == Side.A)
             {
@@ -88,7 +91,7 @@ namespace ServiceSiteScheduling.Routing
             }
         }
 
-        public void Add(Side from, Side to, BitSet state, Route route)
+        public void Add(Side from, Side to, FrozenBitSet state, Route route)
         {
             if (from == Side.A)
             {
@@ -107,9 +110,9 @@ namespace ServiceSiteScheduling.Routing
         }
 
         private static bool tryGetValue(
-            Dictionary<BitSet, Entry> hashmap,
-            LinkedList<BitSet> history,
-            BitSet key,
+            Dictionary<FrozenBitSet, Entry> hashmap,
+            LinkedList<FrozenBitSet> history,
+            FrozenBitSet key,
             out Route value
         )
         {
@@ -128,9 +131,9 @@ namespace ServiceSiteScheduling.Routing
         }
 
         private static void add(
-            Dictionary<BitSet, Entry> hashmap,
-            LinkedList<BitSet> history,
-            BitSet key,
+            Dictionary<FrozenBitSet, Entry> hashmap,
+            LinkedList<FrozenBitSet> history,
+            FrozenBitSet key,
             Route value
         )
         {
@@ -160,9 +163,9 @@ namespace ServiceSiteScheduling.Routing
         private struct Entry
         {
             public Route Route { get; }
-            public LinkedListNode<BitSet> Node { get; }
+            public LinkedListNode<FrozenBitSet> Node { get; }
 
-            public Entry(Route route, LinkedListNode<BitSet> node)
+            public Entry(Route route, LinkedListNode<FrozenBitSet> node)
             {
                 this.Route = route;
                 this.Node = node;

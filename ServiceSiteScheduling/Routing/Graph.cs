@@ -269,7 +269,7 @@ namespace ServiceSiteScheduling.Routing
 
             Route route = null;
             var storage = this.storages[departureTrack.Index, arrivalTrack.Index];
-            BitSet bitstate = storage.ConstructState(occupations, train);
+            FrozenBitSet bitstate = storage.ConstructState(occupations, train);
             if (!storage.TryGet(departureSide, arrivalSide, bitstate, out route))
             {
                 SuperVertex start = this.SuperVertices[departureTrack.Index];
@@ -313,7 +313,8 @@ namespace ServiceSiteScheduling.Routing
 
             Route route = null;
             var storage = this.storages[departureTrack.Index, arrivalTrack.Index];
-            if (!storage.TryGet(departureSide, arrivalSide, bitstate, out route))
+            FrozenBitSet frozenBitstate = bitstate as FrozenBitSet ?? new FrozenBitSet(bitstate);
+            if (!storage.TryGet(departureSide, arrivalSide, frozenBitstate, out route))
             {
                 SuperVertex start = this.SuperVertices[departureTrack.Index];
                 Vertex origin = departureSide == Side.A ? start.AB : start.BA;
@@ -321,7 +322,7 @@ namespace ServiceSiteScheduling.Routing
                 Vertex destination = arrivalSide == Side.A ? end.AA : end.BB;
 
                 route = this.Dijkstra(train, origin, destination, departureSide);
-                storage.Add(departureSide, arrivalSide, bitstate, route);
+                storage.Add(departureSide, arrivalSide, new FrozenBitSet(bitstate), route);
                 return route;
             }
 
@@ -373,14 +374,13 @@ namespace ServiceSiteScheduling.Routing
                 start,
                 (
                     useEstimate
-                        ? (int)
-                            ComputeEstimate(
-                                train,
-                                start.Index,
-                                switchcount,
-                                trackcount,
-                                reversalcount
-                            )
+                        ? (int)ComputeEstimate(
+                            train,
+                            start.Index,
+                            switchcount,
+                            trackcount,
+                            reversalcount
+                        )
                         : 0
                 )
             );
@@ -411,14 +411,13 @@ namespace ServiceSiteScheduling.Routing
                                 neighbor.Distance
                                     + (
                                         useEstimate
-                                            ? (int)
-                                                ComputeEstimate(
-                                                    train,
-                                                    neighbor.Index,
-                                                    switchcount,
-                                                    trackcount,
-                                                    reversalcount
-                                                )
+                                            ? (int)ComputeEstimate(
+                                                train,
+                                                neighbor.Index,
+                                                switchcount,
+                                                trackcount,
+                                                reversalcount
+                                            )
                                             : 0
                                     )
                             );
@@ -429,14 +428,13 @@ namespace ServiceSiteScheduling.Routing
                                 neighbor.Distance
                                     + (
                                         useEstimate
-                                            ? (int)
-                                                ComputeEstimate(
-                                                    train,
-                                                    neighbor.Index,
-                                                    switchcount,
-                                                    trackcount,
-                                                    reversalcount
-                                                )
+                                            ? (int)ComputeEstimate(
+                                                train,
+                                                neighbor.Index,
+                                                switchcount,
+                                                trackcount,
+                                                reversalcount
+                                            )
                                             : 0
                                     )
                             );
