@@ -86,8 +86,7 @@
 
         public void Remove(T node)
         {
-            if (node == null)
-                throw new ArgumentNullException();
+            ArgumentNullException.ThrowIfNull(node);
 
             if ((this.A == null && this.B == null) || this.Count == 0)
                 throw new ArgumentException();

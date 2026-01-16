@@ -89,10 +89,10 @@ namespace ServiceSiteScheduling.LocalSearch
             if (move is not ParkingSwapMove swapmove)
                 return false;
 
-            return this.ParkingFirst.Intersect(swapmove.ParkingFirst).Count() > 0
-                || this.ParkingFirst.Intersect(swapmove.ParkingSecond).Count() > 0
-                || this.ParkingSecond.Intersect(swapmove.ParkingFirst).Count() > 0
-                || this.ParkingSecond.Intersect(swapmove.ParkingSecond).Count() > 0;
+            return ParkingFirst.Intersect(swapmove.ParkingFirst).Any()
+                || ParkingFirst.Intersect(swapmove.ParkingSecond).Any()
+                || ParkingSecond.Intersect(swapmove.ParkingFirst).Any()
+                || ParkingSecond.Intersect(swapmove.ParkingSecond).Any();
         }
 
         public override string ToString()

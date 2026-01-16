@@ -212,7 +212,7 @@ namespace ServiceSiteScheduling
                         break;
                     case AlgoIface.TrackPartType.Switch:
                         Switch @switch = infrastructuremap[part.Id] as Switch;
-                        if (part.ASide.Count() == 1)
+                        if (part.ASide.Count == 1)
                         { // A side is connected to two B side infrastructure
                             @switch.Connect(
                                 infrastructuremap[part.ASide.First()],
@@ -269,7 +269,7 @@ namespace ServiceSiteScheduling
                         {
                             Console.WriteLine($"gateway : {gateway}");
                         }
-                        if (part.ASide.Count() != 0)
+                        if (part.ASide.Count != 0)
                         {
                             if (debugLevel > 1)
                             {
@@ -278,7 +278,7 @@ namespace ServiceSiteScheduling
                             }
                             gateway.Connect(infrastructuremap[part.ASide.First()]);
                         }
-                        else if (part.BSide.Count() != 0)
+                        else if (part.BSide.Count != 0)
                         {
                             if (debugLevel > 1)
                             {

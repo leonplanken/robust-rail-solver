@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -31,5 +30,4 @@
   <ItemGroup>
     <ProjectReference Include="..\ServiceSiteScheduling\HIP.csproj" />
   </ItemGroup>
-
 </Project>

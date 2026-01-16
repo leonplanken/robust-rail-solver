@@ -230,7 +230,7 @@ namespace ServiceSiteScheduling.LocalSearch
                                 move.Selected.Train.UnitBits
                             )
                         );
-                        if (restrictedmoves.Count() > 0)
+                        if (restrictedmoves.Any())
                             currentmoves = restrictedmoves.ToList();
                     }
                     selectedmoves.AddRange(currentmoves);
@@ -245,7 +245,7 @@ namespace ServiceSiteScheduling.LocalSearch
                             || this.Graph.Cost.ProblemTracks[move.Second.Track.Index]
                             || this.Graph.Cost.ProblemTrains.Intersects(move.First.Train.UnitBits)
                         );
-                        if (restrictedmoves.Count() > 0)
+                        if (restrictedmoves.Any())
                             currentmoves = restrictedmoves.ToList();
                     }
                     selectedmoves.AddRange(currentmoves);
@@ -263,7 +263,7 @@ namespace ServiceSiteScheduling.LocalSearch
                                 move.Second.Matching.GetShuntTrain(move.Second.Train).UnitBits
                             )
                         );
-                        if (restrictedmoves.Count() > 0)
+                        if (restrictedmoves.Any())
                             currentmoves = restrictedmoves.ToList();
                     }
                     selectedmoves.AddRange(currentmoves);
@@ -279,7 +279,7 @@ namespace ServiceSiteScheduling.LocalSearch
                                 this.Graph.Cost.ProblemTrains.Intersects(task.Train.UnitBits)
                             )
                         );
-                        if (restrictedmoves.Count() > 0)
+                        if (restrictedmoves.Any())
                             currentmoves = restrictedmoves.ToList();
                     }
                     selectedmoves.AddRange(currentmoves);
@@ -299,7 +299,7 @@ namespace ServiceSiteScheduling.LocalSearch
                                 this.Graph.Cost.ProblemTrains.Intersects(task.Train.UnitBits)
                             )
                         );
-                        if (restrictedmoves.Count() > 0)
+                        if (restrictedmoves.Any())
                             currentmoves = restrictedmoves.ToList();
                     }
                     selectedmoves.AddRange(currentmoves);
@@ -315,7 +315,7 @@ namespace ServiceSiteScheduling.LocalSearch
                             || this.Graph.Cost.ProblemTrains.Intersects(move.First.Train.UnitBits)
                             || this.Graph.Cost.ProblemTrains.Intersects(move.Second.Train.UnitBits)
                         );
-                        if (restrictedmoves.Count() > 0)
+                        if (restrictedmoves.Any())
                             currentmoves = restrictedmoves.ToList();
                     }
                     selectedmoves.AddRange(currentmoves);
@@ -346,7 +346,7 @@ namespace ServiceSiteScheduling.LocalSearch
                                     );
                             }
                         });
-                        if (restrictedmoves.Count() > 0)
+                        if (restrictedmoves.Any())
                             currentmoves = restrictedmoves.ToList();
                     }
                     selectedmoves.AddRange(currentmoves);
@@ -362,7 +362,7 @@ namespace ServiceSiteScheduling.LocalSearch
                             || this.Graph.Cost.ProblemTrains.Intersects(move.First.Train.UnitBits)
                             || this.Graph.Cost.ProblemTrains.Intersects(move.Second.Train.UnitBits)
                         );
-                        if (restrictedmoves.Count() > 0)
+                        if (restrictedmoves.Any())
                             currentmoves = restrictedmoves.ToList();
                     }
                     selectedmoves.AddRange(currentmoves);

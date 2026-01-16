@@ -468,7 +468,7 @@ namespace ServiceSiteScheduling
                             config.ScenarioPath
                         );
 
-                        int numberOfArrivals = ProblemInstance.Current.ArrivalsOrdered.Count();
+                        int numberOfArrivals = ProblemInstance.Current.ArrivalsOrdered.Length;
 
                         // It is a simple example in which the arrival and departure times are modified
                         if (testCase != -1)

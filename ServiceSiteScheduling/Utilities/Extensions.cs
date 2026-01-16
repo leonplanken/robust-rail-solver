@@ -140,8 +140,7 @@
             IComparer<T> comparer = null
         )
         {
-            if (list == null)
-                throw new ArgumentNullException("list");
+            ArgumentNullException.ThrowIfNull(list);
 
             comparer = comparer ?? Comparer<T>.Default;
 
@@ -170,8 +169,7 @@
             IComparer<T> comparer = null
         )
         {
-            if (list == null)
-                throw new ArgumentNullException("list");
+            ArgumentNullException.ThrowIfNull(list);
 
             comparer = comparer ?? Comparer<T>.Default;
 

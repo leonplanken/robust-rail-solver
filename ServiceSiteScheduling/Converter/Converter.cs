@@ -168,7 +168,7 @@ namespace ServiceSiteScheduling
                 train.CanDepartFromAnyTrack = false;
                 train.StandingIndex = arrivalTrain.StandingIndex;
 
-                if (arrivalTrain.Members.Count() > 0)
+                if (arrivalTrain.Members.Count > 0)
                 {
                     foreach (var member in arrivalTrain.Members)
                     {
@@ -179,7 +179,7 @@ namespace ServiceSiteScheduling
                             + "-"
                             + member.TrainUnit.Type.Carriages;
 
-                        if (member.Tasks.Count() > 0)
+                        if (member.Tasks.Count > 0)
                         {
                             AlgoIfaceEvaluator.TaskSpec tasksEvaluator = new();
                             foreach (var taskSolver in member.Tasks)
@@ -237,7 +237,7 @@ namespace ServiceSiteScheduling
                     train.CanDepartFromAnyTrack = false;
                     train.StandingIndex = arrivalTrain.StandingIndex;
 
-                    if (arrivalTrain.Members.Count() > 0)
+                    if (arrivalTrain.Members.Count > 0)
                     {
                         foreach (var member in arrivalTrain.Members)
                         {
@@ -248,7 +248,7 @@ namespace ServiceSiteScheduling
                                 + "-"
                                 + member.TrainUnit.Type.Carriages;
 
-                            if (member.Tasks.Count() > 0)
+                            if (member.Tasks.Count > 0)
                             {
                                 AlgoIfaceEvaluator.TaskSpec tasksEvaluator = new();
                                 foreach (var taskSolver in member.Tasks)
@@ -302,7 +302,7 @@ namespace ServiceSiteScheduling
                 train.CanDepartFromAnyTrack = false;
                 train.StandingIndex = departureTrain.StandingIndex;
 
-                if (departureTrain.TrainUnits.Count() > 0)
+                if (departureTrain.TrainUnits.Count > 0)
                 {
                     foreach (var member in departureTrain.TrainUnits)
                     {
@@ -339,7 +339,7 @@ namespace ServiceSiteScheduling
                     train.CanDepartFromAnyTrack = false;
                     train.StandingIndex = outStandingTrain.StandingIndex;
 
-                    if (outStandingTrain.TrainUnits.Count() > 0)
+                    if (outStandingTrain.TrainUnits.Count > 0)
                     {
                         foreach (var member in outStandingTrain.TrainUnits)
                         {

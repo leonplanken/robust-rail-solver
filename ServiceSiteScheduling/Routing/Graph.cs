@@ -218,7 +218,7 @@ namespace ServiceSiteScheduling.Routing
                     continue;
 
                 SuperVertex v = supervertices[track.Index];
-                var tmp = track.GetConnectionsAtSide(Side.A).Count();
+                var tmp = track.GetConnectionsAtSide(Side.A).Count;
 
                 if (track.Access.HasFlag(Side.A))
                 {

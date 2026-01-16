@@ -321,8 +321,8 @@ namespace ServiceSiteScheduling.Initial
                 Debug.Assert(resource != null);
                 var machineschedule = schedule[resource];
                 selected.Start = Math.Max(t, selected.Previous.End);
-                if (earlieststart.ContainsKey(selected.Train))
-                    selected.Start = Math.Max(selected.Start, earlieststart[selected.Train]);
+                if (earlieststart.TryGetValue(selected.Train, out Time value))
+                    selected.Start = Math.Max(selected.Start, value);
                 selected.End = selected.Start + selected.MinimumDuration;
                 var last = machineschedule.Last;
                 if (last != null) // if the schedule is not empty
@@ -510,7 +510,7 @@ namespace ServiceSiteScheduling.Initial
                             )
                         )
                         .ToArray();
-                    if (reachable.Count() == 0)
+                    if (reachable.Length == 0)
                         throw new InvalidOperationException(
                             $"No routing possible for train {routing.Train} of length {routing.Train.Length} from previous track <{routing.Previous.Track}> with sufficient length and possible route."
                         );

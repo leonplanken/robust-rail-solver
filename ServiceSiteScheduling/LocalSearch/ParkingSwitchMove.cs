@@ -105,7 +105,7 @@
                             (set, t) => set.Intersect(t.Train.Units[0].Type.ParkingLocations)
                         );
                     var services = tasks.Where(t => t.TaskType == Tasks.TrackTaskType.Service);
-                    if (services.Count() > 0)
+                    if (services.Any())
                         tracks = services.Aggregate(
                             tracks,
                             (set, t) => set.Intersect((t as Tasks.ServiceTask).Type.Tracks)
@@ -156,7 +156,7 @@
             if (move is not ParkingSwitchMove shiftmove)
                 return false;
 
-            return this.RelatedTasks.Intersect(shiftmove.RelatedTasks).Count() > 0;
+            return RelatedTasks.Intersect(shiftmove.RelatedTasks).Any();
         }
 
         public override string ToString()

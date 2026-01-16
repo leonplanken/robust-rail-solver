@@ -254,8 +254,7 @@ namespace ServiceSiteScheduling.Matching
                                     list.RemoveAt(index);
                                     for (int i = 0; i < list.Count; i++)
                                     {
-                                        if (list[i].ArrivalUnits.Contains(element))
-                                            list[i].ArrivalUnits.Remove(element);
+                                        list[i].ArrivalUnits.Remove(element);
                                     }
                                     change = true;
                                     break;
@@ -281,8 +280,7 @@ namespace ServiceSiteScheduling.Matching
                                 for (int i = 0; i < list.Count; i++)
                                 {
                                     foreach (var element in elements)
-                                        if (list[i].ArrivalUnits.Contains(element))
-                                            list[i].ArrivalUnits.Remove(element);
+                                        list[i].ArrivalUnits.Remove(element);
                                 }
                                 change = true;
                                 break;
@@ -323,7 +321,7 @@ namespace ServiceSiteScheduling.Matching
                 for (int j = i + 1; j < parts.Count; j++)
                 {
                     ArrivalTrainPart tp2 = parts[j];
-                    if (tp1.Units.Intersect(tp2.Units).Count() > 0)
+                    if (tp1.Units.Intersect(tp2.Units).Any())
                     {
                         tp1.Intersections.Add(tp2);
                         tp2.Intersections.Add(tp1);
@@ -359,7 +357,7 @@ namespace ServiceSiteScheduling.Matching
                 for (int j = i + 1; j < parts.Count; j++)
                 {
                     DepartureTrainPart tp2 = parts[j];
-                    if (tp1.TrainUnits.Intersect(tp2.TrainUnits).Count() > 0)
+                    if (tp1.TrainUnits.Intersect(tp2.TrainUnits).Any())
                     {
                         tp1.Intersections.Add(tp2);
                         tp2.Intersections.Add(tp1);
