@@ -75,16 +75,16 @@ namespace ServiceSiteScheduling.Routing
             if (from == Side.A)
             {
                 if (to == Side.A)
-                    return this.tryGetValue(this.AA, this.AAhistory, state, out route);
+                    return tryGetValue(this.AA, this.AAhistory, state, out route);
                 else
-                    return this.tryGetValue(this.AB, this.ABhistory, state, out route);
+                    return tryGetValue(this.AB, this.ABhistory, state, out route);
             }
             else
             {
                 if (to == Side.A)
-                    return this.tryGetValue(this.BA, this.BAhistory, state, out route);
+                    return tryGetValue(this.BA, this.BAhistory, state, out route);
                 else
-                    return this.tryGetValue(this.BB, this.BBhistory, state, out route);
+                    return tryGetValue(this.BB, this.BBhistory, state, out route);
             }
         }
 
@@ -106,7 +106,7 @@ namespace ServiceSiteScheduling.Routing
             }
         }
 
-        private bool tryGetValue(
+        private static bool tryGetValue(
             Dictionary<BitSet, Entry> hashmap,
             LinkedList<BitSet> history,
             BitSet key,
@@ -127,7 +127,7 @@ namespace ServiceSiteScheduling.Routing
             return success;
         }
 
-        private void add(
+        private static void add(
             Dictionary<BitSet, Entry> hashmap,
             LinkedList<BitSet> history,
             BitSet key,

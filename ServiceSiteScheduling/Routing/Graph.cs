@@ -374,7 +374,7 @@ namespace ServiceSiteScheduling.Routing
                 (
                     useEstimate
                         ? (int)
-                            this.ComputeEstimate(
+                            ComputeEstimate(
                                 train,
                                 start.Index,
                                 switchcount,
@@ -412,7 +412,7 @@ namespace ServiceSiteScheduling.Routing
                                     + (
                                         useEstimate
                                             ? (int)
-                                                this.ComputeEstimate(
+                                                ComputeEstimate(
                                                     train,
                                                     neighbor.Index,
                                                     switchcount,
@@ -430,7 +430,7 @@ namespace ServiceSiteScheduling.Routing
                                     + (
                                         useEstimate
                                             ? (int)
-                                                this.ComputeEstimate(
+                                                ComputeEstimate(
                                                     train,
                                                     neighbor.Index,
                                                     switchcount,
@@ -491,7 +491,7 @@ namespace ServiceSiteScheduling.Routing
             );
         }
 
-        protected Time ComputeEstimate(
+        protected static Time ComputeEstimate(
             ShuntTrain train,
             int index,
             int[] switchcount,

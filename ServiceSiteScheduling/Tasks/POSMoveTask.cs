@@ -42,7 +42,7 @@ namespace ServiceSiteScheduling.Tasks
             this.PredecessorTrackTasks = [];
         }
 
-        public void InsertAfter(POSMoveTask posMoveTask) { }
+        public static void InsertAfter(POSMoveTask posMoveTask) { }
 
         public void AddNewSuccessorByTrainUnits(POSMoveTask successor)
         {

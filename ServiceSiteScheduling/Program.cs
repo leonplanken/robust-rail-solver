@@ -277,7 +277,7 @@ namespace ServiceSiteScheduling
                     );
                     sa.Graph.DisplayMovements();
                 }
-                sa.Graph.Clear();
+                Solutions.PlanGraph.Clear();
                 Console.WriteLine("------------------ Found a plan ---------------------------");
                 sa.Graph.GetShortPlanStatistics();
             }
@@ -418,7 +418,7 @@ namespace ServiceSiteScheduling
                     "----------------------------------------------------------------------"
                 );
                 sa.Graph.DisplayMovements();
-                sa.Graph.Clear();
+                Solutions.PlanGraph.Clear();
             }
             Console.WriteLine("------------ OVERALL BEST --------------");
             Console.WriteLine(best);
@@ -630,7 +630,7 @@ namespace ServiceSiteScheduling
                         // Store the plan per test case
                         var fileNameToStorePlam = "plan" + "_case_" + testCase + "_it_" + itTest;
                         if (
-                            !converter.StorePlan(
+                            !Converter.StorePlan(
                                 fileNameToStorePlam,
                                 config.DeepLook.EvaluatorInput.PathPlan
                             )
@@ -786,7 +786,7 @@ namespace ServiceSiteScheduling
                 // Store the plan per test case
                 var fileNameToStorePlam = "plan" + "_case_" + testCase;
                 if (
-                    !converter.StorePlan(
+                    !Converter.StorePlan(
                         fileNameToStorePlam,
                         config.DeepLook.EvaluatorInput.PathPlan
                     )

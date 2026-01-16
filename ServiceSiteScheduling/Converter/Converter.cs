@@ -58,7 +58,7 @@ namespace ServiceSiteScheduling
             return true;
         }
 
-        public bool StorePlan(string FileName, string pathToPlan)
+        public static bool StorePlan(string FileName, string pathToPlan)
         {
             if (!File.Exists(pathToPlan) && pathToPlan != null)
             {
@@ -358,7 +358,7 @@ namespace ServiceSiteScheduling
             return true;
         }
 
-        public AlgoIfaceEvaluator.TrainUnitTypes CreateTrainUnitTypes()
+        public static AlgoIfaceEvaluator.TrainUnitTypes CreateTrainUnitTypes()
         {
             AlgoIfaceEvaluator.TrainUnitTypes trainUnitTypes = new();
 

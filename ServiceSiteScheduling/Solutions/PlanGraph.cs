@@ -118,7 +118,7 @@ namespace ServiceSiteScheduling.Solutions
                     this.TrackOccupations[i].Reset();
 
             this.ComputeLocation(this.First, recomputestart, recomputeend);
-            this.ComputeTime(recomputestart, recomputestart.PreviousMove?.End ?? 0);
+            ComputeTime(recomputestart, recomputestart.PreviousMove?.End ?? 0);
             return this.ComputeCost();
         }
 
@@ -209,7 +209,7 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
-        public void ComputeTime(MoveTask start, Time time)
+        public static void ComputeTime(MoveTask start, Time time)
         {
             MoveTask move = start;
             while (move != null)
@@ -884,7 +884,7 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
-        public void Clear()
+        public static void Clear()
         {
             foreach (var location in ProblemInstance.Current.ServiceLocations)
             {
@@ -1161,7 +1161,7 @@ namespace ServiceSiteScheduling.Solutions
                         }
                     }
                     // Add departure
-                    this.AddTrackAction(departurerouting.Next, trainconversion, plan);
+                    AddTrackAction(departurerouting.Next, trainconversion, plan);
                 }
                 move = move.NextMove;
             }
@@ -1268,16 +1268,16 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
-        private void AddTrackAction(
+        private static void AddTrackAction(
             TrackTask task,
             Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion,
             AlgoIface.Plan plan
         )
         {
-            this.AddTrackAction(task, task.End, trainconversion, plan);
+            AddTrackAction(task, task.End, trainconversion, plan);
         }
 
-        private void AddTrackAction(
+        private static void AddTrackAction(
             TrackTask task,
             Time endtime,
             Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion,
@@ -1441,7 +1441,7 @@ namespace ServiceSiteScheduling.Solutions
             plan.Actions.Add(trackaction);
         }
 
-        private AlgoIface.ShuntingUnit GetShuntUnit(
+        private static AlgoIface.ShuntingUnit GetShuntUnit(
             ShuntTrain train,
             Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion,
             string _standingType = ""

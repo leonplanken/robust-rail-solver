@@ -80,7 +80,7 @@ namespace ServiceSiteScheduling.Solutions
 
         // Get all the train units (shunt train units) used by the movements in this scenario
         // this information is obtained from the ProblemInstance, created from the `scenario.data` file
-        public List<Trains.TrainUnit> GetTrainFleet()
+        public static List<Trains.TrainUnit> GetTrainFleet()
         {
             ProblemInstance instance = ProblemInstance.Current;
 
@@ -91,7 +91,7 @@ namespace ServiceSiteScheduling.Solutions
 
         // Get the infrastructure describing the shunting yard
         // this information is obtained from the ProblemInstance, created from the `location.json` file
-        public Dictionary<ulong, Infrastructure> GetInfrastructure()
+        public static Dictionary<ulong, Infrastructure> GetInfrastructure()
         {
             ProblemInstance instance = ProblemInstance.Current;
 
@@ -141,7 +141,7 @@ namespace ServiceSiteScheduling.Solutions
 
         // Returns list of the IDs of the train units used by a movement (MoveTask)
 
-        public List<int> GetIDListOfTrainUnitsUsed(MoveTask move)
+        public static List<int> GetIDListOfTrainUnitsUsed(MoveTask move)
         {
             List<int> trainUnits = [];
 
@@ -161,7 +161,7 @@ namespace ServiceSiteScheduling.Solutions
         }
 
         // Returns list of the IDs of the train units used by a POSTrackTask (POSTrackTask)
-        public List<int> GetIDListOfTrainUnitUsedPOSTrackTask(POSTrackTask posTrackTask)
+        public static List<int> GetIDListOfTrainUnitUsedPOSTrackTask(POSTrackTask posTrackTask)
         {
             List<int> trainUnits = [];
 
@@ -175,7 +175,7 @@ namespace ServiceSiteScheduling.Solutions
 
         // Returns list of the IDs of the Infrastructure used by a POSTrackTask (POSTrackTask)
 
-        public List<ulong> GetIDListOfInfraUsedByTrackTasks(POSTrackTask posTrackTask)
+        public static List<ulong> GetIDListOfInfraUsedByTrackTasks(POSTrackTask posTrackTask)
         {
             List<ulong> IDListOfInfraUsed =
             [
@@ -188,7 +188,7 @@ namespace ServiceSiteScheduling.Solutions
         }
 
         // Returns list of the IDs of the Infrastructure used by a movement (MoveTask)
-        public List<ulong> GetIDListOfInfraUsed(MoveTask move)
+        public static List<ulong> GetIDListOfInfraUsed(MoveTask move)
         {
             List<ulong> IDListOfInfraUsed = [];
 
@@ -370,7 +370,7 @@ namespace ServiceSiteScheduling.Solutions
         // Links the previous move -@parentMovementID- this move was conflicting since it previously used the same infrastructure/train unit as the
         // the current move -@childMovementID-
         // @MovementLinks is a dictionary with move IDs as Key, and value as List of all the linked moves
-        public void LinkMovementsByID(
+        public static void LinkMovementsByID(
             Dictionary<int, List<int>> MovementLinks,
             int parentMovementID,
             int childMovementID
@@ -386,7 +386,7 @@ namespace ServiceSiteScheduling.Solutions
         // Links the previous POSTrackTask -@parentPOSTrackTaskID- this POSTrackTask was conflicting since it previously used the same infrastructure/train unit
         // as the current POSTrackTask -@childPOSTrackTaskID-
         // @POSTrackTaskLinks is a dictionary with POSTrackTask IDs as Key, and value as List of all the linked POSTrackTasks
-        public void LinkTrackTaskByID(
+        public static void LinkTrackTaskByID(
             Dictionary<int, List<int>> POSTrackTaskLinks,
             int parentPOSTrackTaskID,
             int childPOSTrackTaskID
@@ -1379,7 +1379,7 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
-        public POSMoveTask GetPOSMoveTaskByID(
+        public static POSMoveTask GetPOSMoveTaskByID(
             int ID,
             Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyList
         )
@@ -1394,7 +1394,7 @@ namespace ServiceSiteScheduling.Solutions
             );
         }
 
-        public List<POSMoveTask> GetMovePredecessors(
+        public static List<POSMoveTask> GetMovePredecessors(
             POSMoveTask POSmove,
             Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyList
         )
@@ -1417,7 +1417,7 @@ namespace ServiceSiteScheduling.Solutions
             return PredecessorsOfPOSMove;
         }
 
-        public List<POSTrackTask> GetTrackTaskPredecessors(
+        public static List<POSTrackTask> GetTrackTaskPredecessors(
             POSTrackTask POStrackTask,
             Dictionary<POSTrackTask, List<POSTrackTask>> POSadjacencyList
         )
@@ -1677,7 +1677,7 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
-        public List<int> CheckIfSameTrainUnitUsed(
+        public static List<int> CheckIfSameTrainUnitUsed(
             List<int> conflictingMoveIds,
             List<MoveTask> listOfMoves,
             int moveIndex
@@ -1722,7 +1722,7 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
-        public List<int> CheckIfSameTrainUnitUsedByPOSTrackTask(
+        public static List<int> CheckIfSameTrainUnitUsedByPOSTrackTask(
             List<int> conflictingTrackTaskIds,
             List<POSTrackTask> listOfPOSTrackTasks,
             int TrackTaskIndex
@@ -1877,7 +1877,7 @@ namespace ServiceSiteScheduling.Solutions
             ;
         }
 
-        public void DisplayPartialResults(Dictionary<int, List<int>> MovementLinks)
+        public static void DisplayPartialResults(Dictionary<int, List<int>> MovementLinks)
         {
             foreach (KeyValuePair<int, List<int>> pair in MovementLinks)
             {
@@ -1933,7 +1933,7 @@ namespace ServiceSiteScheduling.Solutions
             this.ListOfTrainUnits = GetTrainFleet();
         }
 
-        public void DisplayInfrastructure()
+        public static void DisplayInfrastructure()
         {
             Console.WriteLine("-------------------------------");
 

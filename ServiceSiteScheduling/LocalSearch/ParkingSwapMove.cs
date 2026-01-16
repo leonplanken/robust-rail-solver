@@ -65,7 +65,7 @@ namespace ServiceSiteScheduling.LocalSearch
             return base.Revert();
         }
 
-        private void changeTrack(
+        private static void changeTrack(
             IEnumerable<Tasks.TrackTask> set,
             TrackParts.Track track,
             Side side

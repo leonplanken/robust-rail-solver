@@ -27,7 +27,7 @@ namespace ServiceSiteScheduling.LocalSearch
             this.random = random;
         }
 
-        public void showAllPrevious(MoveTask gMove)
+        public static void showAllPrevious(MoveTask gMove)
         {
             List<TrackTask> previousTasks = [];
 
@@ -72,7 +72,7 @@ namespace ServiceSiteScheduling.LocalSearch
             }
         }
 
-        public void showAllNex(MoveTask gMove)
+        public static void showAllNex(MoveTask gMove)
         {
             List<TrackTask> nextTasks = [];
 
