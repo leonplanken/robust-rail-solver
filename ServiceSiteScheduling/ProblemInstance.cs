@@ -363,9 +363,9 @@ namespace ServiceSiteScheduling
                 var facilitytracks = new List<Track>();
                 foreach (var part in facility.RelatedTrackParts)
                 {
-                    if (infrastructuremap.ContainsKey(part))
+                    if (infrastructuremap.TryGetValue(part, out Infrastructure? infra))
                     {
-                        var track = infrastructuremap[part] as Track;
+                        var track = infra as Track;
                         facilitytracks.Add(track);
                         if (facility.Type != "Unknown")
                             servicetracks.Add(track);
@@ -390,9 +390,8 @@ namespace ServiceSiteScheduling
 
                 foreach (var type in facility.TaskTypes)
                 {
-                    if (taskmap.ContainsKey(type))
+                    if (taskmap.TryGetValue(type, out ServiceType? service))
                     {
-                        var service = taskmap[type];
                         foreach (var track in facilitytracks)
                             service.Tracks.Add(track);
                         instance.FacilityConversion[service] = facility;
@@ -442,11 +441,11 @@ namespace ServiceSiteScheduling
                 var currenttrainunits = new List<TrainUnit>();
                 foreach (var unit in arrivaltrain.Members)
                 {
-                    if (!traintypemap.ContainsKey(unit.TrainUnit.Type))
+                    if (!traintypemap.TryGetValue(unit.TrainUnit.Type, out TrainType? type))
                     {
                         var name =
                             $"{unit.TrainUnit.Type.DisplayName}-{unit.TrainUnit.Type.Carriages}";
-                        TrainType type = new(
+                        type = new(
                             traintypes.Count,
                             name,
                             (int)unit.TrainUnit.Type.Length,
@@ -463,7 +462,7 @@ namespace ServiceSiteScheduling
                     TrainUnit trainunit = new(
                         unit.TrainUnit.Id,
                         trainunits.Count,
-                        traintypemap[unit.TrainUnit.Type],
+                        type,
                         unit.Tasks.Where(task =>
                                 taskmap[task.Type].LocationType == ServiceLocationType.Fixed
                             )
@@ -536,11 +535,11 @@ namespace ServiceSiteScheduling
                     var currenttrainunits = new List<TrainUnit>();
                     foreach (var unit in arrivaltrain.Members)
                     {
-                        if (!traintypemap.ContainsKey(unit.TrainUnit.Type))
+                        if (!traintypemap.TryGetValue(unit.TrainUnit.Type, out TrainType? type))
                         {
                             var name =
                                 $"{unit.TrainUnit.Type.DisplayName}-{unit.TrainUnit.Type.Carriages}";
-                            TrainType type = new(
+                            type = new(
                                 traintypes.Count,
                                 name,
                                 (int)unit.TrainUnit.Type.Length,
@@ -557,7 +556,7 @@ namespace ServiceSiteScheduling
                         TrainUnit trainunit = new(
                             unit.TrainUnit.Id,
                             trainunits.Count,
-                            traintypemap[unit.TrainUnit.Type],
+                            type,
                             unit.Tasks.Where(task =>
                                     taskmap[task.Type].LocationType == ServiceLocationType.Fixed
                                 )

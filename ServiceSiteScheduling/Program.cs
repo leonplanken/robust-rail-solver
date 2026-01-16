@@ -685,27 +685,19 @@ namespace ServiceSiteScheduling
                         // If the seed should be displayed
                         if (config.DeepLook.DeterministicPlanning.DisplaySeed)
                         {
-                            if (!ResultSummaryWithSeed.ContainsKey(scenarioTestCase))
-                            {
-                                ResultSummaryWithSeed[scenarioTestCase] = new string[2];
-                            }
-                            ResultSummaryWithSeed[scenarioTestCase][0] = evaluatorResult
-                                ? "Valid ✅"
-                                : "Not Valid ❌";
+                            string[] resultReport = new string[2];
+
+                            resultReport[0] = evaluatorResult ? "Valid ✅" : "Not Valid ❌";
+
+                            resultReport[1] = $"{config.DeepLook.DeterministicPlanning.Seed}";
                             if (config.DeepLook.DeterministicPlanning.LookForSeed)
                             {
-                                ResultSummaryWithSeed[scenarioTestCase][1] = (
-                                    config.DeepLook.DeterministicPlanning.Seed
-                                ).ToString();
                                 Console.WriteLine(
                                     $">>> Seed: {config.DeepLook.DeterministicPlanning.Seed}"
                                 );
                             }
-                            else
-                            {
-                                ResultSummaryWithSeed[scenarioTestCase][1] =
-                                    config.DeepLook.DeterministicPlanning.Seed.ToString();
-                            }
+
+                            ResultSummaryWithSeed[scenarioTestCase] = resultReport;
                         }
                     }
                     if (config.DeepLook.DeterministicPlanning.LookForSeed)
@@ -834,24 +826,17 @@ namespace ServiceSiteScheduling
                 // If the seed should be displayed
                 if (config.DeepLook.DeterministicPlanning.DisplaySeed)
                 {
-                    if (!ResultSummaryWithSeed.ContainsKey(scenarioTestCase))
-                    {
-                        ResultSummaryWithSeed[scenarioTestCase] = new string[2];
-                    }
-                    ResultSummaryWithSeed[scenarioTestCase][0] = evaluatorResult
-                        ? "Valid ✅"
-                        : "Not Valid ❌";
+                    string[] resultReport = new string[2];
+
+                    resultReport[0] = evaluatorResult ? "Valid ✅" : "Not Valid ❌";
+
+                    int seed = config.DeepLook.DeterministicPlanning.Seed;
                     if (config.DeepLook.DeterministicPlanning.LookForSeed)
                     {
-                        ResultSummaryWithSeed[scenarioTestCase][1] = (
-                            config.DeepLook.DeterministicPlanning.Seed - 1
-                        ).ToString();
+                        seed -= 1;
                     }
-                    else
-                    {
-                        ResultSummaryWithSeed[scenarioTestCase][1] =
-                            config.DeepLook.DeterministicPlanning.Seed.ToString();
-                    }
+                    resultReport[1] = $"{seed}";
+                    ResultSummaryWithSeed[scenarioTestCase] = resultReport;
                 }
 
                 // Print the sumarry of the test cases and their evaluation results

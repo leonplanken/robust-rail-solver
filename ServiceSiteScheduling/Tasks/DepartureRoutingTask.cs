@@ -157,13 +157,19 @@ namespace ServiceSiteScheduling.Tasks
             this.Previous[this.Previous.IndexOf(parking)] = previous.Previous;
 
             // update state
-            if (!this.skippedparkings.ContainsKey(parking.Train))
+            if (
+                !this.skippedparkings.TryGetValue(
+                    parking.Train,
+                    out Stack<ParkingTask>? parkingStack
+                )
+            )
             {
-                this.skippedparkings[parking.Train] = new Stack<ParkingTask>();
+                parkingStack = new Stack<ParkingTask>();
+                this.skippedparkings[parking.Train] = parkingStack;
                 this.routetoskippedparkings[parking.Train] = new Stack<RoutingTask>();
             }
 
-            this.skippedparkings[parking.Train].Push(parking);
+            parkingStack.Push(parking);
             this.routetoskippedparkings[parking.Train].Push(previous);
         }
 

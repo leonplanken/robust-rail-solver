@@ -376,11 +376,13 @@ namespace ServiceSiteScheduling.Solutions
             int childMovementID
         )
         {
-            if (!MovementLinks.ContainsKey(parentMovementID))
+            if (!MovementLinks.TryGetValue(parentMovementID, out List<int>? link))
             {
-                MovementLinks[parentMovementID] = [];
+                link = [];
+                MovementLinks[parentMovementID] = link;
             }
-            MovementLinks[parentMovementID].Add(childMovementID);
+
+            link.Add(childMovementID);
         }
 
         // Links the previous POSTrackTask -@parentPOSTrackTaskID- this POSTrackTask was conflicting since it previously used the same infrastructure/train unit
@@ -392,11 +394,13 @@ namespace ServiceSiteScheduling.Solutions
             int childPOSTrackTaskID
         )
         {
-            if (!POSTrackTaskLinks.ContainsKey(parentPOSTrackTaskID))
+            if (!POSTrackTaskLinks.TryGetValue(parentPOSTrackTaskID, out List<int>? link))
             {
-                POSTrackTaskLinks[parentPOSTrackTaskID] = [];
+                link = [];
+                POSTrackTaskLinks[parentPOSTrackTaskID] = link;
             }
-            POSTrackTaskLinks[parentPOSTrackTaskID].Add(childPOSTrackTaskID);
+
+            link.Add(childPOSTrackTaskID);
         }
 
         public void MergeMovements(
