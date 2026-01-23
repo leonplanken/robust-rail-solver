@@ -5,7 +5,7 @@ namespace ServiceSiteScheduling.Trains
     class TrainUnit : IEquatable<TrainUnit>
     {
         public string Name { get; set; }
-        public int Index { get; private set; }
+        public readonly int Index;
         public TrainType Type { get; private set; }
         public Service[] RequiredServices { get; set; }
         public Utilities.Time[] ServiceDurations { get; private set; }
@@ -42,7 +42,7 @@ namespace ServiceSiteScheduling.Trains
 
         public override int GetHashCode()
         {
-            throw new NotImplementedException();
+            return this.Index.GetHashCode();
         }
 
         public override string ToString()

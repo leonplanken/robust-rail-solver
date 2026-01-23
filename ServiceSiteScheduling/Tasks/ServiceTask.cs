@@ -14,8 +14,8 @@
                 return this.minimumDuration;
             }
         }
-        public ServiceTask PreviousServiceTask { get; set; }
-        public ServiceTask NextServiceTask { get; set; }
+        public ServiceTask? PreviousServiceTask { get; set; }
+        public ServiceTask? NextServiceTask { get; set; }
         public Servicing.ServiceResource Resource { get; set; }
         public bool IsRemoved { get; private set; } = false;
 
@@ -33,7 +33,7 @@
             this.Resource = resource;
         }
 
-        public void SwapBefore(ServiceTask position, Servicing.ServiceResource resource)
+        public void SwapBefore(ServiceTask? position, Servicing.ServiceResource resource)
         {
             if (this == position)
                 return;
@@ -58,7 +58,7 @@
                 {
                     if (position.Resource == resource)
                     {
-                        ServiceTask previous = position.PreviousServiceTask;
+                        ServiceTask? previous = position.PreviousServiceTask;
                         position.PreviousServiceTask = this;
                         this.NextServiceTask = position;
                         this.PreviousServiceTask = previous;
@@ -70,8 +70,8 @@
                 }
             }
 
-            if (this.Train.Equals(position.Train))
-                sameTrainSwap(position, this);
+            if (this.Train.Equals(position?.Train))
+                SameTrainSwap(position, this);
 
             this.IsRemoved = false;
         }
@@ -101,7 +101,7 @@
                 {
                     if (position.Resource == resource)
                     {
-                        ServiceTask next = position.NextServiceTask;
+                        ServiceTask? next = position.NextServiceTask;
                         position.NextServiceTask = this;
                         this.PreviousServiceTask = position;
                         this.NextServiceTask = next;
@@ -114,7 +114,7 @@
             }
 
             if (this.Train.Equals(position?.Train))
-                sameTrainSwap(this, position);
+                SameTrainSwap(this, position);
 
             this.IsRemoved = false;
         }
@@ -139,12 +139,13 @@
             this.NextServiceTask = this.PreviousServiceTask = null;
         }
 
-        private static void sameTrainSwap(ServiceTask first, ServiceTask second)
+        private static void SameTrainSwap(ServiceTask first, ServiceTask second)
         {
-            RoutingTask firstprev = first.Previous as RoutingTask,
-                firstnext = first.Next as RoutingTask,
-                secondprev = second.Previous as RoutingTask,
-                secondnext = second.Next as RoutingTask;
+            // LP FIXME: do we have any guarantee that first.Next and second.Next are not DepartureRoutingTask_s?
+            RoutingTask firstprev = (RoutingTask)first.Previous,
+                firstnext = (RoutingTask)first.Next,
+                secondprev = (RoutingTask)second.Previous,
+                secondnext = (RoutingTask)second.Next;
 
             foreach (var task in firstnext.Next)
                 task.Previous = secondnext;
