@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ServiceSiteScheduling.Solutions;
-using ServiceSiteScheduling.Tasks;
 using ServiceSiteScheduling.Utilities;
 
 namespace ServiceSiteScheduling.LocalSearch

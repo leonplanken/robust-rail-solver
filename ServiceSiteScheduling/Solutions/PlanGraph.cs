@@ -734,7 +734,7 @@ namespace ServiceSiteScheduling.Solutions
                         units.AddRange(train.Units);
                         train.Units = units;
                     }
-                    train.UnitBits.Or(tracktask.Train.UnitBits);
+                    train.UnitBits |= tracktask.Train.UnitBits;
                 }
 
                 last = tracktask;

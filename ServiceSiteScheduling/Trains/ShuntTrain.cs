@@ -16,7 +16,7 @@ namespace ServiceSiteScheduling.Trains
         {
             get { return this.Units[this.Units.Count - 1]; }
         }
-        public BitSet UnitBits { get; private set; }
+        public BitSet UnitBits { get; set; }
         public Track[] ParkingLocations { get; set; }
         public Track[] RoutingLocations { get; set; }
 
@@ -84,11 +84,9 @@ namespace ServiceSiteScheduling.Trains
             this.RoutingLocations = ProblemInstance.Current.Tracks;
             // Do something with it
 
-            BitSet unitBits = new(ProblemInstance.Current.TrainUnits.Length);
+            this.UnitBits = new BitSet(ProblemInstance.Current.TrainUnits.Length);
             foreach (var unit in units)
-                unitBits[unit.Index] = true;
-
-            this.UnitBits = new FrozenBitSet(unitBits);
+                this.UnitBits[unit.Index] = true;
 
             if (this.InStanding)
             {
@@ -171,7 +169,7 @@ namespace ServiceSiteScheduling.Trains
             return this.UnitBits.GetHashCode();
         }
 
-        public bool Equals(ShuntTrain? other)
+        public bool Equals(ShuntTrain other)
         {
             if (
                 other == null

@@ -5,8 +5,8 @@ namespace ServiceSiteScheduling.Utilities
     class BitSet : IEnumerable, IEquatable<BitSet>
     {
         #region Private Variables
-        private protected readonly ulong[] elements;
-        private readonly int length;
+        private ulong[] elements;
+        private int length;
 
         private const int elementSize = 8 * sizeof(long);
         private readonly ulong mask = ulong.MaxValue;
@@ -51,7 +51,7 @@ namespace ServiceSiteScheduling.Utilities
         #endregion
 
         #region Public Properties
-        public virtual bool this[int i]
+        public bool this[int i]
         {
             get
             {
@@ -114,7 +114,7 @@ namespace ServiceSiteScheduling.Utilities
         #endregion
 
         #region Public Methods
-        public override bool Equals(object? obj)
+        public override bool Equals(object obj)
         {
             if (obj is not BitSet other)
                 return false;
@@ -124,7 +124,13 @@ namespace ServiceSiteScheduling.Utilities
 
         public override int GetHashCode()
         {
-            throw new NotImplementedException("Refusing to generate hash code for mutable object");
+            unchecked
+            {
+                int hash = 29;
+                for (int i = 0; i < this.elements.Length; i++)
+                    hash = hash * 486187739 + this.elements[i].GetHashCode();
+                return hash;
+            }
         }
 
         public override string ToString()
@@ -136,7 +142,7 @@ namespace ServiceSiteScheduling.Utilities
             return new string(array);
         }
 
-        public virtual BitSet And(BitSet b)
+        public BitSet And(BitSet b)
         {
             this.changed = true;
             for (int i = 0; i < this.elements.Length; i++)
@@ -144,7 +150,7 @@ namespace ServiceSiteScheduling.Utilities
             return this;
         }
 
-        public virtual BitSet Or(BitSet b)
+        public BitSet Or(BitSet b)
         {
             this.changed = true;
             for (int i = 0; i < this.elements.Length; i++)
@@ -152,9 +158,8 @@ namespace ServiceSiteScheduling.Utilities
             return this;
         }
 
-        public virtual BitSet Or(ulong value, int size, int offset)
+        public BitSet Or(ulong value, int size, int offset)
         {
-            // FIXME LP this.changed should be set
             // Clean the value
             value = (value << (elementSize - size)) >> (elementSize - size);
 
@@ -165,7 +170,7 @@ namespace ServiceSiteScheduling.Utilities
             return this;
         }
 
-        public virtual BitSet Xor(BitSet b)
+        public BitSet Xor(BitSet b)
         {
             this.changed = true;
             for (int i = 0; i < this.elements.Length; i++)
@@ -173,7 +178,7 @@ namespace ServiceSiteScheduling.Utilities
             return this;
         }
 
-        public virtual BitSet Exclude(BitSet b)
+        public BitSet Exclude(BitSet b)
         {
             this.changed = true;
             for (int i = 0; i < this.elements.Length; i++)
@@ -181,7 +186,7 @@ namespace ServiceSiteScheduling.Utilities
             return this;
         }
 
-        public virtual BitSet Not()
+        public BitSet Not()
         {
             this.count = this.length - this.count;
 
@@ -215,9 +220,8 @@ namespace ServiceSiteScheduling.Utilities
             return true;
         }
 
-        public virtual BitSet Clear()
+        public BitSet Clear()
         {
-            // FIXME LP this.count should be set to 0
             for (int i = 0; i < this.elements.Length; i++)
                 this.elements[i] = 0;
             return this;
