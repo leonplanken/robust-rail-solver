@@ -73,11 +73,6 @@ namespace ServiceSiteScheduling.Routing
                 {
                     var w = this.Vertices[j];
 
-                    if (v.ToString() == "Spoor906aBA" && w.SuperVertex.Track.CanPark)
-                    {
-                        int x = 25;
-                    }
-
                     var route = this.Dijkstra(train, w, v, w.TrackSide, false);
 
                     this.ReversalCount[i][j] = route.TotalReversals;

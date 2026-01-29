@@ -13,7 +13,7 @@ namespace ServiceSiteScheduling.Solutions
         public ArrivalTask[] ArrivalTasks { get; private set; }
 
         public List<Trains.TrainUnit> ListOfTrainUnits { get; set; }
-        DepartureTask[] DepartureTasks;
+        DepartureTask[] DepartureTasks; // FIXME This became an unreferenced field in commit 4917b23e, 2024-11-22
 
         public ArrivalTask FirstArrival
         {
@@ -394,7 +394,7 @@ namespace ServiceSiteScheduling.Solutions
             int childPOSTrackTaskID
         )
         {
-            if (!POSTrackTaskLinks.TryGetValue(parentPOSTrackTaskID, out List<int>? link))
+            if (!POSTrackTaskLinks.TryGetValue(parentPOSTrackTaskID, out List<int> link))
             {
                 link = [];
                 POSTrackTaskLinks[parentPOSTrackTaskID] = link;
@@ -524,9 +524,6 @@ namespace ServiceSiteScheduling.Solutions
             // the TrainUnitsOccupiedByPOSTrackTaskID is initialized with 999, meaning that there in no valid POSTrackTask ID
             // assigned yet to given train unit
             Dictionary<Trains.TrainUnit, int> TrainUnitsOccupiedByPOSTrackTaskID = [];
-
-            // Init dictionary for infrastructures occupied by moves
-            bool Test = true;
 
             // Initialize dictionaries
             foreach (KeyValuePair<ulong, Infrastructure> infra in DictOfInfrastructure)
