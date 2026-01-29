@@ -1,4 +1,6 @@
-﻿using ServiceSiteScheduling.Servicing;
+﻿#nullable enable
+
+using ServiceSiteScheduling.Servicing;
 
 namespace ServiceSiteScheduling.Trains
 {

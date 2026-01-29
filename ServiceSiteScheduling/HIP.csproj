@@ -9,7 +9,7 @@
     <AssemblyName>ServiceSiteScheduling</AssemblyName>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿#nullable enable
+
+using System.Collections;
 
 namespace ServiceSiteScheduling.Utilities
 {
@@ -114,7 +116,7 @@ namespace ServiceSiteScheduling.Utilities
         #endregion
 
         #region Public Methods
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is not BitSet other)
                 return false;

@@ -1,4 +1,6 @@
-﻿using ServiceSiteScheduling.Utilities;
+﻿#nullable enable
+
+using ServiceSiteScheduling.Utilities;
 
 namespace ServiceSiteScheduling.Tasks
 {

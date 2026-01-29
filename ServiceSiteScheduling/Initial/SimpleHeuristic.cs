@@ -189,7 +189,7 @@ namespace ServiceSiteScheduling.Initial
                 );
                 Time releasedate = previousroute.Start;
                 Time duedate = departuretime - partial_shunttrain.ServiceDuration;
-                ServiceTask? first = null;
+                ServiceTask first = null;
 
                 var trainservicetypes = partial_shunttrain
                     .Units.Aggregate(
@@ -304,7 +304,7 @@ namespace ServiceSiteScheduling.Initial
                     selectedindex--;
                     selected = candidates[selectedindex];
                 }
-                ServiceResource? resource = null;
+                ServiceResource resource = null;
                 Time t = int.MaxValue;
 
                 // Find the machine with earliest completion time

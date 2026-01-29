@@ -1,4 +1,6 @@
-﻿using ServiceSiteScheduling.TrackParts;
+﻿#nullable enable
+
+using ServiceSiteScheduling.TrackParts;
 using ServiceSiteScheduling.Trains;
 using ServiceSiteScheduling.Utilities;
 

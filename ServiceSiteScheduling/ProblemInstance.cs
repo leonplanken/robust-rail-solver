@@ -363,7 +363,7 @@ namespace ServiceSiteScheduling
                 var facilitytracks = new List<Track>();
                 foreach (var part in facility.RelatedTrackParts)
                 {
-                    if (infrastructuremap.TryGetValue(part, out Infrastructure? infra))
+                    if (infrastructuremap.TryGetValue(part, out Infrastructure infra))
                     {
                         var track = infra as Track;
                         facilitytracks.Add(track);
@@ -390,7 +390,7 @@ namespace ServiceSiteScheduling
 
                 foreach (var type in facility.TaskTypes)
                 {
-                    if (taskmap.TryGetValue(type, out ServiceType? service))
+                    if (taskmap.TryGetValue(type, out ServiceType service))
                     {
                         foreach (var track in facilitytracks)
                             service.Tracks.Add(track);
@@ -441,7 +441,7 @@ namespace ServiceSiteScheduling
                 var currenttrainunits = new List<TrainUnit>();
                 foreach (var unit in arrivaltrain.Members)
                 {
-                    if (!traintypemap.TryGetValue(unit.TrainUnit.Type, out TrainType? type))
+                    if (!traintypemap.TryGetValue(unit.TrainUnit.Type, out TrainType type))
                     {
                         var name =
                             $"{unit.TrainUnit.Type.DisplayName}-{unit.TrainUnit.Type.Carriages}";
@@ -535,7 +535,7 @@ namespace ServiceSiteScheduling
                     var currenttrainunits = new List<TrainUnit>();
                     foreach (var unit in arrivaltrain.Members)
                     {
-                        if (!traintypemap.TryGetValue(unit.TrainUnit.Type, out TrainType? type))
+                        if (!traintypemap.TryGetValue(unit.TrainUnit.Type, out TrainType type))
                         {
                             var name =
                                 $"{unit.TrainUnit.Type.DisplayName}-{unit.TrainUnit.Type.Carriages}";

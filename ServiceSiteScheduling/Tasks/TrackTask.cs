@@ -1,4 +1,6 @@
-﻿namespace ServiceSiteScheduling.Tasks
+﻿#nullable enable
+
+namespace ServiceSiteScheduling.Tasks
 {
     public enum TrackTaskType
     {

@@ -376,7 +376,7 @@ namespace ServiceSiteScheduling.Solutions
             int childMovementID
         )
         {
-            if (!MovementLinks.TryGetValue(parentMovementID, out List<int>? link))
+            if (!MovementLinks.TryGetValue(parentMovementID, out List<int> link))
             {
                 link = [];
                 MovementLinks[parentMovementID] = link;
