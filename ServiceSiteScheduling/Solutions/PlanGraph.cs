@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf;
+using Microsoft.Extensions.Logging;
 using ServiceSiteScheduling.Matching;
 using ServiceSiteScheduling.Parking;
 using ServiceSiteScheduling.Routing;
@@ -11,6 +12,8 @@ namespace ServiceSiteScheduling.Solutions
 {
     class PlanGraph
     {
+        static readonly ILogger logger = Logging.GetLogger();
+
         public ShuntTrainUnit[] ShuntUnits { get; private set; }
 
         TrackOccupation[] TrackOccupations;
@@ -211,6 +214,7 @@ namespace ServiceSiteScheduling.Solutions
 
         public static void ComputeTime(MoveTask start, Time time)
         {
+            logger.LogInformation("ComputeTime {start}, {time}", start, time);
             MoveTask move = start;
             while (move != null)
             {
