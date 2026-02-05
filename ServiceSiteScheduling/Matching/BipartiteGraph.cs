@@ -1,4 +1,6 @@
-﻿namespace ServiceSiteScheduling.Matching
+﻿#nullable enable
+
+namespace ServiceSiteScheduling.Matching
 {
     class BipartiteGraph
     {
@@ -11,7 +13,7 @@
         private ArrivalVertex[] matchableArrivals;
         private int infinity;
         private ArrivalVertex dummy;
-        private DepartureVertex[] arrivalmatch;
+        private DepartureVertex?[] arrivalmatch;
         private ArrivalVertex[] departurematch;
         private Queue<ArrivalVertex> queue;
 
@@ -171,7 +173,7 @@
             int size = this.Arrivals.Length;
             this.distance = new int[size + 1];
             this.infinity = size + 1;
-            this.dummy = new ArrivalVertex(size, null, null);
+            this.dummy = new ArrivalVertex(size, null!, null!);
             this.queue = new Queue<ArrivalVertex>();
             this.arrivalmatch = new DepartureVertex[size + 1];
             this.departurematch = new ArrivalVertex[size + 1];
@@ -288,8 +290,8 @@
                 if (iteration++ > iterations)
                     break;
 
-                ArrivalVertex first = null,
-                    second = null;
+                ArrivalVertex first,
+                    second;
 
                 var set = arrivalsbytype.Values.ElementAt(random.Next(arrivalsbytype.Count));
                 first = set[random.Next(set.Count)];
@@ -363,8 +365,12 @@
             Dictionary<Train, List<Part>> trainparts = [];
             foreach (var matchpart in partsmatching)
             {
-                List<Part> parts = null;
-                if (!trainparts.TryGetValue(matchpart.First().Departure.Train, out parts))
+                if (
+                    !trainparts.TryGetValue(
+                        matchpart.First().Departure.Train,
+                        out List<Part>? parts
+                    )
+                )
                     trainparts[matchpart.First().Departure.Train] = parts = [];
                 var part = new Part(matchpart.Select(m => m.Departure.Unit).ToArray());
                 parts.Add(part);

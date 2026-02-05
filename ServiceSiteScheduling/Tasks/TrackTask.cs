@@ -13,7 +13,7 @@ namespace ServiceSiteScheduling.Tasks
     abstract class TrackTask
     {
         public Trains.ShuntTrain Train { get; set; }
-        public TrackParts.Track Track { get; set; }
+        public virtual TrackParts.Track Track { get; set; }
         public MoveTask Previous { get; set; }
         public MoveTask Next { get; set; }
         public Utilities.Time Start { get; set; }

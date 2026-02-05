@@ -117,8 +117,7 @@ namespace ServiceSiteScheduling.Solutions
         public SolutionCost ComputeModel(MoveTask recomputestart, MoveTask recomputeend)
         {
             for (int i = 0; i < this.TrackOccupations.Length; i++)
-                if (this.TrackOccupations[i] != null)
-                    this.TrackOccupations[i].Reset();
+                this.TrackOccupations[i]?.Reset();
 
             this.ComputeLocation(this.First, recomputestart, recomputeend);
             ComputeTime(recomputestart, recomputestart.PreviousMove?.End ?? 0);
@@ -214,7 +213,6 @@ namespace ServiceSiteScheduling.Solutions
 
         public static void ComputeTime(MoveTask start, Time time)
         {
-            logger.LogInformation("ComputeTime {start}, {time}", start, time);
             MoveTask move = start;
             while (move != null)
             {
@@ -230,10 +228,20 @@ namespace ServiceSiteScheduling.Solutions
                         if (arrival.ArrivalSide == routing.FromSide)
                             routing.Start += routing.Train.ReversalDuration;
                         if (routing.Start < time && !arrival.Track.CanPark)
-                            // throw new InvalidOperationException
-                            Console.WriteLine(
-                                $"Forced shuntingunit {routing.Train} to wait after arriving at {routing.Start} because previous routing task {routing.Previous} ends at time {time}, but arrival track {arrival.Track} cannot be used for parking."
+                        {
+                            logger.LogDebug(
+                                ""
+                                    + "Forced shuntingunit {routing.Train} to wait after arriving at {routing.Start}, "
+                                    + "because previous routing task {routing.Previous} ends at time {time}, but arrival "
+                                    + "track {arrival.Track} cannot be used for parking.",
+                                routing.Train,
+                                routing.Start,
+                                routing.Previous,
+                                time,
+                                arrival.Track
                             );
+                            //throw new InvalidOperationException(txt);
+                        }
                     }
                     else if (routing.Previous.TaskType == TrackTaskType.Service)
                         routing.Start =
@@ -575,6 +583,12 @@ namespace ServiceSiteScheduling.Solutions
                         )
                 )
                 {
+                    logger.LogInformation(
+                        "Arrival delay: {end} > {schedule} for train {train}",
+                        arrival.End,
+                        arrival.ScheduledTime,
+                        arrival.Train
+                    );
                     cost.ArrivalDelays++;
                     cost.ArrivalDelaySum += arrival.End - arrival.ScheduledTime;
                     cost.ProblemTrains |= arrival.Train.UnitBits;
@@ -1354,6 +1368,15 @@ namespace ServiceSiteScheduling.Solutions
                     trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Wait;
                     trackaction.StartTime = (ulong)task.Start;
                     trackaction.EndTime = (ulong)endtime;
+                    if (task.Start == endtime)
+                    {
+                        logger.LogWarning("zero-length parking");
+                    }
+                    else
+                    {
+                        logger.LogWarning("positive parking");
+                    }
+
                     break;
                 case TrackTaskType.Service:
                     var service = (ServiceTask)task;
