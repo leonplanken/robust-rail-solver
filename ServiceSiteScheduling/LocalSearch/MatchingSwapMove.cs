@@ -1,5 +1,5 @@
-﻿using ServiceSiteScheduling.Solutions;
-using ServiceSiteScheduling.Matching;
+﻿using ServiceSiteScheduling.Matching;
+using ServiceSiteScheduling.Solutions;
 using ServiceSiteScheduling.Utilities;
 
 namespace ServiceSiteScheduling.LocalSearch
@@ -9,15 +9,18 @@ namespace ServiceSiteScheduling.LocalSearch
         public Part First { get; private set; }
         public Part Second { get; private set; }
 
-        private Tasks.MoveTask firstprevious, secondprevious;
+        private Tasks.MoveTask firstprevious,
+            secondprevious;
         private List<Tasks.ParkingTask> parking;
-        private bool firstskipped, secondskipped;
+        private bool firstskipped,
+            secondskipped;
 
-        public MatchingSwapMove(PlanGraph graph, Part first, Part second) : base(graph)
+        public MatchingSwapMove(PlanGraph graph, Part first, Part second)
+            : base(graph)
         {
             this.First = first;
             this.Second = second;
-            this.parking = new List<Tasks.ParkingTask>();
+            this.parking = [];
 
             this.firstprevious = this.First.Train.Routing.PreviousMove;
             this.secondprevious = this.Second.Train.Routing.PreviousMove;
@@ -25,8 +28,12 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public override SolutionCost Execute()
         {
-            var firsttask = this.First.Train.Routing.GetPrevious(t => t.Train.UnitBits[this.First.Units[0].Index]).First();
-            var secondtask = this.Second.Train.Routing.GetPrevious(t => t.Train.UnitBits[this.Second.Units[0].Index]).First();
+            var firsttask = this
+                .First.Train.Routing.GetPrevious(t => t.Train.UnitBits[this.First.Units[0].Index])
+                .First();
+            var secondtask = this
+                .Second.Train.Routing.GetPrevious(t => t.Train.UnitBits[this.Second.Units[0].Index])
+                .First();
 
             var firstservice = firsttask as Tasks.ServiceTask;
             if (firstservice != null)
@@ -49,7 +56,11 @@ namespace ServiceSiteScheduling.LocalSearch
             this.swap(firsttask, secondtask);
 
             // Checking for resource conflicts
-            if (firstservice != null && (firstservice.NextServiceTask?.Previous.MoveOrder ?? double.PositiveInfinity) > this.Second.Train.Routing.MoveOrder)
+            if (
+                firstservice != null
+                && (firstservice.NextServiceTask?.Previous.MoveOrder ?? double.PositiveInfinity)
+                    > this.Second.Train.Routing.MoveOrder
+            )
             {
                 var park = firsttask as Tasks.ParkingTask;
                 park.Next.SkipParking(park);
@@ -68,8 +79,14 @@ namespace ServiceSiteScheduling.LocalSearch
             {
                 foreach (var task in this.First.Train.Routing.Previous)
                 {
-                    var otherservice = task as Tasks.ServiceTask;
-                    if (otherservice != null && task != secondtask && (otherservice.NextServiceTask?.Previous.MoveOrder ?? double.PositiveInfinity) < this.First.Train.Routing.MoveOrder)
+                    if (
+                        task is Tasks.ServiceTask otherservice
+                        && task != secondtask
+                        && (
+                            otherservice.NextServiceTask?.Previous.MoveOrder
+                            ?? double.PositiveInfinity
+                        ) < this.First.Train.Routing.MoveOrder
+                    )
                     {
                         var park = this.First.Train.Routing.GetSkippedParking(task.Train);
                         this.parking.Add(park);
@@ -81,7 +98,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
             this.First.Train.Routing.UpdatePreviousTaskOrder();
             this.Second.Train.Routing.UpdatePreviousTaskOrder();
-            
+
             return base.Execute();
         }
 
@@ -90,19 +107,21 @@ namespace ServiceSiteScheduling.LocalSearch
             foreach (var p in this.parking)
                 this.First.Train.Routing.SkipParking(p);
 
-            var firsttask = this.Second.Train.Routing.GetPrevious(t => t.Train.UnitBits[this.Second.Units[0].Index]).First();
-            var secondtask = this.First.Train.Routing.GetPrevious(t => t.Train.UnitBits[this.First.Units[0].Index]).First();
+            var firsttask = this
+                .Second.Train.Routing.GetPrevious(t => t.Train.UnitBits[this.Second.Units[0].Index])
+                .First();
+            var secondtask = this
+                .First.Train.Routing.GetPrevious(t => t.Train.UnitBits[this.First.Units[0].Index])
+                .First();
 
-            var firstservice = firsttask as Tasks.ServiceTask;
-            if (firstservice != null)
+            if (firsttask is Tasks.ServiceTask firstservice)
             {
                 var park = firstservice.Next.GetSkippedParking(firstservice.Train);
                 firstservice.Next.UnskipParking(firstservice.Train);
                 firsttask = park;
             }
 
-            var secondservice = secondtask as Tasks.ServiceTask;
-            if (secondservice != null)
+            if (secondtask is Tasks.ServiceTask secondservice)
             {
                 var park = secondservice.Next.GetSkippedParking(secondservice.Train);
                 secondservice.Next.UnskipParking(secondservice.Train);
@@ -127,11 +146,13 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public override bool IsSimilarMove(LocalSearchMove move)
         {
-            var matchingmove = move as MatchingSwapMove;
-            if (matchingmove == null)
+            if (move is not MatchingSwapMove matchingmove)
                 return false;
 
-            return this.First == matchingmove.First || this.Second == matchingmove.First || this.First == matchingmove.Second || this.Second == matchingmove.Second;
+            return this.First == matchingmove.First
+                || this.Second == matchingmove.First
+                || this.First == matchingmove.Second
+                || this.Second == matchingmove.Second;
         }
 
         public override string ToString()
@@ -155,7 +176,8 @@ namespace ServiceSiteScheduling.LocalSearch
             // swap
             for (int i = 0; i < this.First.Units.Length; i++)
             {
-                Unit firstunit = this.First.Units[i], secondunit = this.Second.Units[i];
+                Unit firstunit = this.First.Units[i],
+                    secondunit = this.Second.Units[i];
                 int temp = firstunit.Index;
                 firstunit.Index = secondunit.Index;
                 secondunit.Index = temp;
@@ -173,7 +195,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public static IList<MatchingSwapMove> GetMoves(PlanGraph graph)
         {
-            List<MatchingSwapMove> moves = new List<MatchingSwapMove>();
+            List<MatchingSwapMove> moves = [];
 
             foreach (var departureparts in graph.Matching.DeparturePartsByType)
             {
@@ -189,10 +211,16 @@ namespace ServiceSiteScheduling.LocalSearch
                         if (part2.IsFixed)
                             continue;
 
-                        if (Math.Abs(part1.DepartureTrain.Time - part2.DepartureTrain.Time) > 4 * Time.Hour)
+                        if (
+                            Math.Abs(part1.DepartureTrain.Time - part2.DepartureTrain.Time)
+                            > 4 * Time.Hour
+                        )
                             continue;
 
-                        MatchingSwapMove move = part1.Train.Routing.MoveOrder < part2.Train.Routing.MoveOrder ? new MatchingSwapMove(graph, part1, part2) : new MatchingSwapMove(graph, part2, part1);
+                        MatchingSwapMove move =
+                            part1.Train.Routing.MoveOrder < part2.Train.Routing.MoveOrder
+                                ? new MatchingSwapMove(graph, part1, part2)
+                                : new MatchingSwapMove(graph, part2, part1);
                         moves.Add(move);
                     }
                 }

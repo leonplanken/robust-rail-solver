@@ -10,14 +10,16 @@ namespace ServiceSiteScheduling.Routing
         public List<Arc> Arcs { get; private set; }
 
         public Arc Previous;
-        public int Index, Distance;
-        public bool Discovered, Explored;
+        public int Index,
+            Distance;
+        public bool Discovered,
+            Explored;
 
         public Vertex(Side trackside, Side arrivalside)
         {
             this.TrackSide = trackside;
             this.ArrivalSide = arrivalside;
-            this.Arcs = new List<Arc>();
+            this.Arcs = [];
         }
 
         public override string ToString()

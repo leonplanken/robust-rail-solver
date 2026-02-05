@@ -16,7 +16,16 @@ namespace ServiceSiteScheduling.TrackParts
 
         public bool CanPark;
 
-        public Track(ulong id, string name, ServiceType[] services, int length, Side access, bool canpark, bool canreverse) : base(id, name)
+        public Track(
+            ulong id,
+            string name,
+            ServiceType[] services,
+            int length,
+            Side access,
+            bool canpark,
+            bool canreverse
+        )
+            : base(id, name)
         {
             this.Services = services;
             this.Length = length;
@@ -26,7 +35,15 @@ namespace ServiceSiteScheduling.TrackParts
             this.IsActive = canpark | canreverse;
         }
 
-        public Track(ulong id, string name, ServiceType service, int length, Side access, bool canpark, bool canreverse)
+        public Track(
+            ulong id,
+            string name,
+            ServiceType service,
+            int length,
+            Side access,
+            bool canpark,
+            bool canreverse
+        )
             : this(id, name, new ServiceType[1] { service }, length, access, canpark, canreverse)
         { }
 
@@ -42,8 +59,7 @@ namespace ServiceSiteScheduling.TrackParts
 
         public IList<TrackSwitchContainer> GetConnectionsAtSide(Side side)
         {
-            var path = new List<Infrastructure>();
-            path.Add(this);
+            var path = new List<Infrastructure> { this };
             if (side == Side.A)
                 return this.ASide.GetTracksConnectedTo(this, 0, path);
             if (side == Side.B)
@@ -60,18 +76,32 @@ namespace ServiceSiteScheduling.TrackParts
             throw new ArgumentException("Side is not valid");
         }
 
-        public override IList<TrackSwitchContainer> GetTracksConnectedTo(Infrastructure infrastructure, int switches, List<Infrastructure> path, bool ignoreInactive = true)
+        public override IList<TrackSwitchContainer> GetTracksConnectedTo(
+            Infrastructure infrastructure,
+            int switches,
+            List<Infrastructure> path,
+            bool ignoreInactive = true
+        )
         {
             if (infrastructure == this.ASide || infrastructure == this.BSide)
             {
                 path.Add(this);
                 IList<TrackSwitchContainer> result = null;
                 if (this.IsActive || !ignoreInactive)
-                    result = new TrackSwitchContainer[1] { new TrackSwitchContainer(this, switches, this.GetSide(infrastructure), path.ToArray()) };
+                    result = new TrackSwitchContainer[1]
+                    {
+                        new(this, switches, this.GetSide(infrastructure), path.ToArray()),
+                    };
                 else if (infrastructure == this.ASide)
-                    result = this.BSide == null ? new TrackSwitchContainer[0] : this.BSide.GetTracksConnectedTo(this, switches, path);
+                    result =
+                        this.BSide == null
+                            ? Array.Empty<TrackSwitchContainer>()
+                            : this.BSide.GetTracksConnectedTo(this, switches, path);
                 else
-                    result = this.ASide == null ? new TrackSwitchContainer[0] : this.ASide.GetTracksConnectedTo(this, switches, path);
+                    result =
+                        this.ASide == null
+                            ? Array.Empty<TrackSwitchContainer>()
+                            : this.ASide.GetTracksConnectedTo(this, switches, path);
                 path.RemoveAt(path.Count - 1);
                 return result;
             }
@@ -90,11 +120,11 @@ namespace ServiceSiteScheduling.TrackParts
         {
             this.ASide = A;
             this.BSide = B;
-            if (A != null && !(A is GateWay) && B != null && !(B is GateWay))
+            if (A != null && A is not GateWay && B != null && B is not GateWay)
                 this.Access = Side.Both;
-            else if (A != null && !(A is GateWay))
+            else if (A != null && A is not GateWay)
                 this.Access = Side.A;
-            else if (B != null && !(B is GateWay))
+            else if (B != null && B is not GateWay)
                 this.Access = Side.B;
             else
                 this.Access = Side.None;

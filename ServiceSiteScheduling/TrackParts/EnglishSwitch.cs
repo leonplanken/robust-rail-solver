@@ -1,11 +1,20 @@
-﻿
-namespace ServiceSiteScheduling.TrackParts
+﻿namespace ServiceSiteScheduling.TrackParts
 {
     class EnglishSwitch : Connection
     {
-        public EnglishSwitch(ulong id, string name) : base(id, name) { this.cost = 2; }
+        public EnglishSwitch(ulong id, string name)
+            : base(id, name)
+        {
+            this.cost = 2;
+        }
 
-        public EnglishSwitch(ulong id, string name, IList<Infrastructure> A, IList<Infrastructure> B) : base(id, name)
+        public EnglishSwitch(
+            ulong id,
+            string name,
+            IList<Infrastructure> A,
+            IList<Infrastructure> B
+        )
+            : base(id, name)
         {
             this.Connect(A, B);
         }

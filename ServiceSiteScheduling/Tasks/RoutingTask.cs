@@ -7,42 +7,94 @@ namespace ServiceSiteScheduling.Tasks
         public TrackTask Previous { get; set; }
         public List<TrackTask> Next { get; set; }
 
-        public override IList<TrackTask> AllPrevious { get { return new TrackTask[1] { this.Previous }; } }
-        public override IList<TrackTask> AllNext { get { return this.Next; } }
+        public override IList<TrackTask> AllPrevious
+        {
+            get { return new TrackTask[1] { this.Previous }; }
+        }
+        public override IList<TrackTask> AllNext
+        {
+            get { return this.Next; }
+        }
 
-        public override Time Duration { get { return (this.route?.Duration ?? 0) + (this.Next.Count - 1) * this.Train.Units[0].Type.SplitDuration; } }
-        public override int Crossings { get { return this.route?.Crossings ?? 0; } }
-        public override int DepartureCrossings { get { return this.route?.DepartureCrossings ?? 0; } }
-        public override int NumberOfRoutes { get { return (this.route?.Duration ?? 0) > 0 ? 1 : 0; } }
+        public override Time Duration
+        {
+            get
+            {
+                return (this.route?.Duration ?? 0)
+                    + (this.Next.Count - 1) * this.Train.Units[0].Type.SplitDuration;
+            }
+        }
+        public override int Crossings
+        {
+            get { return this.route?.Crossings ?? 0; }
+        }
+        public override int DepartureCrossings
+        {
+            get { return this.route?.DepartureCrossings ?? 0; }
+        }
+        public override int NumberOfRoutes
+        {
+            get { return (this.route?.Duration ?? 0) > 0 ? 1 : 0; }
+        }
 
-        public override Side FromSide { get { return this.route?.DepartureSide ?? null; } }
+        public override Side FromSide
+        {
+            get { return this.route?.DepartureSide ?? null; }
+        }
 
-        public override bool SkipsParking { get { return this.Previous.TaskType != TrackTaskType.Parking && this.Next.Any(task => task.TaskType != TrackTaskType.Parking); } }
+        public override bool SkipsParking
+        {
+            get
+            {
+                return this.Previous.TaskType != TrackTaskType.Parking
+                    && this.Next.Any(task => task.TaskType != TrackTaskType.Parking);
+            }
+        }
 
         public Stack<RoutingTask> RouteToSkippedParking { get; set; }
         public Stack<ParkingTask> SkippedParking { get; set; }
 
-        public bool IsSplit { get { return this.Next.Count > 1; } }
+        public bool IsSplit
+        {
+            get { return this.Next.Count > 1; }
+        }
 
-        public Routing.Route Route { get { return this.route; } }
+        public Routing.Route Route
+        {
+            get { return this.route; }
+        }
 
-        public override BitSet CrossingTracks { get { return this.route?.CrossingTracks ?? new BitSet(ProblemInstance.Current.Tracks.Length); } }
+        public override BitSet CrossingTracks
+        {
+            get
+            {
+                return this.route?.CrossingTracks
+                    ?? new BitSet(ProblemInstance.Current.Tracks.Length);
+            }
+        }
 
-        public override BitSet DepartureCrossingTracks { get {
-                return (this.route?.DepartureCrossings ?? 0) > 0 ? 
-                    new BitSet(ProblemInstance.Current.Tracks.Length, this.FromTrack.Index) :
-                    new BitSet(ProblemInstance.Current.Tracks.Length); } }
+        public override BitSet DepartureCrossingTracks
+        {
+            get
+            {
+                return (this.route?.DepartureCrossings ?? 0) > 0
+                    ? new BitSet(ProblemInstance.Current.Tracks.Length, this.FromTrack.Index)
+                    : new BitSet(ProblemInstance.Current.Tracks.Length);
+            }
+        }
 
         private Routing.Route route;
 
-        public RoutingTask(Trains.ShuntTrain train) : base(train, MoveTaskType.Standard)
+        public RoutingTask(Trains.ShuntTrain train)
+            : base(train, MoveTaskType.Standard)
         {
-            this.Next = new List<TrackTask>();
+            this.Next = [];
             this.RouteToSkippedParking = new Stack<RoutingTask>();
             this.SkippedParking = new Stack<ParkingTask>();
         }
 
-        public RoutingTask(RoutingTask routing) : base(routing.Train, MoveTaskType.Standard)
+        public RoutingTask(RoutingTask routing)
+            : base(routing.Train, MoveTaskType.Standard)
         {
             this.Previous = routing.Previous;
             this.Next = new List<TrackTask>(routing.Next);
@@ -69,7 +121,7 @@ namespace ServiceSiteScheduling.Tasks
             TrackTask previous = null;
 
             foreach (TrackTask task in this.Next)
-                if (!(task is DepartureTask))
+                if (task is not DepartureTask)
                     task.Train.Units.Clear();
 
             foreach (Trains.ShuntTrainUnit unit in this.Train)
@@ -79,7 +131,7 @@ namespace ServiceSiteScheduling.Tasks
                     var task = this.Next[i];
                     if (task.Train.UnitBits[unit.Index])
                     {
-                        if (!(task is DepartureTask))
+                        if (task is not DepartureTask)
                             task.Train.Units.Add(unit);
                         if (previous != task)
                         {
@@ -105,7 +157,8 @@ namespace ServiceSiteScheduling.Tasks
 
         public string ToRouteString()
         {
-            return this.route.ToString() + (this.route.Crossings + this.route.DepartureCrossings > 0 ? " <----- " : "");
+            return this.route.ToString()
+                + (this.route.Crossings + this.route.DepartureCrossings > 0 ? " <----- " : "");
         }
 
         public override bool IsParkingSkipped(Trains.ShuntTrain train)
@@ -169,7 +222,9 @@ namespace ServiceSiteScheduling.Tasks
 
         public override IEnumerable<TrackTask> GetPrevious(Func<TrackTask, bool> selector)
         {
-            return selector(this.Previous) ? new TrackTask[1] { this.Previous } : new TrackTask[0];
+            return selector(this.Previous)
+                ? new TrackTask[1] { this.Previous }
+                : Array.Empty<TrackTask>();
         }
 
         public override IEnumerable<TrackTask> GetNext(Func<TrackTask, bool> selector)

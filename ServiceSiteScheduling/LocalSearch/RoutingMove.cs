@@ -4,13 +4,12 @@ namespace ServiceSiteScheduling.LocalSearch
 {
     abstract class RoutingMove : LocalSearchMove
     {
-        public RoutingMove(PlanGraph graph) : base(graph)
-        {
-        }
+        public RoutingMove(PlanGraph graph)
+            : base(graph) { }
 
         public static IList<RoutingMove> GetMoves(PlanGraph graph)
         {
-            List<RoutingMove> moves = new List<RoutingMove>();
+            List<RoutingMove> moves = [];
 
             Tasks.MoveTask selected = graph.First;
 
@@ -20,7 +19,7 @@ namespace ServiceSiteScheduling.LocalSearch
                 var position = selected.PreviousMove;
                 while (RoutingShiftMove.Allowed(position, selected))
                 {
-                    RoutingShiftMove move = new RoutingShiftMove(graph, selected, position, true);
+                    RoutingShiftMove move = new(graph, selected, position, true);
                     moves.Add(move);
 
                     if (selected.Train.Equals(position.Train))
@@ -31,7 +30,11 @@ namespace ServiceSiteScheduling.LocalSearch
                 // Check merge
                 if (RoutingMergeMove.Allowed(position, selected))
                 {
-                    RoutingMergeMove move = new RoutingMergeMove(graph, position.AllNext.First() as Tasks.ParkingTask, false);
+                    RoutingMergeMove move = new(
+                        graph,
+                        position.AllNext.First() as Tasks.ParkingTask,
+                        false
+                    );
                     moves.Add(move);
                 }
 
@@ -39,7 +42,7 @@ namespace ServiceSiteScheduling.LocalSearch
                 position = selected.NextMove;
                 while (RoutingShiftMove.Allowed(selected, position))
                 {
-                    RoutingShiftMove move = new RoutingShiftMove(graph, selected, position, false);
+                    RoutingShiftMove move = new(graph, selected, position, false);
                     moves.Add(move);
 
                     if (selected.Train.Equals(position.Train))
@@ -50,7 +53,11 @@ namespace ServiceSiteScheduling.LocalSearch
                 // Check merge
                 if (RoutingMergeMove.Allowed(selected, position))
                 {
-                    RoutingMergeMove move = new RoutingMergeMove(graph, selected.AllNext.First() as Tasks.ParkingTask, true);
+                    RoutingMergeMove move = new(
+                        graph,
+                        selected.AllNext.First() as Tasks.ParkingTask,
+                        true
+                    );
                     moves.Add(move);
                 }
 

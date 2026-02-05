@@ -14,10 +14,16 @@ defaults:
     working-directory: ./ServiceSiteScheduling
 
 jobs:
-  build:
-
+  check_formatting:
     runs-on: ubuntu-latest
-
+    name: Check Formatting
+    steps:
+    - uses: actions/checkout@v4
+    - run: |
+        dotnet tool restore
+        dotnet csharpier check .
+  build:
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Setup .NET

@@ -1,5 +1,4 @@
-﻿
-namespace ServiceSiteScheduling.Servicing
+﻿namespace ServiceSiteScheduling.Servicing
 {
     class ServiceResource
     {

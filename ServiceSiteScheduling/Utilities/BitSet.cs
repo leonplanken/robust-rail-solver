@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿#nullable enable
+
+using System.Collections;
 
 namespace ServiceSiteScheduling.Utilities
 {
@@ -26,7 +28,8 @@ namespace ServiceSiteScheduling.Utilities
                 this.mask = ulong.MaxValue >> (elementSize - remainder);
         }
 
-        public BitSet(int length, int index) : this(length)
+        public BitSet(int length, int index)
+            : this(length)
         {
             this[index] = true;
             this.count = 1;
@@ -42,7 +45,8 @@ namespace ServiceSiteScheduling.Utilities
             this.count = b.count;
         }
 
-        public BitSet(int length, ulong[] bits) : this(length)
+        public BitSet(int length, ulong[] bits)
+            : this(length)
         {
             Array.Copy(bits, this.elements, bits.Length);
         }
@@ -97,8 +101,13 @@ namespace ServiceSiteScheduling.Utilities
                 {
                     ulong element = this.elements[i];
                     element = element - ((element >> 1) & 0x5555555555555555UL);
-                    element = (element & 0x3333333333333333UL) + ((element >> 2) & 0x3333333333333333UL);
-                    this.count += (int)(unchecked(((element + (element >> 4)) & 0xF0F0F0F0F0F0F0FUL) * 0x101010101010101UL) >> 56);
+                    element =
+                        (element & 0x3333333333333333UL) + ((element >> 2) & 0x3333333333333333UL);
+                    this.count += (int)(
+                        unchecked(
+                            ((element + (element >> 4)) & 0xF0F0F0F0F0F0F0FUL) * 0x101010101010101UL
+                        ) >> 56
+                    );
                 }
                 this.changed = false;
                 return this.count;
@@ -107,10 +116,9 @@ namespace ServiceSiteScheduling.Utilities
         #endregion
 
         #region Public Methods
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            BitSet other = obj as BitSet;
-            if (other == null)
+            if (obj is not BitSet other)
                 return false;
 
             return this.Equals(other);
@@ -225,7 +233,7 @@ namespace ServiceSiteScheduling.Utilities
         #region Operator Overloads
         public static BitSet operator &(BitSet b1, BitSet b2)
         {
-            BitSet result = new BitSet(b1.length);
+            BitSet result = new(b1.length);
             for (int i = 0; i < b1.elements.Length; i++)
                 result.elements[i] = b1.elements[i] & b2.elements[i];
             result.changed = true;
@@ -234,7 +242,7 @@ namespace ServiceSiteScheduling.Utilities
 
         public static BitSet operator |(BitSet b1, BitSet b2)
         {
-            BitSet result = new BitSet(b1.length);
+            BitSet result = new(b1.length);
             for (int i = 0; i < b1.elements.Length; i++)
                 result.elements[i] = b1.elements[i] | b2.elements[i];
             result.changed = true;
@@ -243,7 +251,7 @@ namespace ServiceSiteScheduling.Utilities
 
         public static BitSet operator ^(BitSet b1, BitSet b2)
         {
-            BitSet result = new BitSet(b1.length);
+            BitSet result = new(b1.length);
             for (int i = 0; i < b1.elements.Length; i++)
                 result.elements[i] = b1.elements[i] ^ b2.elements[i];
             result.changed = true;
@@ -252,7 +260,7 @@ namespace ServiceSiteScheduling.Utilities
 
         public static BitSet operator -(BitSet b1, BitSet b2)
         {
-            BitSet result = new BitSet(b1.length);
+            BitSet result = new(b1.length);
             for (int i = 0; i < b2.elements.Length; i++)
                 result.elements[i] = b1.elements[i] & ~b2.elements[i];
             result.changed = true;
@@ -261,7 +269,7 @@ namespace ServiceSiteScheduling.Utilities
 
         public static BitSet operator ~(BitSet b)
         {
-            BitSet result = new BitSet(b.length);
+            BitSet result = new(b.length);
             for (int i = 0; i < b.elements.Length; i++)
                 result.elements[i] = ~b.elements[i];
             result.elements[result.elements.Length - 1] &= result.mask;
@@ -287,7 +295,7 @@ namespace ServiceSiteScheduling.Utilities
         #endregion
 
         #region IEquatable<BitSet> Members
-        public bool Equals(BitSet other)
+        public bool Equals(BitSet? other)
         {
             if (other == null || this.length != other.length)
                 return false;

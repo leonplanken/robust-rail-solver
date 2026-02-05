@@ -1,5 +1,4 @@
-﻿
-namespace ServiceSiteScheduling.Utilities
+﻿namespace ServiceSiteScheduling.Utilities
 {
     /// <summary>
     /// A Generic Binary Heap Class
@@ -7,14 +6,23 @@ namespace ServiceSiteScheduling.Utilities
     class BinaryHeap<T>
     {
         #region Variables
-        private List<BinaryHeapNode<T>> nodes = new List<BinaryHeapNode<T>>();
+        private List<BinaryHeapNode<T>> nodes = [];
         private Comparison<T> compare;
         #endregion
 
         #region Properties
-        public int Size { get { return this.nodes.Count; } }
-        public T First { get { return this.nodes.Count > 0 ? this.nodes[0].Item : default(T); } }
-        public bool IsEmpty { get { return this.nodes.Count == 0; } }
+        public int Size
+        {
+            get { return this.nodes.Count; }
+        }
+        public T First
+        {
+            get { return this.nodes.Count > 0 ? this.nodes[0].Item : default(T); }
+        }
+        public bool IsEmpty
+        {
+            get { return this.nodes.Count == 0; }
+        }
         #endregion
 
         #region Constructors
@@ -31,7 +39,7 @@ namespace ServiceSiteScheduling.Utilities
         #region Public Methods
         public BinaryHeapNode<T> Insert(T item)
         {
-            BinaryHeapNode<T> node = new BinaryHeapNode<T>(item, this.compare, this.nodes.Count);
+            BinaryHeapNode<T> node = new(item, this.compare, this.nodes.Count);
             this.nodes.Add(node);
             this.bubbleup(node);
             return node;
@@ -158,7 +166,8 @@ namespace ServiceSiteScheduling.Utilities
             this.index = index;
         }
 
-        public BinaryHeapNode(T item, Comparison<T> compare) : this(item, compare, -1) { }
+        public BinaryHeapNode(T item, Comparison<T> compare)
+            : this(item, compare, -1) { }
         #endregion
 
         #region Public Methods

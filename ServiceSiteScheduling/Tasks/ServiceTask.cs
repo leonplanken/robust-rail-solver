@@ -1,31 +1,41 @@
-﻿
+﻿#nullable enable
+
 namespace ServiceSiteScheduling.Tasks
 {
     class ServiceTask : TrackTask
     {
         public Servicing.ServiceType Type { get; private set; }
-        public Utilities.Time MinimumDuration {
+        public Utilities.Time MinimumDuration
+        {
             get
             {
                 if (this.minimumDuration < 0)
-                    this.minimumDuration = this.Train.Units.Sum(unit => unit.ServiceDurations[this.Type.Index]);
+                    this.minimumDuration = this.Train.Units.Sum(unit =>
+                        unit.ServiceDurations[this.Type.Index]
+                    );
                 return this.minimumDuration;
             }
         }
-        public ServiceTask PreviousServiceTask { get; set; }
-        public ServiceTask NextServiceTask { get; set; }
+        public ServiceTask? PreviousServiceTask { get; set; }
+        public ServiceTask? NextServiceTask { get; set; }
         public Servicing.ServiceResource Resource { get; set; }
         public bool IsRemoved { get; private set; } = false;
 
         private Utilities.Time minimumDuration = -1;
 
-        public ServiceTask(Trains.ShuntTrain train, TrackParts.Track track, Servicing.ServiceType type, Servicing.ServiceResource resource) : base(train, track, TrackTaskType.Service)
+        public ServiceTask(
+            Trains.ShuntTrain train,
+            TrackParts.Track track,
+            Servicing.ServiceType type,
+            Servicing.ServiceResource resource
+        )
+            : base(train, track, TrackTaskType.Service)
         {
             this.Type = type;
             this.Resource = resource;
         }
 
-        public void SwapBefore(ServiceTask position, Servicing.ServiceResource resource)
+        public void SwapBefore(ServiceTask? position, Servicing.ServiceResource resource)
         {
             if (this == position)
                 return;
@@ -50,7 +60,7 @@ namespace ServiceSiteScheduling.Tasks
                 {
                     if (position.Resource == resource)
                     {
-                        ServiceTask previous = position.PreviousServiceTask;
+                        ServiceTask? previous = position.PreviousServiceTask;
                         position.PreviousServiceTask = this;
                         this.NextServiceTask = position;
                         this.PreviousServiceTask = previous;
@@ -62,8 +72,8 @@ namespace ServiceSiteScheduling.Tasks
                 }
             }
 
-            if (this.Train.Equals(position.Train))
-                sameTrainSwap(position, this);
+            if (this.Train.Equals(position?.Train))
+                SameTrainSwap(position, this);
 
             this.IsRemoved = false;
         }
@@ -91,10 +101,9 @@ namespace ServiceSiteScheduling.Tasks
                 }
                 else
                 {
-
                     if (position.Resource == resource)
                     {
-                        ServiceTask next = position.NextServiceTask;
+                        ServiceTask? next = position.NextServiceTask;
                         position.NextServiceTask = this;
                         this.PreviousServiceTask = position;
                         this.NextServiceTask = next;
@@ -107,7 +116,7 @@ namespace ServiceSiteScheduling.Tasks
             }
 
             if (this.Train.Equals(position?.Train))
-                sameTrainSwap(this, position);
+                SameTrainSwap(this, position);
 
             this.IsRemoved = false;
         }
@@ -130,15 +139,15 @@ namespace ServiceSiteScheduling.Tasks
                 this.NextServiceTask.PreviousServiceTask = this.PreviousServiceTask;
 
             this.NextServiceTask = this.PreviousServiceTask = null;
-
         }
 
-        private static void sameTrainSwap(ServiceTask first, ServiceTask second)
+        private static void SameTrainSwap(ServiceTask first, ServiceTask second)
         {
-            RoutingTask firstprev = first.Previous as RoutingTask,
-                        firstnext = first.Next as RoutingTask,
-                        secondprev = second.Previous as RoutingTask,
-                        secondnext = second.Next as RoutingTask;
+            // LP FIXME: do we have any guarantee that first.Next and second.Next are not DepartureRoutingTask_s?
+            RoutingTask firstprev = (RoutingTask)first.Previous,
+                firstnext = (RoutingTask)first.Next,
+                secondprev = (RoutingTask)second.Previous,
+                secondnext = (RoutingTask)second.Next;
 
             foreach (var task in firstnext.Next)
                 task.Previous = secondnext;

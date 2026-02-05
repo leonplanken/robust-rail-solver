@@ -1,5 +1,4 @@
-﻿
-namespace ServiceSiteScheduling.Tasks
+﻿namespace ServiceSiteScheduling.Tasks
 {
     interface IFixedSchedule
     {

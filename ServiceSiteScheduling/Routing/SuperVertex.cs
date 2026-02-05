@@ -5,7 +5,10 @@ namespace ServiceSiteScheduling.Routing
     class SuperVertex
     {
         public Track Track;
-        public Vertex AA, AB, BA, BB;
+        public Vertex AA,
+            AB,
+            BA,
+            BB;
         public Vertex[] SubVertices;
         public Parking.TrackOccupation TrackOccupation;
         public int Index;

@@ -9,7 +9,11 @@ namespace ServiceSiteScheduling.Matching
 
         private IList<ShuntTrainUnit> shuntUnits;
 
-        public TrainMatching(Train[] trains, IEnumerable<Unit> units, IList<ShuntTrainUnit> shuntunits)
+        public TrainMatching(
+            Train[] trains,
+            IEnumerable<Unit> units,
+            IList<ShuntTrainUnit> shuntunits
+        )
         {
             this.DepartureTrains = trains;
             this.shuntUnits = shuntunits;
@@ -28,7 +32,7 @@ namespace ServiceSiteScheduling.Matching
                         }
                     if (parts == null)
                     {
-                        parts = new List<Part>();
+                        parts = [];
                         bytype.Add(parts);
                     }
 
@@ -41,7 +45,10 @@ namespace ServiceSiteScheduling.Matching
 
         public ShuntTrain GetShuntTrain(Train departure)
         {
-            return new ShuntTrain(departure.Units.Select(departureunit => this.shuntUnits[departureunit.Index]), departure.Departure.IsItOutStanding());
+            return new ShuntTrain(
+                departure.Units.Select(departureunit => this.shuntUnits[departureunit.Index]),
+                departure.Departure.IsItOutStanding()
+            );
         }
     }
 }

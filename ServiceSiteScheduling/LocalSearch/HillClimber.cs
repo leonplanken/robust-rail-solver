@@ -1,5 +1,5 @@
-﻿using ServiceSiteScheduling.Solutions;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using ServiceSiteScheduling.Solutions;
 
 namespace ServiceSiteScheduling.LocalSearch
 {
@@ -26,14 +26,15 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public void Run()
         {
-            int iteration = 0, neighborsvisited = 0;
+            int iteration = 0,
+                neighborsvisited = 0;
             double bestcost = this.Graph.ComputeModel().BaseCost;
 
-            Stopwatch stopwatch = new Stopwatch();
+            Stopwatch stopwatch = new();
             stopwatch.Start();
             while (true)
             {
-                List<LocalSearchMove> currentmoves = new List<LocalSearchMove>();
+                List<LocalSearchMove> currentmoves = [];
 
                 var servicemachineordermoves = ServiceMachineOrderMove.GetMoves(this.Graph);
                 currentmoves.AddRange(servicemachineordermoves);
@@ -85,7 +86,9 @@ namespace ServiceSiteScheduling.LocalSearch
             Console.WriteLine("-----------------------");
             this.Graph.OutputConstraintViolations();
             Console.WriteLine("-----------------------");
-            Console.WriteLine($"Finished after {(stopwatch.ElapsedMilliseconds / (double)1000).ToString("N2")} seconds");
+            Console.WriteLine(
+                $"Finished after {(stopwatch.ElapsedMilliseconds / (double)1000).ToString("N2")} seconds"
+            );
             Console.WriteLine($"Neighbors visited = {neighborsvisited}");
         }
     }

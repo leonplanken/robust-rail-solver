@@ -5,11 +5,15 @@ namespace ServiceSiteScheduling.Matching
 {
     static class Greedy
     {
-        public static TrainMatching Construct(ShuntTrain[] shunttrains, IList<ShuntTrainUnit> shunttrainunits, Random random)
+        public static TrainMatching Construct(
+            ShuntTrain[] shunttrains,
+            IList<ShuntTrainUnit> shunttrainunits,
+            Random random
+        )
         {
             // Construct the departure trains
             Train[] departuretrains = new Train[ProblemInstance.Current.DeparturesOrdered.Length];
-            List<Unit> departureunits = new List<Unit>();
+            List<Unit> departureunits = [];
             for (int i = 0; i < ProblemInstance.Current.DeparturesOrdered.Length; i++)
             {
                 DepartureTrain departure = ProblemInstance.Current.DeparturesOrdered[i];
@@ -27,19 +31,31 @@ namespace ServiceSiteScheduling.Matching
             }
 
             // Construct all subsets of trains
-            List<ArrivalTrainPart> arrivals = new List<ArrivalTrainPart>();
-            List<DepartureTrainPart> departures = new List<DepartureTrainPart>();
+            List<ArrivalTrainPart> arrivals = [];
+            List<DepartureTrainPart> departures = [];
 
             for (int i = 0; i < shunttrains.Length; i++)
-                arrivals.AddRange(GetArrivalSubsets(ProblemInstance.Current.ArrivalsOrdered[i], shunttrains[i]));
+                arrivals.AddRange(
+                    GetArrivalSubsets(ProblemInstance.Current.ArrivalsOrdered[i], shunttrains[i])
+                );
             for (int i = 0; i < departuretrains.Length; i++)
-                departures.AddRange(GetDepartureSubsets(ProblemInstance.Current.DeparturesOrdered[i], departuretrains[i]));
+                departures.AddRange(
+                    GetDepartureSubsets(
+                        ProblemInstance.Current.DeparturesOrdered[i],
+                        departuretrains[i]
+                    )
+                );
 
             // Create bipartite graph
-            Match[] possibleMatches = ConstructBipartiteGraph(arrivals, departures, ProblemInstance.Current.ArrivalsOrdered, ProblemInstance.Current.DeparturesOrdered);
+            Match[] possibleMatches = ConstructBipartiteGraph(
+                arrivals,
+                departures,
+                ProblemInstance.Current.ArrivalsOrdered,
+                ProblemInstance.Current.DeparturesOrdered
+            );
 
             // Greedily select largest available subset
-            List<Match> selectedMatches = new List<Match>();
+            List<Match> selectedMatches = [];
             Comparison<Match> comparison = (a, b) =>
             {
                 if (!a.Available && !b.Available)
@@ -49,8 +65,16 @@ namespace ServiceSiteScheduling.Matching
                 if (!b.Available)
                     return -1;
 
-                var leastleftover = Math.Min(a.Arriving.Adjacent.Count(m => m.Available), a.Departing.Adjacent.Count(m => m.Available)).CompareTo(
-                    Math.Min(b.Arriving.Adjacent.Count(m => m.Available), b.Departing.Adjacent.Count(m => m.Available)));
+                var leastleftover = Math.Min(
+                        a.Arriving.Adjacent.Count(m => m.Available),
+                        a.Departing.Adjacent.Count(m => m.Available)
+                    )
+                    .CompareTo(
+                        Math.Min(
+                            b.Arriving.Adjacent.Count(m => m.Available),
+                            b.Departing.Adjacent.Count(m => m.Available)
+                        )
+                    );
 
                 if (leastleftover != 0)
                     return leastleftover;
@@ -68,13 +92,16 @@ namespace ServiceSiteScheduling.Matching
             {
                 int selectedindex = 0;
                 Match match = possibleMatches[selectedindex];
-                while (selectedindex < possibleMatches.Length - 1 && random.NextDouble() < 0.5 && comparison(possibleMatches[selectedindex + 1], match) == 0)
+                while (
+                    selectedindex < possibleMatches.Length - 1
+                    && random.NextDouble() < 0.5
+                    && comparison(possibleMatches[selectedindex + 1], match) == 0
+                )
                 {
                     selectedindex++;
                     match = possibleMatches[selectedindex];
                 }
 
-                
                 match.Arriving.MakeUnavailable();
                 match.Departing.MakeUnavailable();
                 selectedMatches.Add(match);
@@ -82,14 +109,16 @@ namespace ServiceSiteScheduling.Matching
                 Array.Sort(possibleMatches, comparison);
             }
 
-            selectedMatches = selectedMatches.OrderBy(m => m.Arriving.Units.Min(u => u.Index)).ToList();
+            selectedMatches = selectedMatches
+                .OrderBy(m => m.Arriving.Units.Min(u => u.Index))
+                .ToList();
 
-            Dictionary<Train, List<Part>> trainparts = new Dictionary<Train, List<Part>>();
+            Dictionary<Train, List<Part>> trainparts = [];
             foreach (Match m in selectedMatches)
             {
                 List<Part> parts = null;
                 if (!trainparts.TryGetValue(m.Departing.TrainUnits[0].Train, out parts))
-                    trainparts[m.Departing.TrainUnits[0].Train] = parts = new List<Part>();
+                    trainparts[m.Departing.TrainUnits[0].Train] = parts = [];
                 var part = new Part(m.Departing.TrainUnits);
                 parts.Add(part);
 
@@ -102,51 +131,65 @@ namespace ServiceSiteScheduling.Matching
             foreach (var kvp in trainparts)
                 kvp.Key.Parts = kvp.Value.ToArray();
 
-            TrainMatching result = new TrainMatching(departuretrains, departureunits, shunttrainunits);
+            TrainMatching result = new(departuretrains, departureunits, shunttrainunits);
             return result;
         }
 
-        private static Match[] ConstructBipartiteGraph(IEnumerable<ArrivalTrainPart> arrivals, IEnumerable<DepartureTrainPart> departures, IList<ArrivalTrain> arrivaltrains, IList<DepartureTrain> departuretrains)
+        private static Match[] ConstructBipartiteGraph(
+            IEnumerable<ArrivalTrainPart> arrivals,
+            IEnumerable<DepartureTrainPart> departures,
+            IList<ArrivalTrain> arrivaltrains,
+            IList<DepartureTrain> departuretrains
+        )
         {
             var unitmatching = ConstructUnitMatching(arrivaltrains, departuretrains);
 
-            List <Match> result = new List<Match>();
+            List<Match> result = [];
             foreach (ArrivalTrainPart arriving in arrivals)
-                foreach (DepartureTrainPart departing in departures)
+            foreach (DepartureTrainPart departing in departures)
+            {
+                if (
+                    arriving.Units.Length != departing.Units.Length
+                    || arriving.Time >= departing.Time
+                )
+                    continue;
+
+                bool isMatch = true;
+                for (int i = 0; i < arriving.Units.Length && isMatch; i++)
                 {
-                    if (arriving.Units.Length != departing.Units.Length || arriving.Time >= departing.Time)
-                        continue;
+                    var arrivalunit = arriving.Units[i];
+                    var departureunit = departing.Units[i];
 
-                    bool isMatch = true;
-                    for (int i = 0; i < arriving.Units.Length && isMatch; i++)
-                    {
-                        var arrivalunit = arriving.Units[i];
-                        var departureunit = departing.Units[i];
+                    if (
+                        (departureunit.IsFixed && arrivalunit.Index != departureunit.Unit.Index)
+                        || (!departureunit.IsFixed && arrivalunit.Type != departureunit.Type)
+                    )
+                        isMatch = false;
 
-                        if ((departureunit.IsFixed && arrivalunit.Index != departureunit.Unit.Index) || (!departureunit.IsFixed && arrivalunit.Type != departureunit.Type))
-                            isMatch = false;
-
-                        if (!unitmatching[departureunit].Contains(arrivalunit))
-                            isMatch = false;
-                    }
-
-
-                    if (isMatch)
-                    {
-                        Match match = new Match(arriving, departing);
-                        result.Add(match);
-                        arriving.Adjacent.Add(match);
-                        departing.Adjacent.Add(match);
-                    }
+                    if (!unitmatching[departureunit].Contains(arrivalunit))
+                        isMatch = false;
                 }
 
-            foreach (Match match in result.Where(m => m.Departing.Units.Any(unit => unit.IsFixed)).ToList())
+                if (isMatch)
+                {
+                    Match match = new(arriving, departing);
+                    result.Add(match);
+                    arriving.Adjacent.Add(match);
+                    departing.Adjacent.Add(match);
+                }
+            }
+
+            foreach (
+                Match match in result
+                    .Where(m => m.Departing.Units.Any(unit => unit.IsFixed))
+                    .ToList()
+            )
             {
                 foreach (var m in match.Arriving.Adjacent)
                 {
                     if (m == match)
                         continue;
-                    
+
                     m.Departing.Adjacent.Remove(m);
                     result.Remove(m);
                 }
@@ -156,14 +199,17 @@ namespace ServiceSiteScheduling.Matching
             return result.ToArray();
         }
 
-        private static Dictionary<DepartureTrainUnit, List<TrainUnit>> ConstructUnitMatching(IList<ArrivalTrain> arrivals, IList<DepartureTrain> departures)
+        private static Dictionary<DepartureTrainUnit, List<TrainUnit>> ConstructUnitMatching(
+            IList<ArrivalTrain> arrivals,
+            IList<DepartureTrain> departures
+        )
         {
-            Dictionary<TrainType, List<UnitMatch>> matching = new Dictionary<TrainType, List<UnitMatch>>();
+            Dictionary<TrainType, List<UnitMatch>> matching = [];
             foreach (DepartureTrain departuretrain in departures)
             {
                 foreach (DepartureTrainUnit departureunit in departuretrain.Units)
                 {
-                    List<TrainUnit> possiblematches = new List<TrainUnit>();
+                    List<TrainUnit> possiblematches = [];
                     foreach (ArrivalTrain arrivaltrain in arrivals)
                     {
                         if (arrivaltrain.Time > departuretrain.Time)
@@ -179,14 +225,13 @@ namespace ServiceSiteScheduling.Matching
                     }
 
                     if (!matching.ContainsKey(departureunit.Unit?.Type ?? departureunit.Type))
-                        matching[departureunit.Unit?.Type ?? departureunit.Type] = new List<UnitMatch>();
+                        matching[departureunit.Unit?.Type ?? departureunit.Type] = [];
                     var list = matching[departureunit.Unit?.Type ?? departureunit.Type];
                     list.Insert(0, new UnitMatch(departureunit, possiblematches));
                 }
             }
 
-
-            Dictionary<DepartureTrainUnit, List<TrainUnit>> result = new Dictionary<DepartureTrainUnit, List<TrainUnit>>();
+            Dictionary<DepartureTrainUnit, List<TrainUnit>> result = [];
             foreach (var list in matching.Values)
             {
                 bool change = true;
@@ -209,8 +254,7 @@ namespace ServiceSiteScheduling.Matching
                                     list.RemoveAt(index);
                                     for (int i = 0; i < list.Count; i++)
                                     {
-                                        if (list[i].ArrivalUnits.Contains(element))
-                                            list[i].ArrivalUnits.Remove(element);
+                                        list[i].ArrivalUnits.Remove(element);
                                     }
                                     change = true;
                                     break;
@@ -236,8 +280,7 @@ namespace ServiceSiteScheduling.Matching
                                 for (int i = 0; i < list.Count; i++)
                                 {
                                     foreach (var element in elements)
-                                        if (list[i].ArrivalUnits.Contains(element))
-                                            list[i].ArrivalUnits.Remove(element);
+                                        list[i].ArrivalUnits.Remove(element);
                                 }
                                 change = true;
                                 break;
@@ -253,17 +296,21 @@ namespace ServiceSiteScheduling.Matching
             return result;
         }
 
-        private static IEnumerable<ArrivalTrainPart> GetArrivalSubsets(ArrivalTrain arrival, ShuntTrain train)
+        private static IEnumerable<ArrivalTrainPart> GetArrivalSubsets(
+            ArrivalTrain arrival,
+            ShuntTrain train
+        )
         {
-            List<ArrivalTrainPart> parts = new List<ArrivalTrainPart>();
+            List<ArrivalTrainPart> parts = [];
 
             for (int i = 0; i < train.Units.Count; i++)
             {
                 for (int j = 1; j < train.Units.Count - i + 1; j++)
                 {
                     var units = train.Units.Skip(i).Take(j);
-                    ArrivalTrainPart part = new ArrivalTrainPart(units.ToArray());
-                    part.Time = arrival.Time + units.Sum(u => u.RequiredServices.Sum(t => t.Duration));
+                    ArrivalTrainPart part = new(units.ToArray());
+                    part.Time =
+                        arrival.Time + units.Sum(u => u.RequiredServices.Sum(t => t.Duration));
                     parts.Add(part);
                 }
             }
@@ -274,7 +321,7 @@ namespace ServiceSiteScheduling.Matching
                 for (int j = i + 1; j < parts.Count; j++)
                 {
                     ArrivalTrainPart tp2 = parts[j];
-                    if (tp1.Units.Intersect(tp2.Units).Count() > 0)
+                    if (tp1.Units.Intersect(tp2.Units).Any())
                     {
                         tp1.Intersections.Add(tp2);
                         tp2.Intersections.Add(tp1);
@@ -285,9 +332,12 @@ namespace ServiceSiteScheduling.Matching
             return parts;
         }
 
-        private static IEnumerable<DepartureTrainPart> GetDepartureSubsets(DepartureTrain departure, Train train)
+        private static IEnumerable<DepartureTrainPart> GetDepartureSubsets(
+            DepartureTrain departure,
+            Train train
+        )
         {
-            List<DepartureTrainPart> parts = new List<DepartureTrainPart>();
+            List<DepartureTrainPart> parts = [];
 
             for (int i = 0; i < departure.Units.Length; i++)
             {
@@ -295,7 +345,7 @@ namespace ServiceSiteScheduling.Matching
                 {
                     var units = departure.Units.Skip(i).Take(j);
                     var departureunits = train.Units.Skip(i).Take(j);
-                    DepartureTrainPart part = new DepartureTrainPart(units.ToArray(), departureunits.ToArray());
+                    DepartureTrainPart part = new(units.ToArray(), departureunits.ToArray());
                     part.Time = departure.Time;
                     parts.Add(part);
                 }
@@ -307,7 +357,7 @@ namespace ServiceSiteScheduling.Matching
                 for (int j = i + 1; j < parts.Count; j++)
                 {
                     DepartureTrainPart tp2 = parts[j];
-                    if (tp1.TrainUnits.Intersect(tp2.TrainUnits).Count() > 0)
+                    if (tp1.TrainUnits.Intersect(tp2.TrainUnits).Any())
                     {
                         tp1.Intersections.Add(tp2);
                         tp2.Intersections.Add(tp1);
@@ -328,11 +378,10 @@ namespace ServiceSiteScheduling.Matching
 
             public TrainPart()
             {
-
-                this.Subsets = new List<TrainPart>();
-                this.Supersets = new List<TrainPart>();
-                this.Adjacent = new List<Match>();
-                this.Intersections = new List<TrainPart>();
+                this.Subsets = [];
+                this.Supersets = [];
+                this.Adjacent = [];
+                this.Intersections = [];
             }
 
             public void MakeUnavailable()
@@ -341,8 +390,8 @@ namespace ServiceSiteScheduling.Matching
                     m.Available = false;
 
                 foreach (TrainPart tp in this.Intersections)
-                    foreach (Match m in tp.Adjacent)
-                        m.Available = false;
+                foreach (Match m in tp.Adjacent)
+                    m.Available = false;
             }
         }
 
@@ -371,8 +420,6 @@ namespace ServiceSiteScheduling.Matching
                 this.Units = units;
                 this.TrainUnits = departureunits;
             }
-
-
 
             public override string ToString()
             {

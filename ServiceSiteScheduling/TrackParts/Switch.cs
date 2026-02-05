@@ -1,11 +1,17 @@
-﻿
-namespace ServiceSiteScheduling.TrackParts
+﻿namespace ServiceSiteScheduling.TrackParts
 {
     class Switch : Connection
     {
-        public Switch(ulong id, string name) : base(id, name) { }
+        public Switch(ulong id, string name)
+            : base(id, name) { }
 
-        public Switch(ulong id, string name, Infrastructure permanent, IList<Infrastructure> variable) : base(id, name)
+        public Switch(
+            ulong id,
+            string name,
+            Infrastructure permanent,
+            IList<Infrastructure> variable
+        )
+            : base(id, name)
         {
             this.Connect(permanent, variable);
         }

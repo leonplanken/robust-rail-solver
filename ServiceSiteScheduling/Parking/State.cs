@@ -17,29 +17,56 @@ namespace ServiceSiteScheduling.Parking
         public bool HasArrived { get; set; }
         public bool HasDeparted { get; set; }
         public bool ExceedsTrackLength { get; set; }
-        public int Crossings { get { if (!this.crossingsComputed) this.ComputeCrossings(); return this.DepartureSide == Side.A ? this.CrossingsA : this.CrossingsB; } }
+        public int Crossings
+        {
+            get
+            {
+                if (!this.crossingsComputed)
+                    this.ComputeCrossings();
+                return this.DepartureSide == Side.A ? this.CrossingsA : this.CrossingsB;
+            }
+        }
 
-        protected int CrossingsA, CrossingsB;
-        protected List<State> CrossingStatesA, CrossingStatesB;
+        protected int CrossingsA,
+            CrossingsB;
+        protected List<State> CrossingStatesA,
+            CrossingStatesB;
         protected bool crossingsComputed = false;
 
         public State(TrackTask task)
         {
             this.Task = task;
-            this.StatesA = new List<State>();
-            this.StatesB = new List<State>();
-            this.CrossingStatesA = new List<State>();
-            this.CrossingStatesB = new List<State>();
+            this.StatesA = [];
+            this.StatesB = [];
+            this.CrossingStatesA = [];
+            this.CrossingStatesB = [];
             this.HasArrived = this.HasDeparted = this.ExceedsTrackLength = false;
         }
 
-        public List<State> GetAdjacent(Side side) { return side == Side.A ? this.StatesA : this.StatesB; }
+        public List<State> GetAdjacent(Side side)
+        {
+            return side == Side.A ? this.StatesA : this.StatesB;
+        }
 
-        public int GetDistance(Side side) { return side == Side.A ? this.DistanceA : this.DistanceB; }
+        public int GetDistance(Side side)
+        {
+            return side == Side.A ? this.DistanceA : this.DistanceB;
+        }
 
-        public void SetDistance(Side side, int value) { if (side == Side.A) this.DistanceA = value; else this.DistanceB = value; }
+        public void SetDistance(Side side, int value)
+        {
+            if (side == Side.A)
+                this.DistanceA = value;
+            else
+                this.DistanceB = value;
+        }
 
-        public int GetCrossings(Side side) { if (!this.crossingsComputed) this.ComputeCrossings(); return side == Side.A ? this.CrossingsA : this.CrossingsB; }
+        public int GetCrossings(Side side)
+        {
+            if (!this.crossingsComputed)
+                this.ComputeCrossings();
+            return side == Side.A ? this.CrossingsA : this.CrossingsB;
+        }
 
         public void Reset()
         {
@@ -78,7 +105,7 @@ namespace ServiceSiteScheduling.Parking
             }
 
             if (side == Side.A)
-                this.CrossingsA = states.Count > 0 ? 1: 0;
+                this.CrossingsA = states.Count > 0 ? 1 : 0;
             else
                 this.CrossingsB = states.Count > 0 ? 1 : 0;
         }

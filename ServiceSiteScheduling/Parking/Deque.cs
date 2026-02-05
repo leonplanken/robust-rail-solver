@@ -1,7 +1,7 @@
-﻿
-namespace ServiceSiteScheduling.Parking
+﻿namespace ServiceSiteScheduling.Parking
 {
-    class Deque<T> where T : DequeNode<T>
+    class Deque<T>
+        where T : DequeNode<T>
     {
         public T A { get; private set; }
         public T B { get; private set; }
@@ -86,8 +86,7 @@ namespace ServiceSiteScheduling.Parking
 
         public void Remove(T node)
         {
-            if (node == null)
-                throw new ArgumentNullException();
+            ArgumentNullException.ThrowIfNull(node);
 
             if ((this.A == null && this.B == null) || this.Count == 0)
                 throw new ArgumentException();

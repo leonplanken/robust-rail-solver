@@ -1,9 +1,9 @@
-﻿
-namespace ServiceSiteScheduling.Utilities
+﻿namespace ServiceSiteScheduling.Utilities
 {
     public static class Extensions
     {
-        public static T1 MinItem<T1, T>(this IList<T1> elements, Func<T1, T> selector) where T : IComparable
+        public static T1 MinItem<T1, T>(this IList<T1> elements, Func<T1, T> selector)
+            where T : IComparable
         {
             bool first = true;
             T min = default(T);
@@ -32,7 +32,8 @@ namespace ServiceSiteScheduling.Utilities
             return item;
         }
 
-        public static T1 MaxItem<T1, T>(this IList<T1> elements, Func<T1, T> selector) where T : IComparable
+        public static T1 MaxItem<T1, T>(this IList<T1> elements, Func<T1, T> selector)
+            where T : IComparable
         {
             bool first = true;
             T max = default(T);
@@ -61,7 +62,8 @@ namespace ServiceSiteScheduling.Utilities
             return item;
         }
 
-        public static int MinIndex<T>(this IList<T> elements) where T : IComparable<T>
+        public static int MinIndex<T>(this IList<T> elements)
+            where T : IComparable<T>
         {
             T min = default(T);
             int index = -1;
@@ -78,7 +80,8 @@ namespace ServiceSiteScheduling.Utilities
             return index;
         }
 
-        public static int MinIndex<T, T1>(this IList<T> elements, Func<T, T1> selector) where T1 : IComparable<T1>
+        public static int MinIndex<T, T1>(this IList<T> elements, Func<T, T1> selector)
+            where T1 : IComparable<T1>
         {
             T1 min = default(T1);
             int index = -1;
@@ -95,7 +98,8 @@ namespace ServiceSiteScheduling.Utilities
             return index;
         }
 
-        public static int MaxIndex<T>(this IList<T> elements) where T : IComparable<T>
+        public static int MaxIndex<T>(this IList<T> elements)
+            where T : IComparable<T>
         {
             T max = default(T);
             int index = -1;
@@ -112,7 +116,8 @@ namespace ServiceSiteScheduling.Utilities
             return index;
         }
 
-        public static int MaxIndex<T, T1>(this IList<T> elements, Func<T, T1> selector) where T1 : IComparable<T1>
+        public static int MaxIndex<T, T1>(this IList<T> elements, Func<T, T1> selector)
+            where T1 : IComparable<T1>
         {
             T1 max = default(T1);
             int index = -1;
@@ -129,10 +134,13 @@ namespace ServiceSiteScheduling.Utilities
             return index;
         }
 
-        public static int BinarySearchIndexOf<T>(this IList<T> list, T value, IComparer<T> comparer = null)
+        public static int BinarySearchIndexOf<T>(
+            this IList<T> list,
+            T value,
+            IComparer<T> comparer = null
+        )
         {
-            if (list == null)
-                throw new ArgumentNullException("list");
+            ArgumentNullException.ThrowIfNull(list);
 
             comparer = comparer ?? Comparer<T>.Default;
 
@@ -154,10 +162,14 @@ namespace ServiceSiteScheduling.Utilities
             return -1;
         }
 
-        public static int BinarySearchClosestIndexOf<T>(this IList<T> list, T value, bool up = false, IComparer<T> comparer = null)
+        public static int BinarySearchClosestIndexOf<T>(
+            this IList<T> list,
+            T value,
+            bool up = false,
+            IComparer<T> comparer = null
+        )
         {
-            if (list == null)
-                throw new ArgumentNullException("list");
+            ArgumentNullException.ThrowIfNull(list);
 
             comparer = comparer ?? Comparer<T>.Default;
 

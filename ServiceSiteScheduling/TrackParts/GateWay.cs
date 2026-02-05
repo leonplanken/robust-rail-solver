@@ -1,12 +1,14 @@
-﻿
-namespace ServiceSiteScheduling.TrackParts
+﻿namespace ServiceSiteScheduling.TrackParts
 {
     class GateWay : Connection
     {
-        public GateWay(ulong id, string name) : base(id, name) { }
+        public GateWay(ulong id, string name)
+            : base(id, name) { }
+
         public Infrastructure EndPoint { get; private set; }
 
-        public GateWay(ulong id, string name, Infrastructure infrastructure) : this(id, name)
+        public GateWay(ulong id, string name, Infrastructure infrastructure)
+            : this(id, name)
         {
             this.Connect(infrastructure);
             this.EndPoint = infrastructure;
@@ -14,13 +16,18 @@ namespace ServiceSiteScheduling.TrackParts
 
         public void Connect(Infrastructure infrastructure)
         {
-            this.Connections[infrastructure] = new Infrastructure[0];
+            this.Connections[infrastructure] = Array.Empty<Infrastructure>();
             this.EndPoint = infrastructure;
         }
 
-        public override IList<TrackSwitchContainer> GetTracksConnectedTo(Infrastructure infrastructure, int switches, List<Infrastructure> path, bool ignoreInactive = true)
+        public override IList<TrackSwitchContainer> GetTracksConnectedTo(
+            Infrastructure infrastructure,
+            int switches,
+            List<Infrastructure> path,
+            bool ignoreInactive = true
+        )
         {
-            return new List<TrackSwitchContainer>();
+            return [];
         }
     }
 }

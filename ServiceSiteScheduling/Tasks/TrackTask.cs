@@ -1,7 +1,15 @@
-﻿
+﻿#nullable enable
+
 namespace ServiceSiteScheduling.Tasks
 {
-    public enum TrackTaskType { Arrival, Departure, Service, Parking }
+    public enum TrackTaskType
+    {
+        Arrival,
+        Departure,
+        Service,
+        Parking,
+    }
+
     abstract class TrackTask
     {
         public Trains.ShuntTrain Train { get; set; }
@@ -11,11 +19,14 @@ namespace ServiceSiteScheduling.Tasks
         public Utilities.Time Start { get; set; }
         public Utilities.Time End { get; set; }
         public Parking.State State { get; set; }
-        public Side ArrivalSide { get; set; }
-        public TrackTaskType TaskType { get { return this.tasktype; } }
+        public Side? ArrivalSide { get; set; }
+        public TrackTaskType TaskType
+        {
+            get { return this.tasktype; }
+        }
         protected readonly TrackTaskType tasktype;
 
-        private Parking.State originalState { get; set; }
+        private Parking.State? OriginalState { get; set; }
 
         public TrackTask(Trains.ShuntTrain train, TrackParts.Track track, TrackTaskType type)
         {
@@ -23,6 +34,8 @@ namespace ServiceSiteScheduling.Tasks
             this.Track = track;
             this.State = new Parking.State(this);
             this.tasktype = type;
+            this.Previous = null!;
+            this.Next = null!;
         }
 
         public override string ToString()
@@ -32,11 +45,11 @@ namespace ServiceSiteScheduling.Tasks
 
         public void Arrive(Parking.TrackOccupation track)
         {
-            if (this.originalState != null)
+            if (this.OriginalState != null)
             {
-                this.State = this.originalState;
+                this.State = this.OriginalState;
                 this.State.Reset();
-                this.originalState = null;
+                this.OriginalState = null;
             }
 
             track.Arrive(this);
@@ -49,14 +62,14 @@ namespace ServiceSiteScheduling.Tasks
 
         public void Replace(TrackTask other)
         {
-            if (this.originalState == null)
-                this.originalState = this.State;
+            if (this.OriginalState == null)
+                this.OriginalState = this.State;
             this.State = other.State;
         }
 
         public List<TrackTask> GetRelatedTasks()
         {
-            return this.getRelatedTasks(new List<TrackTask>());
+            return this.getRelatedTasks([]);
         }
 
         private List<TrackTask> getRelatedTasks(List<TrackTask> list)

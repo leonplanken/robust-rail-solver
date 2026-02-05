@@ -1,5 +1,4 @@
-﻿
-namespace ServiceSiteScheduling.Utilities
+﻿namespace ServiceSiteScheduling.Utilities
 {
     struct Time : IComparable
     {
@@ -61,7 +60,12 @@ namespace ServiceSiteScheduling.Utilities
             int minutes = time / 60;
             time -= minutes * 60;
 
-            return "" + hours.ToString("D2") + ":" + minutes.ToString("D2") + ":" + time.ToString("D2");
+            return ""
+                + hours.ToString("D2")
+                + ":"
+                + minutes.ToString("D2")
+                + ":"
+                + time.ToString("D2");
         }
 
         public string ToMinuteString()

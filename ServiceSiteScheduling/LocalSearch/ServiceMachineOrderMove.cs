@@ -1,5 +1,5 @@
-﻿using ServiceSiteScheduling.Utilities;
-using ServiceSiteScheduling.Solutions;
+﻿using ServiceSiteScheduling.Solutions;
+using ServiceSiteScheduling.Utilities;
 
 namespace ServiceSiteScheduling.LocalSearch
 {
@@ -8,12 +8,25 @@ namespace ServiceSiteScheduling.LocalSearch
         public Tasks.ServiceTask First { get; set; }
         public Tasks.ServiceTask Second { get; set; }
 
-        protected Tasks.MoveTask previoustofirst, previousfromfirst, previoustosecond, previousfromsecond;
-        protected Tasks.ParkingTask parkingtofirst, firsttoparking, secondtoparking;
+        protected Tasks.MoveTask previoustofirst,
+            previousfromfirst,
+            previoustosecond,
+            previousfromsecond;
+        protected Tasks.ParkingTask parkingtofirst,
+            firsttoparking,
+            secondtoparking;
 
-        bool skippedtofirst, skippedfromfirst, skippedtosecond, skippedfromsecond;
+        bool skippedtofirst,
+            skippedfromfirst,
+            skippedtosecond,
+            skippedfromsecond;
 
-        public ServiceMachineOrderMove(PlanGraph graph, Tasks.ServiceTask first, Tasks.ServiceTask second) : base(graph)
+        public ServiceMachineOrderMove(
+            PlanGraph graph,
+            Tasks.ServiceTask first,
+            Tasks.ServiceTask second
+        )
+            : base(graph)
         {
             this.First = first;
             this.Second = second;
@@ -34,9 +47,15 @@ namespace ServiceSiteScheduling.LocalSearch
             Tasks.MoveTask fromPreviousOnMachine = this.First.PreviousServiceTask?.Next,
                 toNextOnMachine = this.Second.NextServiceTask?.Previous,
                 fromPreviousOfFirst = toFirst.Previous.Previous,
-                toNextOfFirst = fromFirst.AllNext.MinItem(task => task.Next?.MoveOrder ?? double.PositiveInfinity)?.Next,
+                toNextOfFirst =
+                    fromFirst
+                        .AllNext.MinItem(task => task.Next?.MoveOrder ?? double.PositiveInfinity)
+                        ?.Next,
                 fromPreviousOfSecond = toSecond.Previous.Previous,
-                toNextOfSecond = fromSecond.AllNext.MinItem(task => task.Next?.MoveOrder ?? double.PositiveInfinity)?.Next;
+                toNextOfSecond =
+                    fromSecond
+                        .AllNext.MinItem(task => task.Next?.MoveOrder ?? double.PositiveInfinity)
+                        ?.Next;
 
             Time timeOfPreviousOnMachine = fromPreviousOnMachine?.End ?? 0;
 
@@ -72,15 +91,20 @@ namespace ServiceSiteScheduling.LocalSearch
             if (toSecond.IsParkingSkipped(this.Second.Train))
             {
                 // Arrival
-                var arrival = toSecond.Previous as Tasks.ArrivalTask;
-                if (arrival != null)
+                if (toSecond.Previous is Tasks.ArrivalTask arrival)
                 {
                     if (arrival.ScheduledTime > timeOfPreviousOnMachine)
                         this.insert(
                             toSecond,
                             new Tasks.MoveTask[2] { fromPreviousOnMachine, fromPreviousOfSecond },
-                            new Tasks.MoveTask[3] { toNextOnMachine, toNextOfSecond, toNextOfFirst },
-                            arrival.ScheduledTime);
+                            new Tasks.MoveTask[3]
+                            {
+                                toNextOnMachine,
+                                toNextOfSecond,
+                                toNextOfFirst,
+                            },
+                            arrival.ScheduledTime
+                        );
                     else
                     {
                         toSecond.InsertAfter(fromPreviousOnMachine);
@@ -90,12 +114,21 @@ namespace ServiceSiteScheduling.LocalSearch
                 else
                 {
                     var service = toSecond.Previous as Tasks.ServiceTask;
-                    if (fromPreviousOfSecond.End + (service?.MinimumDuration ?? 0) > timeOfPreviousOnMachine)
+                    if (
+                        fromPreviousOfSecond.End + (service?.MinimumDuration ?? 0)
+                        > timeOfPreviousOnMachine
+                    )
                         this.insert(
                             toSecond,
                             new Tasks.MoveTask[2] { fromPreviousOnMachine, fromPreviousOfSecond },
-                            new Tasks.MoveTask[3] { toNextOnMachine, toNextOfSecond, toNextOfFirst },
-                            fromPreviousOfSecond.End + (service?.MinimumDuration ?? 0));
+                            new Tasks.MoveTask[3]
+                            {
+                                toNextOnMachine,
+                                toNextOfSecond,
+                                toNextOfFirst,
+                            },
+                            fromPreviousOfSecond.End + (service?.MinimumDuration ?? 0)
+                        );
                     else
                     {
                         toSecond.InsertAfter(fromPreviousOnMachine);
@@ -108,37 +141,48 @@ namespace ServiceSiteScheduling.LocalSearch
                     toSecond,
                     new Tasks.MoveTask[2] { fromPreviousOnMachine, fromPreviousOfSecond },
                     null,
-                    0);
+                    0
+                );
 
             this.insert(
                 fromSecond,
                 new Tasks.MoveTask[1] { toSecond },
                 new Tasks.MoveTask[3] { toNextOnMachine, toNextOfSecond, toNextOfFirst },
-                toSecond.End + this.Second.MinimumDuration);
+                toSecond.End + this.Second.MinimumDuration
+            );
 
             this.insert(
                 toFirst,
                 new Tasks.MoveTask[2] { fromSecond, fromPreviousOfFirst },
                 new Tasks.MoveTask[2] { toNextOnMachine, toNextOfFirst },
-                0);
+                0
+            );
 
             this.insert(
                 fromFirst,
                 new Tasks.MoveTask[1] { toFirst },
                 new Tasks.MoveTask[2] { toNextOnMachine, toNextOfFirst },
-                toFirst.End + this.First.MinimumDuration);
+                toFirst.End + this.First.MinimumDuration
+            );
 
             this.First.SwapAfter(this.Second, this.First.Resource);
 
             // Merge stuff
-            Tasks.ParkingTask parking = toSecond.Previous as Tasks.ParkingTask;
-            if (parking != null && !toSecond.IsParkingSkipped(this.Second.Train) && this.Second.Train.Equals(toSecond.PreviousMove?.Train))
+            if (
+                toSecond.Previous is Tasks.ParkingTask parking
+                && !toSecond.IsParkingSkipped(this.Second.Train)
+                && this.Second.Train.Equals(toSecond.PreviousMove?.Train)
+            )
             {
                 skippedtosecond = true;
                 toSecond.SkipParking(parking);
             }
             parking = toFirst.Previous as Tasks.ParkingTask;
-            if (parking != null && !toFirst.IsParkingSkipped(this.First.Train) && this.First.Train.Equals(toFirst.PreviousMove?.Train))
+            if (
+                parking != null
+                && !toFirst.IsParkingSkipped(this.First.Train)
+                && this.First.Train.Equals(toFirst.PreviousMove?.Train)
+            )
             {
                 skippedtofirst = true;
                 toFirst.SkipParking(parking);
@@ -146,7 +190,11 @@ namespace ServiceSiteScheduling.LocalSearch
             if (fromSecond.AllNext.Count == 1)
             {
                 parking = fromSecond.AllNext.First() as Tasks.ParkingTask;
-                if (parking != null && !fromSecond.IsParkingSkipped(this.Second.Train) && this.Second.Train.Equals(fromSecond.NextMove?.Train))
+                if (
+                    parking != null
+                    && !fromSecond.IsParkingSkipped(this.Second.Train)
+                    && this.Second.Train.Equals(fromSecond.NextMove?.Train)
+                )
                 {
                     skippedfromsecond = true;
                     fromSecond.NextMove.SkipParking(parking);
@@ -155,7 +203,11 @@ namespace ServiceSiteScheduling.LocalSearch
             if (fromFirst.AllNext.Count == 1)
             {
                 parking = fromFirst.AllNext.First() as Tasks.ParkingTask;
-                if (parking != null && !fromFirst.IsParkingSkipped(this.First.Train) && this.First.Train.Equals(fromFirst.NextMove?.Train))
+                if (
+                    parking != null
+                    && !fromFirst.IsParkingSkipped(this.First.Train)
+                    && this.First.Train.Equals(fromFirst.NextMove?.Train)
+                )
                 {
                     skippedfromfirst = true;
                     fromFirst.NextMove.SkipParking(parking);
@@ -213,11 +265,13 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public override bool IsSimilarMove(LocalSearchMove move)
         {
-            var serviceordermove = move as ServiceMachineOrderMove;
-            if (serviceordermove == null)
+            if (move is not ServiceMachineOrderMove serviceordermove)
                 return false;
 
-            return this.First == serviceordermove.First || this.Second == serviceordermove.Second || this.First == serviceordermove.Second || this.Second == serviceordermove.First;
+            return this.First == serviceordermove.First
+                || this.Second == serviceordermove.Second
+                || this.First == serviceordermove.Second
+                || this.Second == serviceordermove.First;
         }
 
         public override string ToString()
@@ -225,11 +279,19 @@ namespace ServiceSiteScheduling.LocalSearch
             return $"{this.Cost.BaseCost.ToString("N1")}: swapped {this.First} and {this.Second}";
         }
 
-        protected void insert(Tasks.MoveTask selected, IEnumerable<Tasks.MoveTask> after, IEnumerable<Tasks.MoveTask> before, Time target)
+        protected void insert(
+            Tasks.MoveTask selected,
+            IEnumerable<Tasks.MoveTask> after,
+            IEnumerable<Tasks.MoveTask> before,
+            Time target
+        )
         {
             Tasks.MoveTask start = null;
             foreach (Tasks.MoveTask earlier in after)
-                if (earlier != null && earlier.MoveOrder > (start?.MoveOrder ?? double.NegativeInfinity))
+                if (
+                    earlier != null
+                    && earlier.MoveOrder > (start?.MoveOrder ?? double.NegativeInfinity)
+                )
                     start = earlier;
             if (start == null)
                 start = this.Graph.First;
@@ -260,26 +322,24 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public static IList<ServiceMachineOrderMove> GetMoves(PlanGraph graph)
         {
-            List<ServiceMachineOrderMove> moves = new List<ServiceMachineOrderMove>();
+            List<ServiceMachineOrderMove> moves = [];
 
             for (var movetask = graph.First; movetask != null; movetask = movetask.NextMove)
             {
-                var routing = movetask as Tasks.RoutingTask;
-                if (routing != null)
+                if (movetask is Tasks.RoutingTask routing)
                 {
-                    if (routing.IsSplit)
-                    {
-
-                    }
+                    if (routing.IsSplit) { }
                     else
                     {
-                        Tasks.ServiceTask service = routing.Next.First() as Tasks.ServiceTask;
-                        if (service == null)
+                        if (routing.Next.First() is not Tasks.ServiceTask service)
                             continue;
                         Time servicetime = service.Start + service.MinimumDuration;
 
                         var nextservice = service.NextServiceTask;
-                        if (nextservice == null || nextservice.Train.UnitBits.Intersects(service.Train.UnitBits))
+                        if (
+                            nextservice == null
+                            || nextservice.Train.UnitBits.Intersects(service.Train.UnitBits)
+                        )
                             continue;
                         Time nextservicetime = nextservice.Start + nextservice.MinimumDuration;
 
@@ -287,9 +347,15 @@ namespace ServiceSiteScheduling.LocalSearch
                         if (nexttraintime < nextservicetime)
                             continue;
 
-                        Tasks.TrackTask previoustrain = nextservice.Previous.FindLastPrevious(tt => (tt is Tasks.ServiceTask),
-                            tt => tt.Start + ((tt as Tasks.ServiceTask).MinimumDuration));
-                        Time previoustraintime = (previoustrain?.Start ?? nextservice.Previous.FindLastPrevious(task => task.End).End) + ((previoustrain as Tasks.ServiceTask)?.MinimumDuration ?? 0);
+                        Tasks.TrackTask previoustrain = nextservice.Previous.FindLastPrevious(
+                            tt => (tt is Tasks.ServiceTask),
+                            tt => tt.Start + ((tt as Tasks.ServiceTask).MinimumDuration)
+                        );
+                        Time previoustraintime =
+                            (
+                                previoustrain?.Start
+                                ?? nextservice.Previous.FindLastPrevious(task => task.End).End
+                            ) + ((previoustrain as Tasks.ServiceTask)?.MinimumDuration ?? 0);
                         if (previoustraintime > servicetime)
                             continue;
 

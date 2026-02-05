@@ -1,5 +1,4 @@
-﻿
-namespace ServiceSiteScheduling.Matching
+﻿namespace ServiceSiteScheduling.Matching
 {
     class BipartiteGraph
     {
@@ -23,11 +22,11 @@ namespace ServiceSiteScheduling.Matching
         {
             int size = ProblemInstance.Current.TrainUnits.Length;
             this.adjacencyMatrix = new bool[size, size];
-            this.fixedMatches = new List<Match>();
+            this.fixedMatches = [];
 
             // Construct the departure trains
             this.departuretrains = new Train[ProblemInstance.Current.DeparturesOrdered.Length];
-            this.departureunits = new List<Unit>();
+            this.departureunits = [];
             for (int i = 0; i < ProblemInstance.Current.DeparturesOrdered.Length; i++)
             {
                 Trains.DepartureTrain departure = ProblemInstance.Current.DeparturesOrdered[i];
@@ -45,17 +44,17 @@ namespace ServiceSiteScheduling.Matching
             }
 
             int arrivalindex = 0;
-            List<ArrivalVertex> arrivals = new List<ArrivalVertex>();
+            List<ArrivalVertex> arrivals = [];
             foreach (var arrival in ProblemInstance.Current.ArrivalsOrdered)
-                foreach (var unit in arrival.Units)
-                    arrivals.Add(new ArrivalVertex(arrivalindex++, unit, arrival));
+            foreach (var unit in arrival.Units)
+                arrivals.Add(new ArrivalVertex(arrivalindex++, unit, arrival));
             this.Arrivals = arrivals.ToArray();
 
             int departureindex = 0;
-            List<DepartureVertex> departures = new List<DepartureVertex>();
+            List<DepartureVertex> departures = [];
             foreach (var departure in this.departuretrains)
-                foreach (var unit in departure.Units)
-                    departures.Add(new DepartureVertex(departureindex++, unit, departure));
+            foreach (var unit in departure.Units)
+                departures.Add(new DepartureVertex(departureindex++, unit, departure));
             this.Departures = departures.ToArray();
 
             arrivalindex = 0;
@@ -75,12 +74,24 @@ namespace ServiceSiteScheduling.Matching
                     {
                         foreach (var departureunit in departure.Units)
                         {
-                            if (arrival.Time + arrivalunit.RequiredServices.Sum(service => service.Duration) < departure.Time)
+                            if (
+                                arrival.Time
+                                    + arrivalunit.RequiredServices.Sum(service => service.Duration)
+                                < departure.Time
+                            )
                             {
-                                if (!departureunit.IsFixed && arrivalunit.Type == departureunit.Type)
+                                if (
+                                    !departureunit.IsFixed
+                                    && arrivalunit.Type == departureunit.Type
+                                )
                                     this.adjacencyMatrix[arrivalindex, departureindex] = true;
                                 else if (departureunit.Unit == arrivalunit)
-                                    this.fixedMatches.Add(new Match(arrivals[arrivalindex], departures[departureindex]));
+                                    this.fixedMatches.Add(
+                                        new Match(
+                                            arrivals[arrivalindex],
+                                            departures[departureindex]
+                                        )
+                                    );
                             }
 
                             departureindex++;
@@ -97,7 +108,10 @@ namespace ServiceSiteScheduling.Matching
 
             foreach (var match in this.fixedMatches)
                 for (int i = 0; i < size; i++)
-                    this.adjacencyMatrix[match.Arrival.Index, i] = this.adjacencyMatrix[i, match.Departure.Index] = false;
+                    this.adjacencyMatrix[match.Arrival.Index, i] = this.adjacencyMatrix[
+                        i,
+                        match.Departure.Index
+                    ] = false;
 
             // Prune unnecessary edges
             bool change = true;
@@ -161,7 +175,7 @@ namespace ServiceSiteScheduling.Matching
             this.queue = new Queue<ArrivalVertex>();
             this.arrivalmatch = new DepartureVertex[size + 1];
             this.departurematch = new ArrivalVertex[size + 1];
-            List<ArrivalVertex> vertices = new List<ArrivalVertex>();
+            List<ArrivalVertex> vertices = [];
             for (int i = 0; i < size; i++)
             {
                 var arrival = this.Arrivals[i];
@@ -187,29 +201,56 @@ namespace ServiceSiteScheduling.Matching
                         matching++;
             }
 
-            var result = this.arrivalmatch.Take(this.Arrivals.Length).Select((departure, index) => new Match(this.Arrivals[index], departure)).Where(match => match.Departure != null).ToList();
+            var result = this
+                .arrivalmatch.Take(this.Arrivals.Length)
+                .Select((departure, index) => new Match(this.Arrivals[index], departure))
+                .Where(match => match.Departure != null)
+                .ToList();
             result.AddRange(this.fixedMatches);
             result = result.OrderBy(match => match.Arrival.Index).ToList();
 
             if (result.Count < this.Arrivals.Length)
             {
-                var unmatchedarrivalunits = this.Arrivals.Where(arrival => !result.Any(m => m.Arrival == arrival)).Select(arrival => $"{arrival.Unit.Name} { arrival.Train.Time}");
-                var unmatcheddepartureunits = this.Departures.Where(departure => !result.Any(m => m.Departure == departure)).Select(departure => $"{departure.Unit.Departure} {departure.Train.Departure.Time}");
-                throw new InvalidOperationException($"No feasible matching possible. Unmatched arrivals = {string.Join(",", unmatchedarrivalunits)}, departures = {string.Join(",", unmatcheddepartureunits)}");
+                var unmatchedarrivalunits = this
+                    .Arrivals.Where(arrival => !result.Any(m => m.Arrival == arrival))
+                    .Select(arrival => $"{arrival.Unit.Name} {arrival.Train.Time}");
+                var unmatcheddepartureunits = this
+                    .Departures.Where(departure => !result.Any(m => m.Departure == departure))
+                    .Select(departure =>
+                        $"{departure.Unit.Departure} {departure.Train.Departure.Time}"
+                    );
+                throw new InvalidOperationException(
+                    $"No feasible matching possible. Unmatched arrivals = {string.Join(",", unmatchedarrivalunits)}, departures = {string.Join(",", unmatcheddepartureunits)}"
+                );
             }
             return result;
         }
 
-        public TrainMatching LocalSearch(IList<Match> initialmatching, Random random, IList<Trains.ShuntTrainUnit> shunttrainunits, int iterations = 10000000, double T = 20, double alpha = 0.99, int Q = 40000, int reset = 5000)
+        public TrainMatching LocalSearch(
+            IList<Match> initialmatching,
+            Random random,
+            IList<Trains.ShuntTrainUnit> shunttrainunits,
+            int iterations = 10000000,
+            double T = 20,
+            double alpha = 0.99,
+            int Q = 40000,
+            int reset = 5000
+        )
         {
-            var multiparts = this.Arrivals.Where(vertex => vertex.Unit != vertex.Train.Units.First()).ToArray();
+            var multiparts = this
+                .Arrivals.Where(vertex => vertex.Unit != vertex.Train.Units.First())
+                .ToArray();
             Func<int[], int> cost = m =>
             {
                 int counter = 0;
                 foreach (var vertex in multiparts)
                 {
-                    int match = m[vertex.Index], previousmatch = m[vertex.Index - 1];
-                    if (match == previousmatch + 1 && this.Departures[match].Train == this.Departures[previousmatch].Train)
+                    int match = m[vertex.Index],
+                        previousmatch = m[vertex.Index - 1];
+                    if (
+                        match == previousmatch + 1
+                        && this.Departures[match].Train == this.Departures[previousmatch].Train
+                    )
                         counter++;
                 }
                 int errors = 0;
@@ -219,7 +260,7 @@ namespace ServiceSiteScheduling.Matching
                 return this.Arrivals.Length - counter + 5 * errors;
             };
 
-            Dictionary<Trains.TrainType, List<ArrivalVertex>> arrivalsbytype = new Dictionary<Trains.TrainType, List<ArrivalVertex>>();
+            Dictionary<Trains.TrainType, List<ArrivalVertex>> arrivalsbytype = [];
             foreach (var arrival in this.Arrivals)
             {
                 bool active = false;
@@ -229,7 +270,7 @@ namespace ServiceSiteScheduling.Matching
                     continue;
 
                 if (!arrivalsbytype.ContainsKey(arrival.Unit.Type))
-                    arrivalsbytype[arrival.Unit.Type] = new List<ArrivalVertex>();
+                    arrivalsbytype[arrival.Unit.Type] = [];
                 arrivalsbytype[arrival.Unit.Type].Add(arrival);
             }
 
@@ -237,7 +278,8 @@ namespace ServiceSiteScheduling.Matching
             foreach (var match in initialmatching)
                 matching[match.Arrival.Index] = match.Departure.Index;
 
-            int currentcost = cost(matching), best = currentcost;
+            int currentcost = cost(matching),
+                best = currentcost;
             int[] bestsolution = new int[matching.Length];
             Array.Copy(matching, bestsolution, matching.Length);
             int iteration = 0;
@@ -246,7 +288,8 @@ namespace ServiceSiteScheduling.Matching
                 if (iteration++ > iterations)
                     break;
 
-                ArrivalVertex first = null, second = null;
+                ArrivalVertex first = null,
+                    second = null;
 
                 var set = arrivalsbytype.Values.ElementAt(random.Next(arrivalsbytype.Count));
                 first = set[random.Next(set.Count)];
@@ -255,7 +298,10 @@ namespace ServiceSiteScheduling.Matching
                     secondindex = (secondindex + 1) % set.Count;
                 second = set[secondindex];
 
-                if (this.adjacencyMatrix[first.Index, matching[second.Index]] && this.adjacencyMatrix[second.Index, matching[first.Index]])
+                if (
+                    this.adjacencyMatrix[first.Index, matching[second.Index]]
+                    && this.adjacencyMatrix[second.Index, matching[first.Index]]
+                )
                 {
                     int temp = matching[first.Index];
                     matching[first.Index] = matching[second.Index];
@@ -289,14 +335,22 @@ namespace ServiceSiteScheduling.Matching
                 }
             }
 
-            List<List<Match>> partsmatching = new List<List<Match>>();
+            List<List<Match>> partsmatching = [];
             for (int index = 0; index < bestsolution.Length; index++)
             {
-                List<Match> part = new List<Match>();
-                part.Add(new Match(this.Arrivals[index], this.Departures[bestsolution[index]]));
+                List<Match> part =
+                [
+                    new Match(this.Arrivals[index], this.Departures[bestsolution[index]]),
+                ];
 
                 int next = index + 1;
-                while (next < bestsolution.Length && bestsolution[next] == bestsolution[next - 1] + 1 && this.Departures[bestsolution[next]].Train == this.Departures[bestsolution[next - 1]].Train && this.Arrivals[next].Train == this.Arrivals[next-1].Train)
+                while (
+                    next < bestsolution.Length
+                    && bestsolution[next] == bestsolution[next - 1] + 1
+                    && this.Departures[bestsolution[next]].Train
+                        == this.Departures[bestsolution[next - 1]].Train
+                    && this.Arrivals[next].Train == this.Arrivals[next - 1].Train
+                )
                 {
                     part.Add(new Match(this.Arrivals[next], this.Departures[bestsolution[next]]));
                     next++;
@@ -306,12 +360,12 @@ namespace ServiceSiteScheduling.Matching
                 index += part.Count - 1;
             }
 
-            Dictionary<Train, List<Part>> trainparts = new Dictionary<Train, List<Part>>();
+            Dictionary<Train, List<Part>> trainparts = [];
             foreach (var matchpart in partsmatching)
             {
                 List<Part> parts = null;
                 if (!trainparts.TryGetValue(matchpart.First().Departure.Train, out parts))
-                    trainparts[matchpart.First().Departure.Train] = parts = new List<Part>();
+                    trainparts[matchpart.First().Departure.Train] = parts = [];
                 var part = new Part(matchpart.Select(m => m.Departure.Unit).ToArray());
                 parts.Add(part);
 
@@ -324,7 +378,7 @@ namespace ServiceSiteScheduling.Matching
             foreach (var kvp in trainparts)
                 kvp.Key.Parts = kvp.Value.ToArray();
 
-            TrainMatching result = new TrainMatching(this.departuretrains, this.departureunits, shunttrainunits);
+            TrainMatching result = new(this.departuretrains, this.departureunits, shunttrainunits);
             return result;
         }
 
@@ -368,7 +422,10 @@ namespace ServiceSiteScheduling.Matching
             foreach (var departure in arrival.Adjacent)
             {
                 var match = this.departurematch[departure.Index];
-                if (this.distance[match.Index] == this.distance[arrival.Index] + 1 && this.DFS(match))
+                if (
+                    this.distance[match.Index] == this.distance[arrival.Index] + 1
+                    && this.DFS(match)
+                )
                 {
                     this.departurematch[departure.Index] = arrival;
                     this.arrivalmatch[arrival.Index] = departure;
@@ -397,11 +454,12 @@ namespace ServiceSiteScheduling.Matching
         public Trains.TrainUnit Unit;
         public Trains.ArrivalTrain Train;
 
-        public ArrivalVertex(int index, Trains.TrainUnit unit, Trains.ArrivalTrain train) : base(index)
+        public ArrivalVertex(int index, Trains.TrainUnit unit, Trains.ArrivalTrain train)
+            : base(index)
         {
             this.Unit = unit;
             this.Train = train;
-            this.Adjacent = new List<DepartureVertex>();
+            this.Adjacent = [];
         }
 
         public override string ToString()
@@ -415,7 +473,8 @@ namespace ServiceSiteScheduling.Matching
         public Unit Unit;
         public Train Train;
 
-        public DepartureVertex(int index, Unit unit, Train train) : base(index)
+        public DepartureVertex(int index, Unit unit, Train train)
+            : base(index)
         {
             this.Unit = unit;
             this.Train = train;

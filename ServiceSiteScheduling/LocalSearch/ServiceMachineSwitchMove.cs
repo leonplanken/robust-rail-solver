@@ -15,17 +15,27 @@ namespace ServiceSiteScheduling.LocalSearch
         public Side Side { get; private set; }
         public Tasks.ServiceTask Predecessor { get; private set; }
 
-        private Tasks.ParkingTask previousparking, nextparking;
+        private Tasks.ParkingTask previousparking,
+            nextparking;
         private Servicing.ServiceResource originalresource;
         private TrackParts.Track originaltrack;
         private Side originalside;
-        private Tasks.MoveTask originalpreviousposition, originalnextposition;
+        private Tasks.MoveTask originalpreviousposition,
+            originalnextposition;
         private Tasks.ServiceTask originalpredecessor;
         private Tasks.ParkingTask originalpredecessorparking;
 
-        private bool skippedprevious, skippednext;
+        private bool skippedprevious,
+            skippednext;
 
-        public ServiceMachineSwitchMove(PlanGraph graph, Tasks.ServiceTask selected, Servicing.ServiceResource resource, Side side, Tasks.ServiceTask predecessor) : base(graph)
+        public ServiceMachineSwitchMove(
+            PlanGraph graph,
+            Tasks.ServiceTask selected,
+            Servicing.ServiceResource resource,
+            Side side,
+            Tasks.ServiceTask predecessor
+        )
+            : base(graph)
         {
             this.Selected = selected;
             this.Resource = resource;
@@ -42,13 +52,18 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public override SolutionCost Execute()
         {
-            Tasks.MoveTask previous, next, lower, upper;
+            Tasks.MoveTask previous,
+                next,
+                lower,
+                upper;
 
             if (this.Selected.Previous.IsParkingSkipped(this.Selected.Train))
             {
                 previous = this.Selected.Previous;
                 lower = this.Selected.Previous.GetRouteToSkippedParking(this.Selected.Train);
-                this.previousparking = this.Selected.Previous.GetSkippedParking(this.Selected.Train);
+                this.previousparking = this.Selected.Previous.GetSkippedParking(
+                    this.Selected.Train
+                );
                 this.Selected.Previous.UnskipParking(this.Selected.Train);
             }
             else
@@ -72,8 +87,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
             if (this.Selected.Type.LocationType == Servicing.ServiceLocationType.Fixed)
             {
-                var location = this.Resource as Servicing.ServiceLocation;
-                if (location != null)
+                if (this.Resource is Servicing.ServiceLocation location)
                 {
                     this.Selected.Track = location.Track;
                     this.Selected.ArrivalSide = this.Side;
@@ -81,8 +95,7 @@ namespace ServiceSiteScheduling.LocalSearch
                     this.Selected.Previous.ToTrack = location.Track;
                     this.Selected.Previous.ToSide = this.Side;
 
-                    var routing = this.Selected.Next as Tasks.RoutingTask;
-                    if (routing != null)
+                    if (this.Selected.Next is Tasks.RoutingTask routing)
                         routing.FromTrack = location.Track;
                 }
             }
@@ -100,7 +113,10 @@ namespace ServiceSiteScheduling.LocalSearch
             else
                 previous.InsertAfter(this.Predecessor?.Next);
 
-            if (upper.MoveOrder < (this.Selected.NextServiceTask?.Previous.MoveOrder ?? double.PositiveInfinity))
+            if (
+                upper.MoveOrder
+                < (this.Selected.NextServiceTask?.Previous.MoveOrder ?? double.PositiveInfinity)
+            )
                 next.InsertBefore(upper);
             else
                 next.InsertBefore(this.Selected.NextServiceTask?.Previous);
@@ -108,8 +124,11 @@ namespace ServiceSiteScheduling.LocalSearch
             // Merge
             if (previous.AllPrevious.Count == 1)
             {
-                var parking = previous.AllPrevious.First() as Tasks.ParkingTask;
-                if (parking != null && !previous.IsParkingSkipped(previous.Train) && previous.Train.Equals(previous.PreviousMove?.Train))
+                if (
+                    previous.AllPrevious.First() is Tasks.ParkingTask parking
+                    && !previous.IsParkingSkipped(previous.Train)
+                    && previous.Train.Equals(previous.PreviousMove?.Train)
+                )
                 {
                     previous.SkipParking(parking);
                     skippedprevious = true;
@@ -117,8 +136,11 @@ namespace ServiceSiteScheduling.LocalSearch
             }
             if (next.AllNext.Count == 1)
             {
-                var parking = next.AllNext.First() as Tasks.ParkingTask;
-                if (parking != null && !next.IsParkingSkipped(previous.Train) && next.Train.Equals(next.NextMove?.Train))
+                if (
+                    next.AllNext.First() is Tasks.ParkingTask parking
+                    && !next.IsParkingSkipped(previous.Train)
+                    && next.Train.Equals(next.NextMove?.Train)
+                )
                 {
                     next.NextMove.SkipParking(parking);
                     skippednext = true;
@@ -144,8 +166,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
             this.Selected.Previous.ToTrack = this.originaltrack;
             this.Selected.Previous.ToSide = this.originalside;
-            var routing = this.Selected.Next as Tasks.RoutingTask;
-            if (routing != null)
+            if (this.Selected.Next is Tasks.RoutingTask routing)
                 routing.FromTrack = this.originaltrack;
 
             if (this.previousparking != null)
@@ -171,11 +192,13 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public override bool IsSimilarMove(LocalSearchMove move)
         {
-            var machinemove = move as ServiceMachineSwitchMove;
-            if (machinemove == null)
+            if (move is not ServiceMachineSwitchMove machinemove)
                 return false;
 
-            return this.Selected == machinemove.Selected || this.Selected == machinemove.Predecessor || this.Predecessor == machinemove.Selected || this.Predecessor == machinemove.Predecessor;
+            return this.Selected == machinemove.Selected
+                || this.Selected == machinemove.Predecessor
+                || this.Predecessor == machinemove.Selected
+                || this.Predecessor == machinemove.Predecessor;
         }
 
         public override string ToString()
@@ -185,21 +208,16 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public static IList<ServiceMachineSwitchMove> GetMoves(PlanGraph graph)
         {
-            List<ServiceMachineSwitchMove> moves = new List<ServiceMachineSwitchMove>();
+            List<ServiceMachineSwitchMove> moves = [];
 
             for (var movetask = graph.First; movetask != null; movetask = movetask.NextMove)
             {
-                var routing = movetask as Tasks.RoutingTask;
-                if (routing != null)
+                if (movetask is Tasks.RoutingTask routing)
                 {
-                    if (routing.IsSplit)
-                    {
-
-                    }
+                    if (routing.IsSplit) { }
                     else
                     {
-                        Tasks.ServiceTask service = routing.Next.First() as Tasks.ServiceTask;
-                        if (service == null)
+                        if (routing.Next.First() is not Tasks.ServiceTask service)
                             continue;
 
                         if (service.Type.Resources.Count == 1)
@@ -210,43 +228,85 @@ namespace ServiceSiteScheduling.LocalSearch
                             foreach (var track in service.Type.Tracks)
                             {
                                 {
-                                    Tasks.MoveTask lower = service.Previous, upper = service.Next;
+                                    Tasks.MoveTask lower = service.Previous,
+                                        upper = service.Next;
                                     if (!lower.SkipsParking)
                                         lower = lower.LatestPrevious();
                                     if (!upper.SkipsParking)
                                         upper.EarliestNext();
 
-                                    var location = ProblemInstance.Current.ServiceLocations[track.Index];
+                                    var location = ProblemInstance.Current.ServiceLocations[
+                                        track.Index
+                                    ];
                                     var position = location.First;
                                     if (position == null || position.Start > lower.End)
                                     {
                                         if (track.Access == Side.Both)
                                         {
-                                            ServiceMachineSwitchMove move = new ServiceMachineSwitchMove(graph, service, location, Side.A, null);
+                                            ServiceMachineSwitchMove move = new(
+                                                graph,
+                                                service,
+                                                location,
+                                                Side.A,
+                                                null
+                                            );
                                             moves.Add(move);
-                                            move = new ServiceMachineSwitchMove(graph, service, location, Side.B, null);
+                                            move = new ServiceMachineSwitchMove(
+                                                graph,
+                                                service,
+                                                location,
+                                                Side.B,
+                                                null
+                                            );
                                             moves.Add(move);
                                         }
                                         else
                                         {
-                                            ServiceMachineSwitchMove move = new ServiceMachineSwitchMove(graph, service, location, track.Access, null);
+                                            ServiceMachineSwitchMove move = new(
+                                                graph,
+                                                service,
+                                                location,
+                                                track.Access,
+                                                null
+                                            );
                                             moves.Add(move);
                                         }
                                     }
                                     while (position != null && position.End < upper.End)
                                     {
-                                        if (position.NextServiceTask == null || position.NextServiceTask.Start > lower.End)
+                                        if (
+                                            position.NextServiceTask == null
+                                            || position.NextServiceTask.Start > lower.End
+                                        )
                                         {
                                             if (track.Access == Side.Both)
                                             {
-                                                ServiceMachineSwitchMove move = new ServiceMachineSwitchMove(graph, service, location, Side.A, position);
+                                                ServiceMachineSwitchMove move = new(
+                                                    graph,
+                                                    service,
+                                                    location,
+                                                    Side.A,
+                                                    position
+                                                );
                                                 moves.Add(move);
-                                                move = new ServiceMachineSwitchMove(graph, service, location, Side.B, position);
+                                                move = new ServiceMachineSwitchMove(
+                                                    graph,
+                                                    service,
+                                                    location,
+                                                    Side.B,
+                                                    position
+                                                );
                                                 moves.Add(move);
                                             }
                                             else
                                             {
-                                                ServiceMachineSwitchMove move = new ServiceMachineSwitchMove(graph, service, location, track.Access, position);
+                                                ServiceMachineSwitchMove move = new(
+                                                    graph,
+                                                    service,
+                                                    location,
+                                                    track.Access,
+                                                    position
+                                                );
                                                 moves.Add(move);
                                             }
                                         }
@@ -258,7 +318,10 @@ namespace ServiceSiteScheduling.LocalSearch
                         }
                         else
                         {
-                            if (service.PreviousServiceTask == null && service.NextServiceTask == null)
+                            if (
+                                service.PreviousServiceTask == null
+                                && service.NextServiceTask == null
+                            )
                                 continue;
 
                             foreach (var resource in service.Type.Resources)
@@ -266,7 +329,8 @@ namespace ServiceSiteScheduling.LocalSearch
                                 if (resource == service.Resource)
                                     continue;
 
-                                Tasks.MoveTask lower = service.Previous, upper = service.Next;
+                                Tasks.MoveTask lower = service.Previous,
+                                    upper = service.Next;
                                 if (!lower.SkipsParking)
                                     lower = lower.LatestPrevious();
                                 if (!upper.SkipsParking)
@@ -275,14 +339,29 @@ namespace ServiceSiteScheduling.LocalSearch
                                 var position = service.Resource.First;
                                 if (position == null || position.Start > lower.End)
                                 {
-                                    ServiceMachineSwitchMove move = new ServiceMachineSwitchMove(graph, service, service.Resource, Side.None, null);
+                                    ServiceMachineSwitchMove move = new(
+                                        graph,
+                                        service,
+                                        service.Resource,
+                                        Side.None,
+                                        null
+                                    );
                                     moves.Add(move);
                                 }
                                 while (position != null && position.End < upper.End)
                                 {
-                                    if (position.NextServiceTask == null || position.NextServiceTask.Start > lower.End)
+                                    if (
+                                        position.NextServiceTask == null
+                                        || position.NextServiceTask.Start > lower.End
+                                    )
                                     {
-                                        ServiceMachineSwitchMove move = new ServiceMachineSwitchMove(graph, service, service.Resource, Side.None, position);
+                                        ServiceMachineSwitchMove move = new(
+                                            graph,
+                                            service,
+                                            service.Resource,
+                                            Side.None,
+                                            position
+                                        );
                                         moves.Add(move);
                                     }
 

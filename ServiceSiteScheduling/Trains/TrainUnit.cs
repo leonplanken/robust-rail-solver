@@ -1,16 +1,24 @@
-﻿using ServiceSiteScheduling.Servicing;
+﻿#nullable enable
+
+using ServiceSiteScheduling.Servicing;
 
 namespace ServiceSiteScheduling.Trains
 {
     class TrainUnit : IEquatable<TrainUnit>
     {
         public string Name { get; set; }
-        public int Index { get; private set; }
+        public readonly int Index;
         public TrainType Type { get; private set; }
         public Service[] RequiredServices { get; set; }
         public Utilities.Time[] ServiceDurations { get; private set; }
 
-        public TrainUnit(string name, int index, TrainType type, Service[] required, ServiceType[] types)
+        public TrainUnit(
+            string name,
+            int index,
+            TrainType type,
+            Service[] required,
+            ServiceType[] types
+        )
         {
             this.Name = name;
             this.Index = index;
@@ -21,13 +29,22 @@ namespace ServiceSiteScheduling.Trains
                 ServiceDurations[service.Type.Index] = service.Duration;
         }
 
-        public TrainUnit(int index, TrainType type, Service[] required, ServiceType[] types) : this(index.ToString(), index, type, required, types)
+        public TrainUnit(int index, TrainType type, Service[] required, ServiceType[] types)
+            : this(index.ToString(), index, type, required, types) { }
+
+        public bool Equals(TrainUnit? other)
         {
+            return this.Index == other?.Index;
         }
 
-        public bool Equals(TrainUnit other)
+        public override bool Equals(object? obj)
         {
-            return this.Index == other.Index;
+            return Equals(obj as TrainUnit);
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Index.GetHashCode();
         }
 
         public override string ToString()

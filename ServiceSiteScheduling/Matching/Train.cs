@@ -9,17 +9,20 @@ namespace ServiceSiteScheduling.Matching
         public Trains.DepartureTrain Departure { get; private set; }
         public Tasks.DepartureTask Task { get; set; }
         public Tasks.DepartureRoutingTask Routing { get; set; }
+
         public Train(Trains.DepartureTrain train, Unit[] units)
         {
             this.Departure = train;
             this.Units = units;
         }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             for (int i = 0; i < this.Units.Length; i++)
                 yield return this.Units[i];
             yield break;
         }
+
         public override string ToString()
         {
             return $"{this.Departure.Time}: ({string.Join("|", this.Units.Select(unit => unit.ToString()))})";

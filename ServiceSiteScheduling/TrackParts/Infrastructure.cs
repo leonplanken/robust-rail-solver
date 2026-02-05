@@ -1,5 +1,4 @@
-﻿
-namespace ServiceSiteScheduling.TrackParts
+﻿namespace ServiceSiteScheduling.TrackParts
 {
     abstract class Infrastructure
     {
@@ -12,7 +11,12 @@ namespace ServiceSiteScheduling.TrackParts
             this.PrettyName = prettyname;
         }
 
-        public abstract IList<TrackSwitchContainer> GetTracksConnectedTo(Infrastructure infrastructure, int switches, List<Infrastructure> path, bool ignoreInactive = true);
+        public abstract IList<TrackSwitchContainer> GetTracksConnectedTo(
+            Infrastructure infrastructure,
+            int switches,
+            List<Infrastructure> path,
+            bool ignoreInactive = true
+        );
 
         public override string ToString()
         {
@@ -26,7 +30,7 @@ namespace ServiceSiteScheduling.TrackParts
         public int Switches { get; }
         public Side Side { get; }
         public Infrastructure[] Path { get; }
-        
+
         public TrackSwitchContainer(Track track, int switchcost, Side side, Infrastructure[] path)
         {
             this.Track = track;

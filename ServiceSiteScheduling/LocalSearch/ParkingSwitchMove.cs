@@ -1,5 +1,4 @@
-﻿
-namespace ServiceSiteScheduling.LocalSearch
+﻿namespace ServiceSiteScheduling.LocalSearch
 {
     class ParkingSwitchMove : LocalSearchMove
     {
@@ -10,7 +9,13 @@ namespace ServiceSiteScheduling.LocalSearch
         protected TrackParts.Track[] originaltracks;
         protected Side[] originalsides;
 
-        public ParkingSwitchMove(Solutions.PlanGraph graph, IList<Tasks.TrackTask> tasks, TrackParts.Track track, Side side) : base(graph)
+        public ParkingSwitchMove(
+            Solutions.PlanGraph graph,
+            IList<Tasks.TrackTask> tasks,
+            TrackParts.Track track,
+            Side side
+        )
+            : base(graph)
         {
             if (tasks.Count == 0)
                 throw new ArgumentException("The set of tasks cannot be empty");
@@ -67,7 +72,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
         public static IList<ParkingSwitchMove> GetMoves(Solutions.PlanGraph graph)
         {
-            List<ParkingSwitchMove> moves = new List<ParkingSwitchMove>();
+            List<ParkingSwitchMove> moves = [];
 
             for (var movetask = graph.First; movetask != null; movetask = movetask.NextMove)
             {
@@ -78,28 +83,50 @@ namespace ServiceSiteScheduling.LocalSearch
                     var tasks = primarytask.GetRelatedTasks();
                     if (tasks.Min(t => t.Previous.MoveOrder) < routing.MoveOrder)
                         continue;
-                    if (tasks.Any(t => !(t.TaskType == Tasks.TrackTaskType.Parking || (t as Tasks.ServiceTask)?.Type.LocationType == Servicing.ServiceLocationType.Free)))
+                    if (
+                        tasks.Any(t =>
+                            !(
+                                t.TaskType == Tasks.TrackTaskType.Parking
+                                || (t as Tasks.ServiceTask)?.Type.LocationType
+                                    == Servicing.ServiceLocationType.Free
+                            )
+                        )
+                    )
                         continue;
 
                     var currenttrack = primarytask.Track;
                     var currentside = primarytask.ArrivalSide;
 
-                    IEnumerable<TrackParts.Track> tracks = tasks.Skip(1).Aggregate((IEnumerable<TrackParts.Track>)tasks[0].Train.Units[0].Type.ParkingLocations, (set, t) => set.Intersect(t.Train.Units[0].Type.ParkingLocations));
+                    IEnumerable<TrackParts.Track> tracks = tasks
+                        .Skip(1)
+                        .Aggregate(
+                            (IEnumerable<TrackParts.Track>)
+                                tasks[0].Train.Units[0].Type.ParkingLocations,
+                            (set, t) => set.Intersect(t.Train.Units[0].Type.ParkingLocations)
+                        );
                     var services = tasks.Where(t => t.TaskType == Tasks.TrackTaskType.Service);
-                    if (services.Count() > 0)
-                        tracks = services.Aggregate(tracks, (set, t) => set.Intersect((t as Tasks.ServiceTask).Type.Tracks));
+                    if (services.Any())
+                        tracks = services.Aggregate(
+                            tracks,
+                            (set, t) => set.Intersect((t as Tasks.ServiceTask).Type.Tracks)
+                        );
 
                     foreach (var track in tracks)
                     {
-                        if (track.Access.HasFlag(Side.A) && !(track == currenttrack && currentside == Side.A))
+                        if (
+                            track.Access.HasFlag(Side.A)
+                            && !(track == currenttrack && currentside == Side.A)
+                        )
                         {
-                            ParkingSwitchMove move = new ParkingSwitchMove(graph, tasks, track, Side.A);
+                            ParkingSwitchMove move = new(graph, tasks, track, Side.A);
                             moves.Add(move);
                         }
-                        if (track.Access.HasFlag(Side.B) && !(track == currenttrack && currentside == Side.B))
+                        if (
+                            track.Access.HasFlag(Side.B)
+                            && !(track == currenttrack && currentside == Side.B)
+                        )
                         {
-
-                            ParkingSwitchMove move = new ParkingSwitchMove(graph, tasks, track, Side.B);
+                            ParkingSwitchMove move = new(graph, tasks, track, Side.B);
                             moves.Add(move);
                         }
                     }
@@ -110,23 +137,26 @@ namespace ServiceSiteScheduling.LocalSearch
                     var departure = movetask as Tasks.DepartureRoutingTask;
                     if (departure.Next.Track.Access == Side.Both)
                     {
-                        ParkingSwitchMove move = new ParkingSwitchMove(graph, new Tasks.TrackTask[1] { departure.Next }, departure.Next.Track, departure.ToSide.Flip);
+                        ParkingSwitchMove move = new(
+                            graph,
+                            new Tasks.TrackTask[1] { departure.Next },
+                            departure.Next.Track,
+                            departure.ToSide.Flip
+                        );
                         moves.Add(move);
                     }
                 }
             }
-
 
             return moves;
         }
 
         public override bool IsSimilarMove(LocalSearchMove move)
         {
-            var shiftmove = move as ParkingSwitchMove;
-            if (shiftmove == null)
+            if (move is not ParkingSwitchMove shiftmove)
                 return false;
 
-            return this.RelatedTasks.Intersect(shiftmove.RelatedTasks).Count() > 0;
+            return RelatedTasks.Intersect(shiftmove.RelatedTasks).Any();
         }
 
         public override string ToString()

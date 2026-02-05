@@ -11,7 +11,10 @@ namespace ServiceSiteScheduling.Routing
         private Dictionary<BitSet, Entry> BB;
         private int[] indices;
         private const int maxsize = 10000;
-        private LinkedList<BitSet> AAhistory, ABhistory, BAhistory, BBhistory;
+        private LinkedList<BitSet> AAhistory,
+            ABhistory,
+            BAhistory,
+            BBhistory;
 
         public TrackParts.Track From { get; private set; }
         public TrackParts.Track To { get; private set; }
@@ -35,13 +38,13 @@ namespace ServiceSiteScheduling.Routing
             }
 
             this.bitsize = index;
-            this.AA = new Dictionary<BitSet, Entry>();
+            this.AA = [];
             this.AAhistory = new LinkedList<BitSet>();
-            this.AB = new Dictionary<BitSet, Entry>();
+            this.AB = [];
             this.ABhistory = new LinkedList<BitSet>();
-            this.BA = new Dictionary<BitSet, Entry>();
+            this.BA = [];
             this.BAhistory = new LinkedList<BitSet>();
-            this.BB = new Dictionary<BitSet, Entry>();
+            this.BB = [];
             this.BBhistory = new LinkedList<BitSet>();
 
             this.EmptyState = new BitSet(this.bitsize);
@@ -49,7 +52,7 @@ namespace ServiceSiteScheduling.Routing
 
         public BitSet ConstructState(Parking.TrackOccupation[] trackstates, Trains.ShuntTrain train)
         {
-            BitSet result = new BitSet(bitsize);
+            BitSet result = new(bitsize);
 
             foreach (var state in trackstates)
             {
@@ -72,16 +75,16 @@ namespace ServiceSiteScheduling.Routing
             if (from == Side.A)
             {
                 if (to == Side.A)
-                    return this.tryGetValue(this.AA, this.AAhistory, state, out route);
+                    return tryGetValue(this.AA, this.AAhistory, state, out route);
                 else
-                    return this.tryGetValue(this.AB, this.ABhistory, state, out route);
+                    return tryGetValue(this.AB, this.ABhistory, state, out route);
             }
             else
             {
                 if (to == Side.A)
-                    return this.tryGetValue(this.BA, this.BAhistory, state, out route);
+                    return tryGetValue(this.BA, this.BAhistory, state, out route);
                 else
-                    return this.tryGetValue(this.BB, this.BBhistory, state, out route);
+                    return tryGetValue(this.BB, this.BBhistory, state, out route);
             }
         }
 
@@ -103,7 +106,12 @@ namespace ServiceSiteScheduling.Routing
             }
         }
 
-        private bool tryGetValue(Dictionary<BitSet, Entry> hashmap, LinkedList<BitSet> history, BitSet key, out Route value)
+        private static bool tryGetValue(
+            Dictionary<BitSet, Entry> hashmap,
+            LinkedList<BitSet> history,
+            BitSet key,
+            out Route value
+        )
         {
             Entry entry = default(Entry);
             bool success = hashmap.TryGetValue(key, out entry);
@@ -119,7 +127,12 @@ namespace ServiceSiteScheduling.Routing
             return success;
         }
 
-        private void add(Dictionary<BitSet, Entry> hashmap, LinkedList<BitSet> history, BitSet key, Route value)
+        private static void add(
+            Dictionary<BitSet, Entry> hashmap,
+            LinkedList<BitSet> history,
+            BitSet key,
+            Route value
+        )
         {
             hashmap[key] = new Entry(value, history.AddLast(key));
             if (history.Count > maxsize)
@@ -139,7 +152,8 @@ namespace ServiceSiteScheduling.Routing
             string result = string.Empty;
             foreach (var track in ProblemInstance.Current.Tracks)
                 if (track.IsActive)
-                    result += $"{track.PrettyName} = {state[this.indices[track.Index]]} {(track.Access == Side.Both ? state[this.indices[track.Index] + 1].ToString() : "?")} \r\n";
+                    result +=
+                        $"{track.PrettyName} = {state[this.indices[track.Index]]} {(track.Access == Side.Both ? state[this.indices[track.Index] + 1].ToString() : "?")} \r\n";
             return result;
         }
 

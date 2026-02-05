@@ -31,7 +31,18 @@ namespace ServiceSiteScheduling.Solutions
         public BitSet ProblemTracks;
         public BitSet ProblemTrains;
 
-        public bool IsFeasible { get { return this.Crossings + this.ArrivalDelays + this.DepartureDelays + this.TrackLengthViolations + this.CombineOnDepartureTrack == 0; } }
+        public bool IsFeasible
+        {
+            get
+            {
+                return this.Crossings
+                        + this.ArrivalDelays
+                        + this.DepartureDelays
+                        + this.TrackLengthViolations
+                        + this.CombineOnDepartureTrack
+                    == 0;
+            }
+        }
 
         public SolutionCost()
         {
@@ -43,15 +54,14 @@ namespace ServiceSiteScheduling.Solutions
         {
             get
             {
-                return
-                    CrossingWeight * this.Crossings +
-                    DepartureDelayWeight * this.DepartureDelays +
-                    DepartureDelaySumWeight * this.DepartureDelaySum / (this.DepartureDelays + 1) +
-                    ArrivalDelayWeight * this.ArrivalDelays +
-                    ArrivalDelaySumWeight * this.ArrivalDelaySum / (this.ArrivalDelays + 1) +
-                    TrackWeight * this.TrackLengthViolations +
-                    MaintenanceWeight * this.UnplannedMaintenance + 
-                    CombineDepartureWeight * this.CombineOnDepartureTrack;
+                return CrossingWeight * this.Crossings
+                    + DepartureDelayWeight * this.DepartureDelays
+                    + DepartureDelaySumWeight * this.DepartureDelaySum / (this.DepartureDelays + 1)
+                    + ArrivalDelayWeight * this.ArrivalDelays
+                    + ArrivalDelaySumWeight * this.ArrivalDelaySum / (this.ArrivalDelays + 1)
+                    + TrackWeight * this.TrackLengthViolations
+                    + MaintenanceWeight * this.UnplannedMaintenance
+                    + CombineDepartureWeight * this.CombineOnDepartureTrack;
             }
         }
 
@@ -59,18 +69,17 @@ namespace ServiceSiteScheduling.Solutions
         {
             get
             {
-                return
-                    CrossingWeight * this.Crossings +
-                    DepartureDelayWeight * this.DepartureDelays +
-                    DepartureDelaySumWeight * this.DepartureDelaySum / (this.DepartureDelays + 1) +
-                    ArrivalDelayWeight * this.ArrivalDelays +
-                    ArrivalDelaySumWeight * this.ArrivalDelaySum / (this.ArrivalDelays + 1) +
-                    TrackWeight * this.TrackLengthViolations +
-                    TrackSumWeight * this.TrackLengthViolationSum +
-                    CombineDepartureWeight * this.CombineOnDepartureTrack +
-                    ShuntWeight * this.ShuntMoves +
-                    MaintenanceWeight * this.UnplannedMaintenance +
-                    RoutingWeight * this.RoutingDurationSum / this.ShuntMoves;
+                return CrossingWeight * this.Crossings
+                    + DepartureDelayWeight * this.DepartureDelays
+                    + DepartureDelaySumWeight * this.DepartureDelaySum / (this.DepartureDelays + 1)
+                    + ArrivalDelayWeight * this.ArrivalDelays
+                    + ArrivalDelaySumWeight * this.ArrivalDelaySum / (this.ArrivalDelays + 1)
+                    + TrackWeight * this.TrackLengthViolations
+                    + TrackSumWeight * this.TrackLengthViolationSum
+                    + CombineDepartureWeight * this.CombineOnDepartureTrack
+                    + ShuntWeight * this.ShuntMoves
+                    + MaintenanceWeight * this.UnplannedMaintenance
+                    + RoutingWeight * this.RoutingDurationSum / this.ShuntMoves;
             }
         }
 
@@ -81,7 +90,8 @@ namespace ServiceSiteScheduling.Solutions
 
         public override string ToString()
         {
-            return string.Format("Cost = {0} : {8} | cr={1}, dd={2}, da={3}, tlv={4}, sm={5}, rd={6}, cd={7}, um={9}",
+            return string.Format(
+                "Cost = {0} : {8} | cr={1}, dd={2}, da={3}, tlv={4}, sm={5}, rd={6}, cd={7}, um={9}",
                 this.BaseCost.ToString("N1"),
                 this.Crossings,
                 this.DepartureDelays,
@@ -91,7 +101,8 @@ namespace ServiceSiteScheduling.Solutions
                 (this.RoutingDurationSum / this.ShuntMoves).ToString("N2"),
                 this.CombineOnDepartureTrack,
                 this.FullCost.ToString("N2"),
-                this.UnplannedMaintenance);
+                this.UnplannedMaintenance
+            );
         }
     }
 }

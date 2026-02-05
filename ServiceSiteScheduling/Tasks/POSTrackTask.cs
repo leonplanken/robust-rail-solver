@@ -1,7 +1,14 @@
-
 namespace ServiceSiteScheduling.Tasks
 {
-    public enum POSTrackTaskType { Arrival, Departure, Service, Parking, Split, Combine }
+    public enum POSTrackTaskType
+    {
+        Arrival,
+        Departure,
+        Service,
+        Parking,
+        Split,
+        Combine,
+    }
 
     class POSTrackTask
     {
@@ -27,12 +34,9 @@ namespace ServiceSiteScheduling.Tasks
 
         public List<POSTrackTask> PredecessorTrackTaskByInfrastructure { get; set; }
 
-
-
         public POSTrackTask(TrackTask correspondingTrackTask)
         {
             this.CorrespondingTrackTask = correspondingTrackTask;
-
 
             switch (CorrespondingTrackTask.TaskType)
             {
@@ -58,23 +62,21 @@ namespace ServiceSiteScheduling.Tasks
                     break;
             }
 
-            this.previousMoves = new List<POSMoveTask>();
+            this.previousMoves = [];
 
-            this.nextMoves = new List<POSMoveTask>();
+            this.nextMoves = [];
 
             this.Train = correspondingTrackTask.Train;
 
             this.Track = correspondingTrackTask.Track;
 
+            this.SuccessorTrackTaskByTrainUnits = [];
 
-            this.SuccessorTrackTaskByTrainUnits = new List<POSTrackTask>();
+            this.PredecessorTrackTaskByTrainUnits = [];
 
-            this.PredecessorTrackTaskByTrainUnits = new List<POSTrackTask>();
+            this.SuccessorTrackTaskByInfrastructure = [];
 
-            this.SuccessorTrackTaskByInfrastructure = new List<POSTrackTask>();
-
-            this.PredecessorTrackTaskByInfrastructure = new List<POSTrackTask>();
-
+            this.PredecessorTrackTaskByInfrastructure = [];
         }
 
         public void displayLinksByInfrastructure()
@@ -97,7 +99,6 @@ namespace ServiceSiteScheduling.Tasks
                 Console.Write($"POSTrackTask {item.ID}, ");
             }
             Console.WriteLine(" ]\n");
-
         }
 
         public void displayLinksByTrainUnits()
@@ -120,7 +121,6 @@ namespace ServiceSiteScheduling.Tasks
                 Console.Write($"POSTrackTask {item.ID}, ");
             }
             Console.WriteLine(" ]\n");
-
         }
 
         public string GetInfoLinksByTrainUnits()
@@ -143,7 +143,7 @@ namespace ServiceSiteScheduling.Tasks
             return str;
         }
 
-          public string GetInfoLinksByInfrastructure()
+        public string GetInfoLinksByInfrastructure()
         {
             string str = "";
             str = str + "TrackTask Links by same Infrastructure used :\n";
@@ -162,7 +162,6 @@ namespace ServiceSiteScheduling.Tasks
             str = str + "]\n";
             return str;
         }
-
 
         public void AddNewSuccessorByTrainUnits(POSTrackTask successor)
         {
@@ -186,13 +185,11 @@ namespace ServiceSiteScheduling.Tasks
 
         public void setPOSTrackTaskType(POSTrackTaskType POSTrackTaskType)
         {
-
             this.TaskType = POSTrackTaskType;
         }
 
         public override string ToString()
         {
-
             string POStype = "";
 
             switch (this.TaskType)
@@ -226,10 +223,16 @@ namespace ServiceSiteScheduling.Tasks
                     break;
             }
 
-
-
-
-            string str = "POSTrackTask " + this.ID + " - " + POStype + "Train: " + Train + " at " + Track.ID + ":\n";
+            string str =
+                "POSTrackTask "
+                + this.ID
+                + " - "
+                + POStype
+                + "Train: "
+                + Train
+                + " at "
+                + Track.ID
+                + ":\n";
             str = str + "|POSMoveTask Successors: [";
 
             foreach (POSMoveTask successor in nextMoves)
@@ -242,13 +245,10 @@ namespace ServiceSiteScheduling.Tasks
             foreach (POSMoveTask predeccessor in previousMoves)
             {
                 str = str + "Move " + predeccessor.ID + ", ";
-
             }
             str = str + "]\n";
 
-
             return str;
         }
-
     }
 }

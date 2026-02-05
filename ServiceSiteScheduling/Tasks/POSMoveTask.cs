@@ -1,4 +1,3 @@
-
 namespace ServiceSiteScheduling.Tasks
 {
     class POSMoveTask
@@ -16,39 +15,35 @@ namespace ServiceSiteScheduling.Tasks
         public int ID { get; set; }
         public List<POSMoveTask> LinkedMoves { get; set; }
 
+        public List<POSMoveTask> SuccessorMovesByTrainUnits { get; set; }
 
-        public List<POSMoveTask> SuccessorMovesByTrainUnits {get; set;}
+        public List<POSMoveTask> PredecessorMovesByTrainUnits { get; set; }
 
-        public List<POSMoveTask> PredecessorMovesByTrainUnits {get; set;}
+        public List<POSMoveTask> SuccessorMovesByInfrastructure { get; set; }
 
-        public List<POSMoveTask> SuccessorMovesByInfrastructure {get; set;}
+        public List<POSMoveTask> PredecessorMovesByInfrastructure { get; set; }
 
-        public List<POSMoveTask> PredecessorMovesByInfrastructure {get; set;}
+        public List<POSTrackTask> SuccessorTrackTasks { get; set; }
 
-        public List<POSTrackTask> SuccessorTrackTasks {get; set;}
-
-        public List<POSTrackTask> PredecessorTrackTasks {get; set;}
-
+        public List<POSTrackTask> PredecessorTrackTasks { get; set; }
 
         public POSMoveTask(MoveTask correspondingMoveTask, int id)
         {
             // this.POSPlanGraph = posGraph;
             this.CorrespondingMoveTask = correspondingMoveTask;
             this.ID = id;
-            this.LinkedMoves = new  List<POSMoveTask>();
-            this.SuccessorMovesByTrainUnits = new List<POSMoveTask>();
-            this.PredecessorMovesByTrainUnits = new List<POSMoveTask>();
-            this.SuccessorMovesByInfrastructure = new List<POSMoveTask>();
-            this.PredecessorMovesByInfrastructure = new List<POSMoveTask>();
-            
-            this.SuccessorTrackTasks = new List<POSTrackTask>();
-            this.PredecessorTrackTasks = new List<POSTrackTask>();
-        }   
+            this.LinkedMoves = [];
+            this.SuccessorMovesByTrainUnits = [];
+            this.PredecessorMovesByTrainUnits = [];
+            this.SuccessorMovesByInfrastructure = [];
+            this.PredecessorMovesByInfrastructure = [];
 
-        public void InsertAfter(POSMoveTask posMoveTask)
-        {
-            
+            this.SuccessorTrackTasks = [];
+            this.PredecessorTrackTasks = [];
         }
+
+        public static void InsertAfter(POSMoveTask posMoveTask) { }
+
         public void AddNewSuccessorByTrainUnits(POSMoveTask successor)
         {
             this.SuccessorMovesByTrainUnits.Add(successor);
@@ -68,60 +63,56 @@ namespace ServiceSiteScheduling.Tasks
         {
             this.PredecessorMovesByInfrastructure.Add(predeccessor);
         }
+
         public override string ToString()
         {
             string str = "POSMove " + this.ID + ":\n";
             str = str + "Movement Links by same Train Unit used :\n";
             str = str + "|Direct successors: [";
 
-            foreach(POSMoveTask successor in SuccessorMovesByTrainUnits)
+            foreach (POSMoveTask successor in SuccessorMovesByTrainUnits)
             {
                 str = str + "Move " + successor.ID + " , ";
             }
             str = str + "]\n|Direct predeccessors|: [";
 
-            foreach(POSMoveTask predeccessor in PredecessorMovesByTrainUnits)
+            foreach (POSMoveTask predeccessor in PredecessorMovesByTrainUnits)
             {
                 str = str + "Move " + predeccessor.ID + ", ";
-
             }
             str = str + "]\n";
 
             str = str + "Movement Links by same Infrastructure used :\n";
             str = str + "|Direct successors: [";
 
-            foreach(POSMoveTask successor in SuccessorMovesByInfrastructure)
+            foreach (POSMoveTask successor in SuccessorMovesByInfrastructure)
             {
                 str = str + "Move " + successor.ID + " , ";
             }
             str = str + "]\n|Direct predeccessors|: [";
 
-            foreach(POSMoveTask predeccessor in PredecessorMovesByInfrastructure)
+            foreach (POSMoveTask predeccessor in PredecessorMovesByInfrastructure)
             {
                 str = str + "Move " + predeccessor.ID + ", ";
-
             }
             str = str + "]\n";
 
             str = str + "Track Task Links :\n";
             str = str + "|Direct successors: [";
 
-            foreach(POSTrackTask successor in SuccessorTrackTasks)
+            foreach (POSTrackTask successor in SuccessorTrackTasks)
             {
                 str = str + "Track Task " + successor.ID + " , ";
             }
             str = str + "]\n|Direct predeccessors|: [";
 
-            foreach(POSTrackTask predeccessor in PredecessorTrackTasks)
+            foreach (POSTrackTask predeccessor in PredecessorTrackTasks)
             {
                 str = str + "Track Task " + predeccessor.ID + ", ";
-
             }
             str = str + "]\n";
 
             return str;
         }
     }
-
 }
-
