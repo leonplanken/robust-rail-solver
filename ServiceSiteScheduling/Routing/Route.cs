@@ -8,7 +8,7 @@ namespace ServiceSiteScheduling.Routing
 {
     class Route : IEquatable<Route>
     {
-        public ShuntTrain Train { get; private set; }
+        public ShuntTrain? Train { get; private set; }
         public Track[] Tracks { get; private set; }
         public Arc[] Arcs { get; private set; }
         public BitSet TrackBits { get; private set; }
@@ -18,10 +18,10 @@ namespace ServiceSiteScheduling.Routing
         public Side DepartureSide { get; private set; }
         public RoutingGraph Graph { get; private set; }
         public BitSet CrossingTracks { get; private set; }
-        public BitSet TrackState { get; set; }
+        public BitSet? TrackState { get; set; }
 
         public static Route Invalid = new(
-            null,
+            null!,
             Array.Empty<Track>(),
             Array.Empty<Arc>(),
             Settings.CrossingsIfInvalidRoute,

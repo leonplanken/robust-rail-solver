@@ -80,6 +80,7 @@ namespace ServiceSiteScheduling.Tasks
             this.Previous = [];
             this.crossingtracks = new BitSet(ProblemInstance.Current.Tracks.Length);
             this.departurecrossingtracks = new BitSet(ProblemInstance.Current.Tracks.Length);
+            this.Next = null!;
         }
 
         public void UpdatePreviousTaskOrder()

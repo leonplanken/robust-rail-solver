@@ -368,10 +368,7 @@
             foreach (var matchpart in partsmatching)
             {
                 if (
-                    !trainparts.TryGetValue(
-                        matchpart.First().Departure.Train,
-                        out List<Part>? parts
-                    )
+                    !trainparts.TryGetValue(matchpart.First().Departure.Train, out List<Part> parts)
                 )
                     trainparts[matchpart.First().Departure.Train] = parts = [];
                 var part = new Part(matchpart.Select(m => m.Departure.Unit).ToArray());
