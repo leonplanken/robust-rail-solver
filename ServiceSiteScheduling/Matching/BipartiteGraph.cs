@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-namespace ServiceSiteScheduling.Matching
+﻿namespace ServiceSiteScheduling.Matching
 {
     class BipartiteGraph
     {
@@ -13,7 +11,7 @@ namespace ServiceSiteScheduling.Matching
         private ArrivalVertex[] matchableArrivals;
         private int infinity;
         private ArrivalVertex dummy;
-        private DepartureVertex?[] arrivalmatch;
+        private DepartureVertex[] arrivalmatch;
         private ArrivalVertex[] departurematch;
         private Queue<ArrivalVertex> queue;
 
@@ -48,15 +46,19 @@ namespace ServiceSiteScheduling.Matching
             int arrivalindex = 0;
             List<ArrivalVertex> arrivals = [];
             foreach (var arrival in ProblemInstance.Current.ArrivalsOrdered)
-            foreach (var unit in arrival.Units)
-                arrivals.Add(new ArrivalVertex(arrivalindex++, unit, arrival));
+            {
+                foreach (var unit in arrival.Units)
+                    arrivals.Add(new ArrivalVertex(arrivalindex++, unit, arrival));
+            }
             this.Arrivals = arrivals.ToArray();
 
             int departureindex = 0;
             List<DepartureVertex> departures = [];
             foreach (var departure in this.departuretrains)
-            foreach (var unit in departure.Units)
-                departures.Add(new DepartureVertex(departureindex++, unit, departure));
+            {
+                foreach (var unit in departure.Units)
+                    departures.Add(new DepartureVertex(departureindex++, unit, departure));
+            }
             this.Departures = departures.ToArray();
 
             arrivalindex = 0;
@@ -173,7 +175,7 @@ namespace ServiceSiteScheduling.Matching
             int size = this.Arrivals.Length;
             this.distance = new int[size + 1];
             this.infinity = size + 1;
-            this.dummy = new ArrivalVertex(size, null!, null!);
+            this.dummy = new ArrivalVertex(size, null, null);
             this.queue = new Queue<ArrivalVertex>();
             this.arrivalmatch = new DepartureVertex[size + 1];
             this.departurematch = new ArrivalVertex[size + 1];
@@ -290,8 +292,8 @@ namespace ServiceSiteScheduling.Matching
                 if (iteration++ > iterations)
                     break;
 
-                ArrivalVertex first,
-                    second;
+                ArrivalVertex first = null,
+                    second = null;
 
                 var set = arrivalsbytype.Values.ElementAt(random.Next(arrivalsbytype.Count));
                 first = set[random.Next(set.Count)];
